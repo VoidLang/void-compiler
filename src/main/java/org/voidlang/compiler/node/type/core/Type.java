@@ -1,8 +1,7 @@
-package org.voidlang.compiler.node.method.type;
+package org.voidlang.compiler.node.type.core;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.voidlang.compiler.node.method.type.TypeEntry;
 import org.voidlang.compiler.token.Token;
 
 import java.util.List;

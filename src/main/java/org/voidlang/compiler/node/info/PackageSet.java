@@ -3,6 +3,7 @@ package org.voidlang.compiler.node.info;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.common.Finish;
+import org.voidlang.llvm.element.Builder;
 import org.voidlang.llvm.element.Value;
 
 /**
@@ -37,7 +38,7 @@ public class PackageSet extends Node {
      * @return node ir code wrapper
      */
     @Override
-    public Value generate() {
+    public Value generate(Builder builder) {
         throw new IllegalStateException("Cannot generate IR code for " + Finish.class);
     }
 

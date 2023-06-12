@@ -1,4 +1,4 @@
-package org.voidlang.compiler.node.method.type;
+package org.voidlang.compiler.node.type.core;
 
 /**
  * Represents an entry which may be a {@link Type} or a {@link TypeGroup}.

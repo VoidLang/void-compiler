@@ -1,9 +1,9 @@
-package org.voidlang.compiler.node.method.named;
+package org.voidlang.compiler.node.type.named;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.voidlang.compiler.node.method.type.Type;
-import org.voidlang.compiler.node.method.type.TypeGroup;
+import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.compiler.node.type.core.TypeGroup;
 
 import java.util.List;
 

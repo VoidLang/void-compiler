@@ -1,4 +1,4 @@
-package org.voidlang.compiler.node.method.type;
+package org.voidlang.compiler.node.type.core;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

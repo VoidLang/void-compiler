@@ -1,7 +1,8 @@
-package org.voidlang.compiler.node.type;
+package org.voidlang.compiler.node.type.modifier;
 
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.llvm.element.Builder;
 import org.voidlang.llvm.element.Value;
 
 import java.util.List;
@@ -38,7 +39,7 @@ public class ModifierList extends Node {
      * @return node ir code wrapper
      */
     @Override
-    public Value generate() {
+    public Value generate(Builder builder) {
         throw new IllegalStateException("Cannot generate IR code for " + ModifierList.class);
     }
 

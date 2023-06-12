@@ -5,8 +5,8 @@ import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
 import org.voidlang.compiler.node.info.PackageImport;
 import org.voidlang.compiler.node.info.PackageSet;
-import org.voidlang.compiler.node.type.ModifierBlock;
-import org.voidlang.compiler.node.type.ModifierList;
+import org.voidlang.compiler.node.type.modifier.ModifierBlock;
+import org.voidlang.compiler.node.type.modifier.ModifierList;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
 

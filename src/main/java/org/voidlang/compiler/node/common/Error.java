@@ -2,6 +2,7 @@ package org.voidlang.compiler.node.common;
 
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.llvm.element.Builder;
 import org.voidlang.llvm.element.Value;
 
 /**
@@ -29,7 +30,7 @@ public class Error extends Node {
      * @return node ir code wrapper
      */
     @Override
-    public Value generate() {
+    public Value generate(Builder builder) {
         throw new IllegalStateException("Cannot generate IR code for " + Error.class);
     }
 }

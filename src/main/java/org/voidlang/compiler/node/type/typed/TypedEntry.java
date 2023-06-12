@@ -1,4 +1,4 @@
-package org.voidlang.compiler.node.method.typed;
+package org.voidlang.compiler.node.type.typed;
 
 // TODO this will be used for lambda references
 //   let foo = |x, y| x + 1

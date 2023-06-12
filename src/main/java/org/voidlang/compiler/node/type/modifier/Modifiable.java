@@ -1,4 +1,4 @@
-package org.voidlang.compiler.node.type;
+package org.voidlang.compiler.node.type.modifier;
 
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeType;

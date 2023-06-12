@@ -1,4 +1,4 @@
-package org.voidlang.compiler.node.method.named;
+package org.voidlang.compiler.node.type.named;
 
 /**
  * Represents an entry which may be a {@link NamedType} or a {@link ReturnTypeGroup}.

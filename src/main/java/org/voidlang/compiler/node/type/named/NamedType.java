@@ -1,7 +1,7 @@
-package org.voidlang.compiler.node.method.named;
+package org.voidlang.compiler.node.type.named;
 
 import lombok.Getter;
-import org.voidlang.compiler.node.method.type.Type;
+import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.token.Token;
 
 import java.util.List;
