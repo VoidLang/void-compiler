@@ -6,6 +6,8 @@ import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
 import org.voidlang.compiler.node.info.PackageImport;
 import org.voidlang.compiler.node.info.PackageSet;
+import org.voidlang.compiler.node.type.array.Array;
+import org.voidlang.compiler.node.type.array.Dimension;
 import org.voidlang.compiler.node.type.generic.GenericArgumentList;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
@@ -461,6 +463,35 @@ public class Parser {
         }
 
         return new QualifiedName(tokens);
+    }
+
+    /**
+     * Parse the next array declaration.
+     * @return next type array
+     */
+    private Array nextArray() {
+        // loop while the token is an array start
+        // int[] myArray
+        //    ^  square brackets indicate that the type is an array
+        // float[][] my2DArray
+        //      ^ ^ multiple square brackets indicate the dimensions of an array
+        //           this one is a 2-dimensional array for example
+        // byte[1024] a; byte[BUFFER_SIZE] b;
+        //     ^^^^^          ^^^^^^^^^^^  array size may be explicitly declared with an integer
+        //                                 or an identifier referring to a constant
+        List<Dimension> dimensions = new ArrayList<>();
+        while (peek().is(TokenType.START)) {
+            // skip the '[' symbol
+            get();
+            // handle explicitly declared array dimension size
+            Token size = Token.of(TokenType.NONE);
+            if (peek().is(TokenType.INTEGER, TokenType.IDENTIFIER))
+                size = get();
+            // float[] getVectorElements()
+            //       ^ a closing square bracket must be placed right after an open square bracket
+            get(TokenType.STOP);
+        }
+        return new Array(dimensions);
     }
 
     /**

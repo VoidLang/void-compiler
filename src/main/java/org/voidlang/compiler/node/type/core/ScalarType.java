@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.type.QualifiedName;
+import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.generic.GenericArgument;
 import org.voidlang.compiler.node.type.generic.GenericArgumentList;
 import org.voidlang.compiler.token.Token;
@@ -36,7 +37,16 @@ public class ScalarType implements Type {
     private final GenericArgumentList generics;
 
     /**
-     * Get dimensions of the type. Each open-close square bracket pair increases the dimensions by one.
+     * The dimensions of the multidimensional array.
      */
-    private final int dimensions;
+    @NotNull
+    private final Array array;
+
+    /**
+     * Indicate, whether this type is an array.
+     * @return true if there are array dimensions specified
+     */
+    public boolean isArray() {
+        return !array.getDimensions().isEmpty();
+    }
 }
