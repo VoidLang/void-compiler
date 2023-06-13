@@ -1,6 +1,7 @@
 package org.voidlang.compiler.node.type.named;
 
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.token.Token;
 
@@ -19,15 +20,11 @@ import java.util.List;
  * @see Type
  */
 @Getter
-public class NamedType extends Type implements ReturnTypeEntry {
+public class NamedType extends Type implements NamedTypeEntry {
     /**
-     * Indicate, whether the type as a name declared.
+     * The name of the type. If it is null, the type is unnamed.
      */
-    private final boolean named;
-
-    /**
-     * The name of the type. It is null if <code>named</code> is false.
-     */
+    @Nullable
     private final String name;
 
     /**
@@ -35,12 +32,10 @@ public class NamedType extends Type implements ReturnTypeEntry {
      * @param types type tokens
      * @param generics generic arguments
      * @param dimensions array dimensions
-     * @param named does the type have a name
      * @param name type name or null
      */
-    public NamedType(List<Token> types, List<Token> generics, int dimensions, boolean named, String name) {
+    public NamedType(List<Token> types, List<Token> generics, int dimensions, @Nullable String name) {
         super(types, generics, dimensions);
-        this.named = named;
         this.name = name;
     }
 }

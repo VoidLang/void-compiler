@@ -1,12 +1,16 @@
 package org.voidlang.compiler.token;
 
 import dev.inventex.octa.console.ConsoleFormat;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.util.Objects;
 
 /**
  * Represents a section of the parsed source string that holds specific information of a file part.
  */
+@AllArgsConstructor
+@Getter
 public class Token {
     /**
      * The type of the token.
@@ -19,28 +23,9 @@ public class Token {
     private final String value;
 
     /**
-     * Initialize the parsed token.
-     * @param type token type
-     * @param value token value
+     * The meta information of the token.
      */
-    private Token(TokenType type, String value) {
-        this.type = type;
-        this.value = value;
-    }
-
-    /**
-     * Get the type of the token.
-     */
-    public TokenType getType() {
-        return type;
-    }
-
-    /**
-     * Ge the value of the token.
-     */
-    public String getValue() {
-        return value;
-    }
+    private final TokenMeta meta;
 
     /**
      * Indicate, whether this token is of the specified type.
@@ -85,6 +70,38 @@ public class Token {
     }
 
     /**
+     * Check if this token does not match the specified type.
+     * @param type first token type to check
+     * @param types target token types to check
+     * @return this token or an error
+     */
+    public Token expect(TokenType type, TokenType... types) {
+        if (is(type))
+            return this;
+        for (TokenType test : types) {
+            if (is(test))
+                return this;
+        }
+        throw new IllegalStateException("Expected " + type + ", but got " + this);
+    }
+
+    /**
+     * Check if this token does not match the specified type.
+     * @param token first token to check
+     * @param tokens target tokens to check
+     * @return this token or an error
+     */
+    public Token expect(Token token, Token... tokens) {
+        if (equals(token))
+            return this;
+        for (Token test : tokens) {
+            if (equals(test))
+                return this;
+        }
+        throw new IllegalStateException("Expected " + type + ", but got " + this);
+    }
+
+    /**
      * Get the string representation of this token.
      * @return token debug information
      */
@@ -92,7 +109,7 @@ public class Token {
     public String toString() {
         return ConsoleFormat.YELLOW + type.name() + ConsoleFormat.DARK_GRAY + '|'
              + ConsoleFormat.WHITE + value + ConsoleFormat.DARK_GRAY + '|'
-             + ConsoleFormat.WHITE;
+             + ConsoleFormat.WHITE + ' ';
     }
 
     @Override
@@ -121,10 +138,31 @@ public class Token {
      * Create a new token with the specified type and value.
      * @param type token type
      * @param value token value
+     * @param meta token metadata information
+     * @return new parsed token
+     */
+    public static Token of(TokenType type, String value, TokenMeta meta) {
+        return new Token(type, value, meta);
+    }
+
+    /**
+     * Create a new token with the specified type.
+     * @param type token type
+     * @param meta token metadata information
+     * @return new parsed token
+     */
+    public static Token of(TokenType type, TokenMeta meta) {
+        return new Token(type, "", meta);
+    }
+
+    /**
+     * Create a new token with the specified type and value.
+     * @param type token type
+     * @param value token value
      * @return new parsed token
      */
     public static Token of(TokenType type, String value) {
-        return new Token(type, value);
+        return new Token(type, value, null);
     }
 
     /**
@@ -133,6 +171,6 @@ public class Token {
      * @return new parsed token
      */
     public static Token of(TokenType type) {
-        return new Token(type, "");
+        return new Token(type, "", null);
     }
 }

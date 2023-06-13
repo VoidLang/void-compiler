@@ -30,6 +30,21 @@ public class Tokenizer {
     private int lineNumber = 1;
 
     /**
+     * The index of the first character in the line of the token being processed.
+     */
+    private int tokenLineIndex = 0;
+
+    /**
+     * The number of the current line being processed for the token.
+     */
+    private int tokenLineNumber = 1;
+
+    /**
+     * The beginning index of the currently parsed token.
+     */
+    private int beginIndex;
+
+    /**
      * Initialize the tokenizer.
      * @param data raw input data
      */
@@ -50,16 +65,20 @@ public class Tokenizer {
                 lineIndex = 0;
                 lineNumber++;
                 // make a new line token to be replaced later to semicolons
-                return Token.of(TokenType.NEW_LINE);
+                return makeToken(TokenType.NEW_LINE);
             }
         }
 
         // handle end of file
         if (peek() == '\0')
-            return Token.of(TokenType.FINISH);
+            return makeToken(TokenType.FINISH);
+
+        beginIndex = cursor;
+        tokenLineNumber = lineNumber;
+        tokenLineIndex = lineIndex;
 
         // handle identifiers
-        else if (isIdentifierStart(peek()))
+        if (isIdentifierStart(peek()))
             return nextIdentifier();
 
         // handle operators
@@ -86,7 +105,26 @@ public class Tokenizer {
         // handle invalid syntax
 
         syntaxError("");
-        return Token.of(TokenType.UNEXPECTED);
+        return makeToken(TokenType.UNEXPECTED);
+    }
+
+    /**
+     * Make a new token of the specified type and value.
+     * @param type token type
+     * @param value token value
+     * @return new token
+     */
+    private Token makeToken(TokenType type, String value) {
+        return Token.of(type, value, new TokenMeta(beginIndex, cursor, tokenLineIndex, tokenLineNumber));
+    }
+
+    /**
+     * Make a new token of the specified type.
+     * @param type token type
+     * @return new token
+     */
+    public Token makeToken(TokenType type) {
+        return makeToken(type, "");
     }
 
     /**
@@ -114,16 +152,15 @@ public class Tokenizer {
         else if (isNull(token))
             type = TokenType.NULL;
         // make the identifier token
-        return Token.of(type, token);
+        return makeToken(type, token);
     }
-
 
     /**
      * Parse the next operator token.
      * @return new operator token
      */
     public Token nextOperator() {
-        return Token.of(TokenType.OPERATOR, String.valueOf(get()));
+        return makeToken(TokenType.OPERATOR, String.valueOf(get()));
     }
 
     /**
@@ -162,7 +199,7 @@ public class Tokenizer {
                 type = TokenType.STOP;
                 break;
         }
-        return Token.of(type, String.valueOf(c));
+        return makeToken(type, String.valueOf(c));
     }
 
     /**
@@ -184,7 +221,7 @@ public class Tokenizer {
                 get();
             // make the hexadecimal number token
             String value = range(begin, cursor);
-            return Token.of(TokenType.HEXADECIMAL, value);
+            return makeToken(TokenType.HEXADECIMAL, value);
         }
 
         // handle regular number
@@ -193,7 +230,7 @@ public class Tokenizer {
             if (peek() == '.') {
                 // check if the floating-point number contains multiple dot symbols
                 if (!integer)
-                    return Token.of(TokenType.UNEXPECTED, "Floating point number cannot have multiple dot symbols.");
+                    return makeToken(TokenType.UNEXPECTED, "Floating point number cannot have multiple dot symbols.");
                 integer = false;
             }
 
@@ -225,14 +262,14 @@ public class Tokenizer {
                 // check if integer type value has non-floating-point data
                 if (!integer && (type == TokenType.BYTE || type == TokenType.SHORT
                         || type == TokenType.INTEGER || type == TokenType.LONG)) {
-                    return Token.of(TokenType.UNEXPECTED, type + " cannot have a floating-point value.");
+                    return makeToken(TokenType.UNEXPECTED, type + " cannot have a floating-point value.");
                 }
 
                 // skip the type specifier
                 skip(1);
                 // get the value of the number
                 String value = range(begin, cursor - 1);
-                return Token.of(type, value);
+                return makeToken(type, value);
                 // TODO check if number declaration ended because a type specifier were set, 
                 //  but after the specifier there is no separator or whitespace eg. 1.5Flol
             }
@@ -241,7 +278,7 @@ public class Tokenizer {
         }
         // get the value of the number
         String value = range(begin, cursor);
-        return Token.of(integer ? TokenType.INTEGER : TokenType.DOUBLE, value);
+        return makeToken(integer ? TokenType.INTEGER : TokenType.DOUBLE, value);
     }
 
     /**
@@ -307,7 +344,7 @@ public class Tokenizer {
             else if ((peek() == '"' && string) || (peek() == '\'' && !string)) {
                 // skip the end of the string
                 skip(1);
-                return Token.of(string ? TokenType.STRING : TokenType.CHARACTER, content.toString());
+                return makeToken(string ? TokenType.STRING : TokenType.CHARACTER, content.toString());
             }
 
             // handle string literal content
@@ -318,7 +355,7 @@ public class Tokenizer {
         }
 
         syntaxError("Missing trailing `" + (string ? '"' : '\'') + "` symbol to terminate the " + (string ? "string" : "char") + " literal.");
-        return Token.of(TokenType.UNEXPECTED);
+        return makeToken(TokenType.UNEXPECTED);
     }
 
     /**
@@ -334,7 +371,7 @@ public class Tokenizer {
         if (!token.is(TokenType.IDENTIFIER))
             return token;
         // create the annotation token
-        return Token.of(TokenType.ANNOTATION, token.getValue());
+        return makeToken(TokenType.ANNOTATION, token.getValue());
     }
 
     /**
@@ -361,6 +398,7 @@ public class Tokenizer {
      * @return currently parsed data index
      */
     private char get() {
+        lineIndex++;
         return at(cursor++);
     }
 

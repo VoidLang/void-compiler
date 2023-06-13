@@ -1,6 +1,7 @@
-package org.voidlang.compiler.node.type.name;
+package org.voidlang.compiler.node.type.named;
 
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.type.named.NamedType;
 import org.voidlang.compiler.token.Token;
 
@@ -26,13 +27,12 @@ public class LambdaNamedType extends NamedType {
      * @param types type tokens
      * @param generics generic arguments
      * @param dimensions array dimensions
-     * @param named does the type have a name
      * @param name type name or null
      * @param parameters lambda parameter types
      */
-    public LambdaNamedType(List<Token> types, List<Token> generics, int dimensions, boolean named, String name,
+    public LambdaNamedType(List<Token> types, List<Token> generics, int dimensions, @Nullable String name,
                            List<NamedType> parameters) {
-        super(types, generics, dimensions, named, name);
+        super(types, generics, dimensions, name);
         this.parameters = parameters;
     }
 }

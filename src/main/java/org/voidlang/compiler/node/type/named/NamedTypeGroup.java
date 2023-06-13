@@ -17,9 +17,9 @@ import java.util.List;
  */
 @AllArgsConstructor
 @Getter
-public class ReturnTypeGroup implements ReturnTypeEntry {
+public class NamedTypeGroup implements NamedTypeEntry {
     /**
      * The list of the held nested named type entries.
      */
-    private final List<ReturnTypeEntry> entries;
+    private final List<NamedTypeEntry> entries;
 }

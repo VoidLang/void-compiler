@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class TokenizerTest {
     public static void main(String[] args) throws Exception {
@@ -24,16 +25,56 @@ public class TokenizerTest {
 
         tokens = new Transformer(tokens).transform();
 
-        int longest = tokens.stream()
+        int longestType = tokens.stream()
+            .filter(x -> x.getMeta() != null)
             .mapToInt(x -> x.getType().name().length())
             .max()
             .orElse(0);
 
+        int longestValue = tokens.stream()
+            .filter(x -> x.getMeta() != null)
+            .mapToInt(x -> x.getValue().length())
+            .max()
+            .orElse(0);
+
+        int longestRange = tokens.stream()
+            .filter(x -> x.getMeta() != null)
+            .mapToInt(x -> x.getMeta().range().length())
+            .max()
+            .orElse(0);
+
+        int longestIndex = tokens.stream()
+            .filter(x -> x.getMeta() != null)
+            .mapToInt(x -> x.getMeta().index().length())
+            .max()
+            .orElse(0);
+
         for (Token element : tokens) {
-            int length = element.getType().name().length();
-            for (int i = 0; i < longest - length; i++)
+            int typeLength = element.getType().name().length();
+            for (int i = 0; i < longestType - typeLength; i++)
                 System.out.print(' ');
-            System.out.println(element);
+            System.out.print(element);
+
+            if (element.getMeta() == null || element.getMeta().getBeginIndex() < 0) {
+                System.out.println();
+                continue;
+            }
+
+            int valueLength = element.getValue().length();
+            for (int i = 0; i < longestValue - valueLength; i++)
+                System.out.print(' ');
+
+            int rangeLength = element.getMeta().range().length();
+            for (int i = 0; i < longestRange - rangeLength; i++)
+                System.out.print(' ');
+
+            System.out.print(element.getMeta().range());
+
+            int indexLength = element.getMeta().index().length();
+            for (int i = 0; i < 5; i++)
+                System.out.print(' ');
+
+            System.out.println(element.getMeta().index());
         }
     }
 

@@ -5,12 +5,16 @@ import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
 import org.voidlang.compiler.node.info.PackageImport;
 import org.voidlang.compiler.node.info.PackageSet;
+import org.voidlang.compiler.node.type.generic.GenericType;
 import org.voidlang.compiler.node.type.modifier.ModifierBlock;
 import org.voidlang.compiler.node.type.modifier.ModifierList;
+import org.voidlang.compiler.node.type.named.NamedTypeEntry;
+import org.voidlang.compiler.node.type.named.NamedTypeGroup;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Represents a parser that transforms raw tokens to instruction nodes.
@@ -162,7 +166,132 @@ public class Parser {
      * @return new declared type
      */
     public Node nextTypeDeclaration() {
+        // get the kind of the type
+        // class MyClass {
+        // ^^^^^ the expression indicates the kind of the type
+        String kind = get(TokenType.EXPRESSION).getValue();
+
+        // get the name of the type
+        // class Test {
+        //       ^^^^ the identifier indicates the name of the type
+        String name = get(TokenType.IDENTIFIER).getValue();
+
+        // handle type generic declaration
+        // struct MyGenericStruct<T, U> {
+        //                       ^^^^^^ the generic names are placed in between angle brackets
+        // class Collection<T = Document> {
+        //                    ^^^^^^^^^^^ generic types may have a default value
+        List<GenericType> genericNames = parseGenericTypes();
+
+        System.out.println(kind + " " + name);
+        if (!genericNames.isEmpty()) {
+            String debug = genericNames.stream()
+                .map(GenericType::toString)
+                .collect(Collectors.joining(", "));
+            System.out.print("<" + String.join(", ", debug) + ">");
+        }
+
+        // TODO generic type implementation (where T implements MyType)
+
+
+
         return null;
+    }
+
+    private NamedTypeEntry parseNamedTypeEntry() {
+        return null;
+    }
+
+    private NamedTypeGroup parseNamedGroup() {
+        return null;
+    }
+
+
+
+    /**
+     * Parse the next generic type declaration.
+     * @return generic type tokens
+     */
+    private List<GenericType> parseGenericTypes() {
+        List<GenericType> types = new ArrayList<>();
+
+        // handle no generic type declaration
+        if (!peek().is(TokenType.OPERATOR, "<"))
+            return types;
+
+        // handle the '<' symbol that starts the generic type
+        get();
+
+        // assuming that the code might look something like Map<UUID, List<Data>>
+        // it is 1 by default, because the first '<' has been already handled
+        int offset = 1;
+
+        List<Token> generics = new ArrayList<>();
+
+        // loop until the generic type declaration ends
+        while (true) {
+            Token token = get();
+            // handle nested generic type
+            if (token.is(TokenType.OPERATOR, "<"))
+                offset++;
+                // handle generic type end
+            else if (token.is(TokenType.OPERATOR, ">") && --offset == 0)
+                break;
+            // check if the generic type wasn't terminated closed properly before closing
+            else if (token.is(TokenType.OPEN, TokenType.CLOSE))
+                throw new IllegalStateException("Invalid closing of generic type.");
+            // register the generic token
+            generics.add(token);
+        }
+
+        // check if the diamond operator was declared, but no generic types were given
+        if (generics.isEmpty())
+            throw new IllegalStateException("Generic declaration terminated before a type was given.");
+
+        // handle the tokens of the generic types' declaration
+        for (int i = 0; i < generics.size(); i++) {
+            // get the type name of the generic type
+            Token type = generics.get(i++);
+
+            // handle generic tokens termination
+            if (i == generics.size() - 1) {
+                types.add(new GenericType(type.getValue(), null));
+                break;
+            }
+
+            Token token = generics.get(i).expect(
+                Token.of(TokenType.COMMA),
+                Token.of(TokenType.OPERATOR, "=")
+            );
+
+            // handle the next generic type
+            if (token.is(TokenType.COMMA)) {
+                types.add(new GenericType(type.getValue(), null));
+                continue;
+            }
+
+            // handle generic type default value
+            // skip the '=' symbol
+            if (++i == generics.size())
+                throw new IllegalStateException("Generic declaration ended before default value was specified.");
+
+            // get the default value of the generic type
+            String defaultValue = generics.get(i)
+                .expect(TokenType.IDENTIFIER, TokenType.TYPE)
+                .getValue();
+
+            // register the generic type with a default value given
+            types.add(new GenericType(type.getValue(), defaultValue));
+
+            // handle generic tokens termination
+            if (i == generics.size() - 1)
+                break;
+
+            // handle the next generic type
+            generics.get(++i).expect(TokenType.COMMA);
+        }
+
+        return types;
     }
 
     /**
