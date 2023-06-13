@@ -1,8 +1,11 @@
 package org.voidlang.compiler.token;
 
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents a utility that parses raw string input to tokens.
  */
+@RequiredArgsConstructor
 public class Tokenizer {
     /**
      * The maximum length of a displayable line of code in a syntax error.
@@ -43,14 +46,6 @@ public class Tokenizer {
      * The beginning index of the currently parsed token.
      */
     private int beginIndex;
-
-    /**
-     * Initialize the tokenizer.
-     * @param data raw input data
-     */
-    public Tokenizer(String data) {
-        this.data = data;
-    }
 
     /**
      * Parse the next token from the data.

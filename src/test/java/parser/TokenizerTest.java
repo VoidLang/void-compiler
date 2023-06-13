@@ -1,5 +1,6 @@
 package parser;
 
+import lombok.SneakyThrows;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.Tokenizer;
 import org.voidlang.compiler.token.Transformer;
@@ -9,10 +10,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class TokenizerTest {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         String data = readSource();
 
         Tokenizer tokenizer = new Tokenizer(data);
@@ -40,12 +40,6 @@ public class TokenizerTest {
         int longestRange = tokens.stream()
             .filter(x -> x.getMeta() != null)
             .mapToInt(x -> x.getMeta().range().length())
-            .max()
-            .orElse(0);
-
-        int longestIndex = tokens.stream()
-            .filter(x -> x.getMeta() != null)
-            .mapToInt(x -> x.getMeta().index().length())
             .max()
             .orElse(0);
 
@@ -78,7 +72,8 @@ public class TokenizerTest {
         }
     }
 
-    private static String readSource() throws Exception {
+    @SneakyThrows
+    private static String readSource() {
         StringBuilder builder = new StringBuilder();
         try (InputStream stream = TokenizerTest.class.getClassLoader().getResourceAsStream("source.void");
              BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {

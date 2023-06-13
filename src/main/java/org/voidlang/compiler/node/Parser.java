@@ -1,14 +1,23 @@
 package org.voidlang.compiler.node;
 
 import dev.inventex.octa.data.primitive.Tuple;
+import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
 import org.voidlang.compiler.node.info.PackageImport;
 import org.voidlang.compiler.node.info.PackageSet;
+import org.voidlang.compiler.node.type.generic.GenericArgumentList;
+import org.voidlang.compiler.node.type.QualifiedName;
+import org.voidlang.compiler.node.type.core.ScalarType;
+import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.compiler.node.type.core.TypeGroup;
+import org.voidlang.compiler.node.type.generic.GenericArgument;
 import org.voidlang.compiler.node.type.generic.GenericType;
+import org.voidlang.compiler.node.type.generic.GenericTypeList;
 import org.voidlang.compiler.node.type.modifier.ModifierBlock;
 import org.voidlang.compiler.node.type.modifier.ModifierList;
-import org.voidlang.compiler.node.type.named.NamedTypeEntry;
+import org.voidlang.compiler.node.type.named.NamedScalarType;
+import org.voidlang.compiler.node.type.named.NamedType;
 import org.voidlang.compiler.node.type.named.NamedTypeGroup;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
@@ -181,11 +190,11 @@ public class Parser {
         //                       ^^^^^^ the generic names are placed in between angle brackets
         // class Collection<T = Document> {
         //                    ^^^^^^^^^^^ generic types may have a default value
-        List<GenericType> genericNames = parseGenericTypes();
+        GenericTypeList genericTypes = nextGenericTypes();
 
         System.out.println(kind + " " + name);
-        if (!genericNames.isEmpty()) {
-            String debug = genericNames.stream()
+        if (genericTypes.isExplicit()) {
+            String debug = genericTypes.getGenerics().stream()
                 .map(GenericType::toString)
                 .collect(Collectors.joining(", "));
             System.out.print("<" + String.join(", ", debug) + ">");
@@ -198,26 +207,88 @@ public class Parser {
         return null;
     }
 
-    private NamedTypeEntry parseNamedTypeEntry() {
+    private NamedType nextNamedType() {
         return null;
     }
 
-    private NamedTypeGroup parseNamedGroup() {
+    /**
+     * Parse the next group of named types. Handle nested members recursively.
+     * <p>Example:</p>
+     * <pre> {@code
+     *     (bool success, string msg)
+     * } </pre>
+     * Here {@code bool success} and {@code string msg} are parsed as two separate type entries.
+     * @return next named type group
+     */
+    private NamedTypeGroup nextNamedGroup() {
+        List<NamedType> entries = new ArrayList<>();
+        // skip the '(' symbol
+        get(TokenType.OPEN);
+
+        while (!peek().is(TokenType.CLOSE)) {
+            // parse the next member of the group
+            NamedType member = nextNamedType();
+            // continue parsing if there are more members expected
+            if (peek(TokenType.COMMA, TokenType.CLOSE).is(TokenType.COMMA))
+                get();
+            // stop parsing if the group has been closed
+            else
+                break;
+        }
+
+        // skip the ')' symbol
+        get(TokenType.CLOSE);
+
+        return new NamedTypeGroup(entries);
+    }
+
+    private NamedScalarType nextExactNamedType() {
         return null;
     }
 
+    private Type nextType() {
+        return null;
+    }
 
+    private TypeGroup nextTypeGroup() {
+        List<Type> members = new ArrayList<>();
+        // skip the '(' symbol
+        get(TokenType.OPEN);
+
+        while (!peek().is(TokenType.CLOSE)) {
+            // parse the next member of the group
+            Type member = nextType();
+            // continue parsing if there are more members expected
+            if (peek(TokenType.COMMA, TokenType.CLOSE).is(TokenType.COMMA))
+                get();
+                // stop parsing if the group has been closed
+            else
+                break;
+        }
+
+        // skip the ')' symbol
+        get(TokenType.CLOSE);
+
+        return new TypeGroup(members);
+    }
+
+    private ScalarType nextScalarType() {
+        return null;
+    }
 
     /**
      * Parse the next generic type declaration.
+     * <pre> {@code
+     *     void foo<T, U = FallbackType>()
+     * } </pre>
      * @return generic type tokens
      */
-    private List<GenericType> parseGenericTypes() {
+    private GenericTypeList nextGenericTypes() {
         List<GenericType> types = new ArrayList<>();
 
         // handle no generic type declaration
         if (!peek().is(TokenType.OPERATOR, "<"))
-            return types;
+            return new GenericTypeList(types, false);
 
         // handle the '<' symbol that starts the generic type
         get();
@@ -291,7 +362,105 @@ public class Parser {
             generics.get(++i).expect(TokenType.COMMA);
         }
 
-        return types;
+        return new GenericTypeList(types, true);
+    }
+
+    /**
+     * Parse the next generic arguments declaration.
+     * <pre> {@code
+     *     Map<UUID, Pair<User, Status>>
+     * } </pre>
+     * @return next generic argument list
+     */
+    @NotNull
+    private GenericArgumentList nextGenericArgumentList() {
+        List<GenericArgument> arguments = new ArrayList<>();
+
+        // check if no generic arguments were given
+        if (!peek().is(TokenType.OPERATOR, "<"))
+            return new GenericArgumentList(arguments, false);
+
+        // skip the '<' symbol
+        get();
+
+        // handle generic arguments
+        while (!peek().is(TokenType.OPERATOR, ">")) {
+            // parse the next inner generic argument
+            arguments.add(nextGenericArgument());
+            // check if there are more generic arguments to be parsed
+            if (peek().is(TokenType.COMMA))
+                get();
+                // not expecting more, exit loop
+            else
+                break;
+        }
+
+        // skip the '>' symbol
+        get(TokenType.OPERATOR, ">");
+        return new GenericArgumentList(arguments, true);
+    }
+
+    @NotNull
+    private GenericArgument nextGenericArgument() {
+        // parse the type of the generic argument
+        Type type = nextType();
+        // check if the generic argument does not have inner generic arguments
+        if (!peek().is(TokenType.OPERATOR, "<"))
+            return new GenericArgument(type, null);
+        // skip the '<' symbol
+        get();
+        // handle generic argument inner arguments
+        List<GenericArgument> members = new ArrayList<>();
+        while (!peek().is(TokenType.OPERATOR, ">")) {
+            // parse the next inner generic argument
+            members.add(nextGenericArgument());
+            // check if there are more inner generic arguments to be parsed
+            if (peek().is(TokenType.COMMA))
+                get();
+            // not expecting more, exit loop
+            else
+                break;
+        }
+        // skip the '>' symbol
+        get(TokenType.OPERATOR, ">");
+        return new GenericArgument(type, members);
+    }
+
+    /**
+     * Parse the next fully qualified name of a type.
+     * <pre> {@code
+     *     My.Class.Inner.Element
+     * } </pre>
+     * The parts of the type are connected with dots.
+     * @return next fully qualified type
+     */
+    private QualifiedName nextQualifiedName() {
+        List<Token> tokens = new ArrayList<>();
+
+        // get the first part of the fully qualified type
+        Token first = get(TokenType.TYPE, TokenType.IDENTIFIER);
+        tokens.add(first);
+
+        // return here if the first type is primitive, as primitives
+        // cannot have nested members, therefore we can stop processing here
+        // TODO maybe enable this, but I'm currently not so sure what rules
+        //  I want for primitives, as Void supports methods on primitive types
+        // if (first.is(TokenType.TYPE))
+        //     return result;
+
+        // check if there are more tokens to be parsed
+        while (peek().is(TokenType.OPERATOR, ".")) {
+            // skip the '.' symbol
+            get();
+            // parse the next token type
+            Token token = get(TokenType.IDENTIFIER, TokenType.TYPE /* here again, TYPE might be removed */);
+            tokens.add(token);
+            // exit the loop if there aren't any type tokens left
+            if (!peek().is(TokenType.OPERATOR, "."))
+                break;
+        }
+
+        return new QualifiedName(tokens);
     }
 
     /**

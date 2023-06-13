@@ -2,9 +2,9 @@ package org.voidlang.compiler.node.method;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.voidlang.compiler.node.type.core.TypeEntry;
-import org.voidlang.compiler.node.type.name.NameEntry;
 import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.compiler.node.type.name.NameEntry;
+import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.TypeGroup;
 
 /**
@@ -17,7 +17,7 @@ import org.voidlang.compiler.node.type.core.TypeGroup;
  *     void qux(Entity { health, level })
  *     void abc(int[] [x, y, z])
  * } </pre>
- * The {@link TypeEntry} allows the parameter type to be a single scalar type {@link Type} or a compound
+ * The {@link Type} allows the parameter type to be a single scalar type {@link ScalarType} or a compound
  * type {@link TypeGroup} for grouping multiple types together.
  * The {@link NameEntry} allows the parameter to use deconstruction on compound types:
  */
@@ -27,7 +27,7 @@ public class Parameter {
     /**
      * The type entry of the method parameter. Can be either a scalar or a compound type.
      */
-    private final TypeEntry type;
+    private final Type type;
 
     /**
      * Indicate, whether the parameter is variadic. If this is true, the <code>name</code>

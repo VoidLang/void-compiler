@@ -1,10 +1,11 @@
-package org.voidlang.compiler.node.type.core;
+package org.voidlang.compiler.node.type.named;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import org.voidlang.compiler.node.type.named.NamedScalarType;
-import org.voidlang.compiler.node.type.named.NamedType;
+import org.jetbrains.annotations.Nullable;
+import org.voidlang.compiler.node.type.core.ScalarType;
+import org.voidlang.compiler.node.type.core.Type;
 
 import java.util.List;
 
@@ -12,13 +13,13 @@ import java.util.List;
  * Represents a lambda type that is a callable anonymous function parameter.
  * <p>Example:</p>
  * <pre> {@code
- *     foo(My.Document<User>[] |int a, bool b|)
+ *     (void |User| callback) getUserCallback()
  * } </pre>
- * Here {@code |int a, bool b|} are the two named parameters of the lambda.
+ * Here {@code void |User| callback} is a named lambda return type of the function {@code getUserCallback}.
  */
 @AllArgsConstructor
 @Getter
-public class LambdaType implements Type {
+public class NamedLambdaType implements NamedType {
     /**
      * the return type of the lambda type.
      */

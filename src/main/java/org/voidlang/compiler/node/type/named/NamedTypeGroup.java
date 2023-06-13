@@ -2,7 +2,7 @@ package org.voidlang.compiler.node.type.named;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.TypeGroup;
 
 import java.util.List;
@@ -13,13 +13,13 @@ import java.util.List;
  * <pre> {@code
  *     (bool success, (string token, string msg)) login()
  * } </pre>
- * Here {@code (bool, string)} is a {@link TypeGroup} of two {@link Type} elements: {@code bool} and {@code string}.
+ * Here {@code (bool, string)} is a {@link TypeGroup} of two {@link ScalarType} elements: {@code bool} and {@code string}.
  */
 @AllArgsConstructor
 @Getter
-public class NamedTypeGroup implements NamedTypeEntry {
+public class NamedTypeGroup implements NamedType {
     /**
      * The list of the held nested named type entries.
      */
-    private final List<NamedTypeEntry> entries;
+    private final List<NamedType> members;
 }

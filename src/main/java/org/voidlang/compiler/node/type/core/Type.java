@@ -1,36 +1,41 @@
 package org.voidlang.compiler.node.type.core;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import org.voidlang.compiler.token.Token;
-
-import java.util.List;
-
 /**
- * Represents a type use in the Void syntax that has a type token, generic arguments and array dimensions.
- * <p>Example:</p>
+ * Represents an entry which may be a {@link ScalarType} or a {@link TypeGroup}.
+ * The purpose of this class is to be able to hold type groups <strong>recursively</strong>.
+ * <p>Examples:</p>
  * <pre> {@code
- *     MyCollection.Document<User>[] documents
+ *     float foo
+ *     (int, bool)
+ *     int |float, string|
  * } </pre>
- * Here {@code MyCollection.Document} is the type token, {@code <User>} is the generic token, and
- * {@code []} is a one-dimensional array specifier.
+ * The code {@code float} will be a {@link ScalarType}, as it does not have any members, and {@code (int, bool)}
+ * will be a {@link TypeGroup}, as it has two members inside.
+ * @see ScalarType
+ * @see TypeGroup
  */
-@Getter
-@AllArgsConstructor
-public class Type implements TypeEntry {
+public interface Type {
     /**
-     * The type tokens of the type. Having multiple type tokens means that we are accessing
-     * an inner element of a parent type. Eg: UserService.User
+     * Indicate, whether this entry is a {@link ScalarType}, so it does not have any nested members.
+     * @return true if this type entry is a direct type
      */
-    private final List<Token> types;
+    default boolean isScalar() {
+        return this instanceof ScalarType;
+    }
 
     /**
-     * The generic argument tokens of the type.
+     * Indicate, whether this entry is a {@link TypeGroup}, so it has nested members only.
+     * @return true if this type entry is a group of type entries
      */
-    private final List<Token> generics;
+    default boolean isGroup() {
+        return this instanceof TypeGroup;
+    }
 
     /**
-     * Get dimensions of the type. Each open-close square bracket pair increases the dimensions by one.
+     * Indicate, whether this entry is a {@link LambdaType}, so it has nested parameter types.
+     * @return true if this type entry is a callable lambda function
      */
-    private final int dimensions;
+    default boolean isLambda() {
+        return this instanceof LambdaType;
+    }
 }

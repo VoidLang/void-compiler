@@ -1,41 +1,45 @@
 package org.voidlang.compiler.node.type.named;
 
-import lombok.Getter;
-import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.type.core.Type;
-import org.voidlang.compiler.token.Token;
-
-import java.util.List;
 
 /**
- * Represents a type that optionally has a unique name given.
- * <p>Example:</p>
+ * Represents an entry which may be a {@link NamedScalarType} or a {@link NamedTypeGroup}.
+ * The purpose of this class is to be able to hold type groups <strong>recursively</strong>.
+ * <p>Examples:</p>
  * <pre> {@code
- *     (bool success, string msg) login()
+ *     (float a)
+ *     (int a, bool b)
+ *     (void |User| callback)
  * } </pre>
- * Here {@code bool success} and {@code string msg} are two named types of a tuple return type.
- * <br>
- * {@code bool} and {@code string} are the type of the {@link NamedType}, {@code success} and
- * {@code msg} are their names.
+ * The code {@code float a} will be a {@link NamedScalarType}, as it does not have any members, and {@code (int a, bool b)}
+ * will be a {@link NamedTypeGroup}, as it has two members inside.
+ * @see NamedScalarType
+ * @see NamedTypeGroup
+ * @see NamedLambdaType
  * @see Type
  */
-@Getter
-public class NamedType extends Type implements NamedTypeEntry {
+public interface NamedType extends Type {
     /**
-     * The name of the type. If it is null, the type is unnamed.
+     * Indicate, whether this entry is a {@link NamedScalarType}, so it does not have any nested members.
+     * @return true if this type entry is a direct type
      */
-    @Nullable
-    private final String name;
+    default boolean isReturnType() {
+        return this instanceof NamedScalarType;
+    }
 
     /**
-     * Initialize the named type.
-     * @param types type tokens
-     * @param generics generic arguments
-     * @param dimensions array dimensions
-     * @param name type name or null
+     * Indicate, whether this entry is a {@link NamedTypeGroup}, so it has nested members only.
+     * @return true if this type entry is a group of type entries
      */
-    public NamedType(List<Token> types, List<Token> generics, int dimensions, @Nullable String name) {
-        super(types, generics, dimensions);
-        this.name = name;
+    default boolean isReturnGroup() {
+        return this instanceof NamedTypeGroup;
+    }
+
+    /**
+     * Indicate, whether this entry is a {@link NamedLambdaType}, so it has nested parameter types.
+     * @return true if this type entry is a callable lambda function
+     */
+    default boolean isLambda() {
+        return this instanceof NamedLambdaType;
     }
 }

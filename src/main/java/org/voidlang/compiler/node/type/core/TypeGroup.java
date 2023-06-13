@@ -11,13 +11,13 @@ import java.util.List;
  * <pre> {@code
  *     (bool, string) login()
  * } </pre>
- * Here {@code (bool, string)} is a {@link TypeGroup} of two {@link Type} elements: {@code bool} and {@code string}.
+ * Here {@code (bool, string)} is a {@link TypeGroup} of two {@link ScalarType} elements: {@code bool} and {@code string}.
  */
 @AllArgsConstructor
 @Getter
-public class TypeGroup implements TypeEntry {
+public class TypeGroup implements Type {
     /**
      * The list of the held nested type entries.
      */
-    private final List<TypeEntry> entries;
+    private final List<Type> members;
 }
