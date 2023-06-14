@@ -7,6 +7,7 @@ import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents a type token holder of a fully qualified type name.
@@ -32,5 +33,16 @@ public class QualifiedName {
      */
     public boolean isPrimitive() {
         return types.size() == 1 && types.get(0).is(TokenType.TYPE);
+    }
+
+    /**
+     * Get the string representation of the qualified name.
+     * @return name debug information
+     */
+    @Override
+    public String toString() {
+        return types.stream()
+            .map(Token::getValue)
+            .collect(Collectors.joining("."));
     }
 }

@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents a holder of a generic argument list for a type use.
@@ -47,5 +48,23 @@ public class GenericArgumentList implements Iterable<GenericArgument> {
     @Override
     public Iterator<GenericArgument> iterator() {
         return generics.iterator();
+    }
+
+    /**
+     * Get the string representation of the generic argument list.
+     * @return name debug information
+     */
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        if (!explicit)
+            return builder.toString();
+        builder.append('<');
+        String collect = generics.stream()
+            .map(GenericArgument::toString)
+            .collect(Collectors.joining(", "));
+        return builder.append(collect)
+            .append('>')
+            .toString();
     }
 }

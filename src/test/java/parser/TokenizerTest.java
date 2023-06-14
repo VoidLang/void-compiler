@@ -1,6 +1,8 @@
 package parser;
 
 import lombok.SneakyThrows;
+import org.voidlang.compiler.node.Node;
+import org.voidlang.compiler.node.Parser;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.Tokenizer;
 import org.voidlang.compiler.token.Transformer;
@@ -13,6 +15,18 @@ import java.util.List;
 
 public class TokenizerTest {
     public static void main(String[] args) {
+        List<Token> tokens = tokenizeSource();
+        debugTokens(tokens);
+
+        Parser parser = new Parser(null, tokens);
+
+        Node node;
+        do {
+            node = parser.next();
+        } while (node.hasNext());
+    }
+
+    private static List<Token> tokenizeSource() {
         String data = readSource();
 
         Tokenizer tokenizer = new Tokenizer(data);
@@ -23,25 +37,27 @@ public class TokenizerTest {
             tokens.add(token = tokenizer.next());
         } while (token.hasNext());
 
-        tokens = new Transformer(tokens).transform();
+        return new Transformer(tokens).transform();
+    }
 
+    private static void debugTokens(List<Token> tokens) {
         int longestType = tokens.stream()
-            .filter(x -> x.getMeta() != null)
-            .mapToInt(x -> x.getType().name().length())
-            .max()
-            .orElse(0);
+                .filter(x -> x.getMeta() != null)
+                .mapToInt(x -> x.getType().name().length())
+                .max()
+                .orElse(0);
 
         int longestValue = tokens.stream()
-            .filter(x -> x.getMeta() != null)
-            .mapToInt(x -> x.getValue().length())
-            .max()
-            .orElse(0);
+                .filter(x -> x.getMeta() != null)
+                .mapToInt(x -> x.getValue().length())
+                .max()
+                .orElse(0);
 
         int longestRange = tokens.stream()
-            .filter(x -> x.getMeta() != null)
-            .mapToInt(x -> x.getMeta().range().length())
-            .max()
-            .orElse(0);
+                .filter(x -> x.getMeta() != null)
+                .mapToInt(x -> x.getMeta().range().length())
+                .max()
+                .orElse(0);
 
         for (Token element : tokens) {
             int typeLength = element.getType().name().length();
@@ -55,7 +71,7 @@ public class TokenizerTest {
             }
 
             int valueLength = element.getValue().length();
-            for (int i = 0; i < longestValue - valueLength; i++)
+            for (int i = 0; i < (longestValue - valueLength) + 1; i++)
                 System.out.print(' ');
 
             int rangeLength = element.getMeta().range().length();

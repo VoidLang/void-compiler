@@ -49,4 +49,13 @@ public class ScalarType implements Type {
     public boolean isArray() {
         return !array.getDimensions().isEmpty();
     }
+
+    /**
+     * Get the string representation of the scalar type.
+     * @return scalar type debug information
+     */
+    @Override
+    public String toString() {
+        return String.valueOf(name) + generics + array;
+    }
 }

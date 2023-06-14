@@ -7,6 +7,7 @@ import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.type.named.NamedType;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents a lambda type that is a callable anonymous function parameter.
@@ -30,4 +31,21 @@ public class LambdaType implements Type {
      */
     @NotNull
     private final List<NamedScalarType> parameters;
+
+    /**
+     * Get the string representation of the lambda type.
+     * @return lambda type debug information
+     */
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder(type.toString())
+            .append(" |");
+        String collect = parameters.stream()
+            .map(NamedScalarType::toString)
+            .collect(Collectors.joining(", "));
+        return builder
+            .append(collect)
+            .append('|')
+            .toString();
+    }
 }

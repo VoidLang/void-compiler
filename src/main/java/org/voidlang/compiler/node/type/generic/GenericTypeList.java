@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents a holder of a generic type list for a type declaration.
@@ -46,5 +47,24 @@ public class GenericTypeList implements Iterable<GenericType> {
     @Override
     public Iterator<GenericType> iterator() {
         return generics.iterator();
+    }
+
+    /**
+     * Get the string representation of the generic type list.
+     * @return generic type list debug information
+     */
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        if (!explicit)
+            return builder.toString();
+        builder.append('<');
+        String collect = generics.stream()
+            .map(GenericType::toString)
+            .collect(Collectors.joining(", "));
+        return builder
+            .append(collect)
+            .append('>')
+            .toString();
     }
 }

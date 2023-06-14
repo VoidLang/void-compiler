@@ -18,6 +18,9 @@ import org.voidlang.compiler.node.type.generic.GenericType;
 import org.voidlang.compiler.node.type.generic.GenericTypeList;
 import org.voidlang.compiler.node.type.modifier.ModifierBlock;
 import org.voidlang.compiler.node.type.modifier.ModifierList;
+import org.voidlang.compiler.node.type.name.CompoundName;
+import org.voidlang.compiler.node.type.name.Name;
+import org.voidlang.compiler.node.type.name.ScalarName;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.type.named.NamedType;
 import org.voidlang.compiler.node.type.named.NamedTypeGroup;
@@ -205,12 +208,15 @@ public class Parser {
         // TODO generic type implementation (where T implements MyType)
 
 
-
-        return null;
+        return new Error();
     }
 
-    private NamedType nextNamedType() {
-        return null;
+    private NamedType nextNamedType(boolean expectName) {
+        // handle type group
+        if (peek().is(TokenType.OPEN))
+            return nextNamedTypeGroup();
+        // handle scalar type
+        return nextNamedScalarType(expectName);
     }
 
     /**
@@ -222,14 +228,14 @@ public class Parser {
      * Here {@code bool success} and {@code string msg} are parsed as two separate type entries.
      * @return next named type group
      */
-    private NamedTypeGroup nextNamedGroup() {
-        List<NamedType> entries = new ArrayList<>();
+    private NamedTypeGroup nextNamedTypeGroup() {
+        List<NamedType> members = new ArrayList<>();
         // skip the '(' symbol
         get(TokenType.OPEN);
 
         while (!peek().is(TokenType.CLOSE)) {
             // parse the next member of the group
-            NamedType member = nextNamedType();
+            members.add(nextNamedType(true));
             // continue parsing if there are more members expected
             if (peek(TokenType.COMMA, TokenType.CLOSE).is(TokenType.COMMA))
                 get();
@@ -241,15 +247,39 @@ public class Parser {
         // skip the ')' symbol
         get(TokenType.CLOSE);
 
-        return new NamedTypeGroup(entries);
+        return new NamedTypeGroup(members);
     }
 
-    private NamedScalarType nextExactNamedType() {
-        return null;
+    private NamedScalarType nextNamedScalarType(boolean expectName) {
+        // parse the type of the named type
+        ScalarType type = nextScalarType();
+
+        // check if the type follows a lambda parameter list
+        if (peek().is(TokenType.OPERATOR, "|")) {
+            // skip the '|' symbol
+            get();
+            // loop until the lambda parameter list ends
+            while (!peek().is(TokenType.OPERATOR, "|")) {
+                // parse the next parameter type
+                NamedType paramType = nextNamedType(true);
+
+            }
+        }
+
+        // check if a name is declared for the type
+        String name = "";
+        if (expectName && peek().is(TokenType.IDENTIFIER))
+            name = get().getValue();
+        // handle unnamed scalar type
+        return new NamedScalarType(type, name, !name.isEmpty());
     }
 
     private Type nextType() {
-        return null;
+        // handle type group
+        if (peek().is(TokenType.OPEN))
+            return nextTypeGroup();
+        // handle scalar type
+        return nextScalarType();
     }
 
     private TypeGroup nextTypeGroup() {
@@ -275,7 +305,56 @@ public class Parser {
     }
 
     private ScalarType nextScalarType() {
-        return null;
+        // parse the fully qualified name of the type
+        // User.Type getUserType()
+        // ^^^^^^^^^ the tokens joined with the '.' operator are the specifiers of the type
+        QualifiedName name = nextQualifiedName();
+
+        // parse the generic arguments of the type
+        // List<Element> myList
+        //     ^^^^^^^^^ the tokens between angle brackets are the generic arguments of the type
+        GenericArgumentList generics = nextGenericArgumentList();
+
+        // check if generic arguments were declared for a primitive type
+        // TODO if I ever disabled this check, I should modify nextQualifiedName() as well
+        if (name.isPrimitive() && generics.isExplicit())
+            throw new IllegalStateException("Primitive types cannot have generic type arguments.");
+
+        // parse the array dimensions of the type
+        Array array = nextArray();
+
+        return new ScalarType(name, generics, array);
+    }
+
+    private Name nextName() {
+        // handle compound name
+        if (peek().is(TokenType.OPEN))
+            return nextCompoundName();
+        // handle scalar name
+        return nextScalarName();
+    }
+
+    private Name nextScalarName() {
+        return new ScalarName(get(TokenType.IDENTIFIER).getValue());
+    }
+
+    private Name nextCompoundName() {
+        // skip the '(' symbol
+        get(TokenType.OPEN);
+        List<Name> members = new ArrayList<>();
+        while (!peek().is(TokenType.CLOSE)) {
+            // parse the next member of the group
+            members.add(nextName());
+            // continue parsing if there are more members expected
+            if (peek(TokenType.COMMA, TokenType.CLOSE).is(TokenType.COMMA))
+                get();
+            // stop parsing if the group has been closed
+            else
+                break;
+        }
+        // skip the ')' symbol
+        get(TokenType.CLOSE);
+        return new CompoundName(members);
     }
 
     /**
@@ -287,84 +366,36 @@ public class Parser {
      */
     private GenericTypeList nextGenericTypes() {
         List<GenericType> types = new ArrayList<>();
-
         // handle no generic type declaration
         if (!peek().is(TokenType.OPERATOR, "<"))
             return new GenericTypeList(types, false);
-
-        // handle the '<' symbol that starts the generic type
+        // skip the '<' symbol
         get();
-
-        // assuming that the code might look something like Map<UUID, List<Data>>
-        // it is 1 by default, because the first '<' has been already handled
-        int offset = 1;
-
-        List<Token> generics = new ArrayList<>();
-
-        // loop until the generic type declaration ends
-        while (true) {
-            Token token = get();
-            // handle nested generic type
-            if (token.is(TokenType.OPERATOR, "<"))
-                offset++;
-                // handle generic type end
-            else if (token.is(TokenType.OPERATOR, ">") && --offset == 0)
+        while (!peek().is(TokenType.OPERATOR, ">")) {
+            // parse the next generic type
+            types.add(nextGenericType());
+            // check if there are more generic types to be parsed
+            if (peek().is(TokenType.COMMA))
+                get();
+            // generic type declaration ended, exit loop
+            else
                 break;
-            // check if the generic type wasn't terminated closed properly before closing
-            else if (token.is(TokenType.OPEN, TokenType.CLOSE))
-                throw new IllegalStateException("Invalid closing of generic type.");
-            // register the generic token
-            generics.add(token);
         }
+        // skip the '>' symbol
+        get(TokenType.OPERATOR, ">");
+        return new GenericTypeList(types ,true);
+    }
 
-        // check if the diamond operator was declared, but no generic types were given
-        if (generics.isEmpty())
-            throw new IllegalStateException("Generic declaration terminated before a type was given.");
-
-        // handle the tokens of the generic types' declaration
-        for (int i = 0; i < generics.size(); i++) {
-            // get the type name of the generic type
-            Token type = generics.get(i++);
-
-            // handle generic tokens termination
-            if (i == generics.size() - 1) {
-                types.add(new GenericType(type.getValue(), null));
-                break;
-            }
-
-            Token token = generics.get(i).expect(
-                Token.of(TokenType.COMMA),
-                Token.of(TokenType.OPERATOR, "=")
-            );
-
-            // handle the next generic type
-            if (token.is(TokenType.COMMA)) {
-                types.add(new GenericType(type.getValue(), null));
-                continue;
-            }
-
-            // handle generic type default value
-            // skip the '=' symbol
-            if (++i == generics.size())
-                throw new IllegalStateException("Generic declaration ended before default value was specified.");
-
-            // get the default value of the generic type
-            String defaultValue = generics.get(i)
-                .expect(TokenType.IDENTIFIER, TokenType.TYPE)
-                .getValue();
-
-            // register the generic type with a default value given
-            types.add(new GenericType(type.getValue(), defaultValue));
-
-            // handle generic tokens termination
-            if (i == generics.size() - 1)
-                break;
-
-            // handle the next generic type
-            generics.get(++i).expect(TokenType.COMMA);
-        }
-
-        return new GenericTypeList(types, true);
+    private GenericType nextGenericType() {
+        // get the type name of the generic type
+        String name = get(TokenType.IDENTIFIER).getValue();
+        // return if the generic type does not have a default value
+        if (!peek().is(TokenType.OPERATOR, "="))
+            return new GenericType(name, null);
+        // skip the '=' symbol
+        get(TokenType.OPERATOR, "=");
+        // get the default value of the generic type
+        return new GenericType(name, nextNamedType(false));
     }
 
     /**
@@ -407,12 +438,12 @@ public class Parser {
         // parse the type of the generic argument
         Type type = nextType();
         // check if the generic argument does not have inner generic arguments
+        List<GenericArgument> members = new ArrayList<>();
         if (!peek().is(TokenType.OPERATOR, "<"))
-            return new GenericArgument(type, null);
+            return new GenericArgument(type, members, false);
         // skip the '<' symbol
         get();
         // handle generic argument inner arguments
-        List<GenericArgument> members = new ArrayList<>();
         while (!peek().is(TokenType.OPERATOR, ">")) {
             // parse the next inner generic argument
             members.add(nextGenericArgument());
@@ -425,7 +456,7 @@ public class Parser {
         }
         // skip the '>' symbol
         get(TokenType.OPERATOR, ">");
-        return new GenericArgument(type, members);
+        return new GenericArgument(type, members, true);
     }
 
     /**
@@ -445,10 +476,10 @@ public class Parser {
 
         // return here if the first type is primitive, as primitives
         // cannot have nested members, therefore we can stop processing here
-        // TODO maybe enable this, but I'm currently not so sure what rules
+        // TODO maybe disable this, but I'm currently not so sure what rules
         //  I want for primitives, as Void supports methods on primitive types
-        // if (first.is(TokenType.TYPE))
-        //     return result;
+        if (first.is(TokenType.TYPE))
+            return new QualifiedName(tokens);
 
         // check if there are more tokens to be parsed
         while (peek().is(TokenType.OPERATOR, ".")) {
@@ -476,7 +507,7 @@ public class Parser {
         // float[][] my2DArray
         //      ^ ^ multiple square brackets indicate the dimensions of an array
         //           this one is a 2-dimensional array for example
-        // byte[1024] a; byte[BUFFER_SIZE] b;
+        // byte[1024] a; byte[BUFFER_SIZE] b
         //     ^^^^^          ^^^^^^^^^^^  array size may be explicitly declared with an integer
         //                                 or an identifier referring to a constant
         List<Dimension> dimensions = new ArrayList<>();
@@ -490,6 +521,7 @@ public class Parser {
             // float[] getVectorElements()
             //       ^ a closing square bracket must be placed right after an open square bracket
             get(TokenType.STOP);
+            dimensions.add(new Dimension(size, !size.is(TokenType.NONE)));
         }
         return new Array(dimensions);
     }
@@ -499,7 +531,34 @@ public class Parser {
      * @return new method node
      */
     public Node nextMethod() {
-        return null;
+        // parse the type of the method
+        // int getUserBalance(string user)
+        // ^^^ the method has only one return type, "int"
+        // (int, string) fetchURL(String url)
+        // ^           ^  multi-return types are placed in between parenthesis
+        // (bool code, string message) authenticate(String username, String password)
+        //       ^^^^         ^^^^^^^ you can even name these return types
+        NamedType type = nextNamedType(false);
+
+        // parse the name of the method
+        // void greet(string person) { println($"Hi, {person}") }
+        //      ^^^^^ the identifier after the type token(s) is the name of the method
+        String name = get(TokenType.IDENTIFIER).getValue();
+
+        // parse the generic types of the method
+        // in here we only define what identifiers we are willing to use as generic types inside the method
+        // void concat<T>(List<T> firstList, List<T> secondList)
+        //            ^^^ method generics are placed after the method name
+        // void createMap<K,V>()
+        //                 ^ you may have multiple method generic types
+        //                   they are also separated with a comma
+        // T serialize<T = JsonObject>(string json)
+        //               ^^^^^^^^^^^^^ generic types may have a default value specified
+        GenericTypeList genericTypes = nextGenericTypes();
+
+        System.out.println(type + " " + name + genericTypes);
+
+        return new Error();
     }
 
     /**

@@ -28,8 +28,26 @@ public class NamedScalarType implements NamedType {
     private final ScalarType scalarType;
 
     /**
-     * The name of the type. If it is null, the type is unnamed.
+     * The name of the type.
      */
-    @Nullable
+    @NotNull
     private final String name;
+
+    /**
+     * Indicate, whether the type has a name declared.
+     */
+    private final boolean named;
+
+    /**
+     * Get the string representation of the named scalar type.
+     *
+     * @return named scalar type debug information
+     */
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder(scalarType.toString());
+        if (named)
+            builder.append(' ').append(name);
+        return builder.toString();
+    }
 }

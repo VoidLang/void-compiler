@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.voidlang.compiler.node.type.QualifiedName;
+import org.voidlang.compiler.node.type.core.Type;
 
 /**
  * Represents a generic type declaration for a method or a type.
@@ -38,8 +40,12 @@ public class GenericType {
      * not explicitly specify it.
      */
     @Nullable
-    private final String defaultValue;
+    private final Type defaultValue;
 
+    /**
+     * Get the string representation of the generic type.
+     * @return generic type debug information
+     */
     @Override
     public String toString() {
         String result = name;

@@ -3,7 +3,7 @@ package org.voidlang.compiler.node.method;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.voidlang.compiler.node.type.core.Type;
-import org.voidlang.compiler.node.type.name.NameEntry;
+import org.voidlang.compiler.node.type.name.Name;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.TypeGroup;
 
@@ -19,7 +19,7 @@ import org.voidlang.compiler.node.type.core.TypeGroup;
  * } </pre>
  * The {@link Type} allows the parameter type to be a single scalar type {@link ScalarType} or a compound
  * type {@link TypeGroup} for grouping multiple types together.
- * The {@link NameEntry} allows the parameter to use deconstruction on compound types:
+ * The {@link Name} allows the parameter to use deconstruction on compound types:
  */
 @AllArgsConstructor
 @Getter
@@ -39,5 +39,5 @@ public class Parameter {
      * The name entry of the method parameter. Can be either a normal parameter name or a
      * compound-type object deconstruction.
      */
-    private final NameEntry name;
+    private final Name name;
 }

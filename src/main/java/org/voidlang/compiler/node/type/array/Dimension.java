@@ -2,6 +2,7 @@ package org.voidlang.compiler.node.type.array;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
@@ -15,7 +16,7 @@ public class Dimension {
     /**
      * The size of the array dimension.
      */
-    @Nullable
+    @NotNull
     public final Token size;
 
     /**
@@ -28,7 +29,7 @@ public class Dimension {
      * @return true if the dimension size is given by a hardcoded number
      */
     public boolean isConstant() {
-        return size != null && size.is(TokenType.INTEGER);
+        return size.is(TokenType.INTEGER);
     }
 
     /**
@@ -41,5 +42,16 @@ public class Dimension {
             throw new IllegalStateException("Array dimension is not constant.");
         return Integer.parseInt(size.getValue());
     }
-}
 
+    /**
+     * Get the string representation of the array dimension.
+     * @return array dimension debug information
+     */
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder("[");
+        if (explicit)
+            builder.append(size.getValue());
+        return builder.append(']').toString();
+    }
+}

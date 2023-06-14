@@ -1,4 +1,4 @@
-package org.voidlang.compiler.node.type.core;
+package org.voidlang.compiler.node.type.name;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,20 +7,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Represents a group of nested type entries.
- * The purpose of this class is to be able to hold type groups <strong>recursively</strong>.
+ * Represents a group of nested name entries.
+ * The purpose of this class is to be able to hold name groups <strong>recursively</strong>.
  * <pre> {@code
- *     (bool, string) login()
+ *     void foo((int, int) (x, y))
  * } </pre>
- * Here {@code (bool, string)} is a {@link TypeGroup} of two {@link ScalarType} elements: {@code bool} and {@code string}.
+ * Here {@code (x, y)} is a {@link CompoundName} of two {@link Name} elements: {@code x} and {@code y}.
  */
 @AllArgsConstructor
 @Getter
-public class TypeGroup implements Type {
+public class CompoundName implements Name {
     /**
-     * The list of the held nested type entries.
+     * The list of the held nested name entries.
      */
-    private final List<Type> members;
+    private final List<Name> members;
 
     /**
      * Get the string representation of the type group.
@@ -31,7 +31,7 @@ public class TypeGroup implements Type {
         StringBuilder builder = new StringBuilder("(");
         if (!members.isEmpty()) {
             String collect = members.stream()
-                .map(Type::toString)
+                .map(Name::toString)
                 .collect(Collectors.joining(", "));
             builder.append(collect);
         }

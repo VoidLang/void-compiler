@@ -1,4 +1,3 @@
-void main() {
-    let x = 100
+void main<T, K = Type>() {
     println("Hello, World!")
 }

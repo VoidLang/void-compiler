@@ -109,7 +109,7 @@ public class Token {
     public String toString() {
         return ConsoleFormat.YELLOW + type.name() + ConsoleFormat.DARK_GRAY + '|'
              + ConsoleFormat.WHITE + value + ConsoleFormat.DARK_GRAY + '|'
-             + ConsoleFormat.WHITE + ' ';
+             + ConsoleFormat.WHITE;
     }
 
     @Override

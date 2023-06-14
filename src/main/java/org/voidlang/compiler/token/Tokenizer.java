@@ -207,7 +207,7 @@ public class Tokenizer {
         // determine if the number is integer
         boolean integer = true;
 
-        // handle hexadecimal numbers
+        // handle hexadecimal number format
         if (peek() == '0' && at(cursor + 1) == 'x') {
             // skip the '0x' prefix
             skip(2);
@@ -217,6 +217,18 @@ public class Tokenizer {
             // make the hexadecimal number token
             String value = range(begin, cursor);
             return makeToken(TokenType.HEXADECIMAL, value);
+        }
+
+        // handle binary number format
+        else if (peek() == '0' && at(cursor + 1) == 'b') {
+            // skip the '0b' prefix
+            skip(2);
+            // handle number content
+            while (isBinary(peek()))
+                get();
+            // make the hexadecimal number token
+            String value = range(begin, cursor);
+            return makeToken(TokenType.BINARY, value);
         }
 
         // handle regular number
@@ -556,6 +568,21 @@ public class Tokenizer {
                 return true;
             default:
                 return isNumber(c);
+        }
+    }
+
+    /**
+     * Check if the given character is a binary number part.
+     * @param c target character to test
+     * @return true if the character is a binary char
+     */
+    private boolean isBinary(char c) {
+        switch (c) {
+            case '0':
+            case '1':
+                return true;
+            default:
+                return false;
         }
     }
 
