@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,5 +45,14 @@ public class QualifiedName {
         return types.stream()
             .map(Token::getValue)
             .collect(Collectors.joining("."));
+    }
+
+    /**
+     * Create a primitive fully qualified type name wrapper for the specified type.
+     * @param type primitive type name
+     * @return primitive type wrapper
+     */
+    public static QualifiedName primitive(String type) {
+        return new QualifiedName(Collections.singletonList(Token.of(TokenType.TYPE, type)));
     }
 }

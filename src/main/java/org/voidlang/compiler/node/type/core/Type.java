@@ -1,5 +1,14 @@
 package org.voidlang.compiler.node.type.core;
 
+import org.voidlang.compiler.node.type.QualifiedName;
+import org.voidlang.compiler.node.type.array.Array;
+import org.voidlang.compiler.node.type.generic.GenericArgumentList;
+import org.voidlang.compiler.token.Token;
+import org.voidlang.compiler.token.TokenType;
+
+import java.util.ArrayList;
+import java.util.Collections;
+
 /**
  * Represents an entry which may be a {@link ScalarType} or a {@link TypeGroup}.
  * The purpose of this class is to be able to hold type groups <strong>recursively</strong>.
@@ -37,5 +46,18 @@ public interface Type {
      */
     default boolean isLambda() {
         return this instanceof LambdaType;
+    }
+
+    /**
+     * Create a new type wrapper for the specified primitive type.
+     * @param type primitive type name
+     * @return primitive type wrapper
+     */
+    static Type primitive(String type) {
+        return new ScalarType(
+            QualifiedName.primitive(type),
+            GenericArgumentList.implicit(),
+            Array.noArray()
+        );
     }
 }

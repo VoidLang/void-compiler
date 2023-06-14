@@ -3,8 +3,8 @@ package org.voidlang.compiler.node.type.generic;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -66,5 +66,21 @@ public class GenericArgumentList implements Iterable<GenericArgument> {
         return builder.append(collect)
             .append('>')
             .toString();
+    }
+
+    /**
+     * Create a generic type list wrapper that does not have any explicit generic types.
+     * @return empty implicit generic type list wrapper
+     */
+    public static GenericArgumentList implicit() {
+        return new GenericArgumentList(new ArrayList<>(), false);
+    }
+
+    /**
+     * Create a generic type list wrapper that explicitly declares a diamond operator.
+     * @return empty explicit generic type list wrapper
+     */
+    public static GenericArgumentList explicit() {
+        return new GenericArgumentList(new ArrayList<>(), true);
     }
 }

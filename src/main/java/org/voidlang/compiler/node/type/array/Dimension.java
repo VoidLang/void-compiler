@@ -54,4 +54,30 @@ public class Dimension {
             builder.append(size.getValue());
         return builder.append(']').toString();
     }
+
+    /**
+     * Create an implicitly sized array dimension, that does not have a size specifier.
+     * @return non-sized implicit array dimension
+     */
+    public static Dimension implicit() {
+        return new Dimension(Token.of(TokenType.NONE), false);
+    }
+
+    /**
+     * Create an explicitly sized array dimension, that a number constant size specifier.
+     * @param size dimension size number constant
+     * @return sized explicit array dimension
+     */
+    public static Dimension explicit(int size) {
+        return new Dimension(Token.of(TokenType.INTEGER, String.valueOf(size)), true);
+    }
+
+    /**
+     * Create an explicitly sized array dimension, that a value constant size specifier.
+     * @param identifier identifier of constant value
+     * @return sized explicit array dimension
+     */
+    public static Dimension explicit(String identifier) {
+        return new Dimension(Token.of(TokenType.IDENTIFIER, identifier), true);
+    }
 }

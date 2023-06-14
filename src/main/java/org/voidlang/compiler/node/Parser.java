@@ -8,6 +8,7 @@ import org.voidlang.compiler.node.info.PackageImport;
 import org.voidlang.compiler.node.info.PackageSet;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.array.Dimension;
+import org.voidlang.compiler.node.type.core.LambdaType;
 import org.voidlang.compiler.node.type.generic.GenericArgumentList;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
@@ -24,6 +25,7 @@ import org.voidlang.compiler.node.type.name.ScalarName;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.type.named.NamedType;
 import org.voidlang.compiler.node.type.named.NamedTypeGroup;
+import org.voidlang.compiler.node.type.parameter.LambdaParameter;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
 
@@ -97,6 +99,11 @@ public class Parser {
         // handle method or type declaration
         else if (peek().is(TokenType.TYPE, TokenType.IDENTIFIER, TokenType.OPEN, TokenType.EXPRESSION))
             return nextTypeOrMethod();
+
+        // handle method declaration with a lambda type that doesn't have an explicit return type
+        else if (peek().is(TokenType.OPERATOR, "|"))
+            return nextMethod();
+
         // handle unexpected token
         System.out.println("Error (Next) " + peek());
         return new Error();
@@ -211,12 +218,26 @@ public class Parser {
         return new Error();
     }
 
-    private NamedType nextNamedType(boolean expectName) {
+
+
+    private NamedType nextNamedType(boolean expectLambda) {
+        return nextNamedTypeInternal(false, expectLambda);
+    }
+
+    private NamedType nextNamedType() {
+        return nextNamedTypeInternal(false, true);
+    }
+
+    private NamedType nextNamedTypeNested(boolean expectLambda) {
+        return nextNamedTypeInternal(true, expectLambda);
+    }
+
+    private NamedType nextNamedTypeInternal(boolean expectName, boolean expectLambda) {
         // handle type group
         if (peek().is(TokenType.OPEN))
-            return nextNamedTypeGroup();
+            return nextNamedTypeGroup(expectLambda);
         // handle scalar type
-        return nextNamedScalarType(expectName);
+        return nextNamedScalarType(expectName, expectLambda);
     }
 
     /**
@@ -228,14 +249,14 @@ public class Parser {
      * Here {@code bool success} and {@code string msg} are parsed as two separate type entries.
      * @return next named type group
      */
-    private NamedTypeGroup nextNamedTypeGroup() {
+    private NamedTypeGroup nextNamedTypeGroup(boolean expectLambda) {
         List<NamedType> members = new ArrayList<>();
         // skip the '(' symbol
         get(TokenType.OPEN);
 
         while (!peek().is(TokenType.CLOSE)) {
             // parse the next member of the group
-            members.add(nextNamedType(true));
+            members.add(nextNamedTypeNested(expectLambda));
             // continue parsing if there are more members expected
             if (peek(TokenType.COMMA, TokenType.CLOSE).is(TokenType.COMMA))
                 get();
@@ -250,22 +271,58 @@ public class Parser {
         return new NamedTypeGroup(members);
     }
 
-    private NamedScalarType nextNamedScalarType(boolean expectName) {
-        // parse the type of the named type
-        ScalarType type = nextScalarType();
+    private Type nextLambdaType(Type returnType) {
+        /*
+        // check if the lambda does not have an explicit return type
+        // because the parameter list is already started
+        Type returnType;
+        if (peek().is(TokenType.OPERATOR, "|"))
+            returnType = Type.primitive("void");
+        // lambda has an explicit return type, parse the type
+        else
+            returnType = nextNamedType();
+         */
+        // skip the '|' symbol
+        get(TokenType.OPERATOR, "|");
+        // parse the parameter list of hte lambda
+        List<LambdaParameter> parameters = new ArrayList<>();
+        while (!peek().is(TokenType.OPERATOR, "|")) {
+            // parse the next lambda parameter type
+            Type type = nextNamedType(false);
+            // parse the variadic arguments specifier of the type
+            boolean variadic = nextVarargs();
 
-        // check if the type follows a lambda parameter list
-        if (peek().is(TokenType.OPERATOR, "|")) {
-            // skip the '|' symbol
-            get();
-            // loop until the lambda parameter list ends
-            while (!peek().is(TokenType.OPERATOR, "|")) {
-                // parse the next parameter type
-                NamedType paramType = nextNamedType(true);
-
+            // check if the lambda parameter does not have a type specified
+            if (peek().is(TokenType.COMMA) || peek().is(TokenType.OPERATOR, "|")) {
+                // register an unnamed lambda parameter
+                parameters.add(new LambdaParameter(type, variadic, null, false));
+                // skip the ',' symbol
+                if (peek().is(TokenType.COMMA))
+                    get();
+                // continue handling parameters, or exit because of the condition
+                continue;
             }
-        }
 
+            // parse the name of the lambda parameter type
+            Name name = nextName();
+            // register a named lambda parameter
+            parameters.add(new LambdaParameter(type, variadic, name, true));
+
+            // check if there are more parameters to be parsed
+            if (peek().is(TokenType.COMMA))
+                get();
+            // lambda parameter declaration ended, exit the loop
+            else
+                break;
+        }
+        // skip the '|' symbol
+        get(TokenType.OPERATOR, "|");
+        return new LambdaType(returnType, parameters);
+    }
+
+    private NamedScalarType nextNamedScalarType(boolean expectName, boolean expectLambda) {
+        // parse the type of the named type
+        Type type = nextScalarType(expectLambda);
         // check if a name is declared for the type
         String name = "";
         if (expectName && peek().is(TokenType.IDENTIFIER))
@@ -275,11 +332,15 @@ public class Parser {
     }
 
     private Type nextType() {
+        return nextType(true);
+    }
+
+    private Type nextType(boolean expectLambda) {
         // handle type group
         if (peek().is(TokenType.OPEN))
             return nextTypeGroup();
         // handle scalar type
-        return nextScalarType();
+        return nextScalarType(expectLambda);
     }
 
     private TypeGroup nextTypeGroup() {
@@ -304,7 +365,11 @@ public class Parser {
         return new TypeGroup(members);
     }
 
-    private ScalarType nextScalarType() {
+    private Type nextScalarType(boolean expectLambda) {
+        // check for lambda type declaration without an explicit return type
+        if (peek().is(TokenType.OPERATOR, "|"))
+            return nextLambdaType(Type.primitive("void"));
+
         // parse the fully qualified name of the type
         // User.Type getUserType()
         // ^^^^^^^^^ the tokens joined with the '.' operator are the specifiers of the type
@@ -323,7 +388,30 @@ public class Parser {
         // parse the array dimensions of the type
         Array array = nextArray();
 
-        return new ScalarType(name, generics, array);
+        // create the type wrapper
+        ScalarType type = new ScalarType(name, generics, array);
+
+        // check if a lambda parameter list declaration is after the type
+        // do not handle '|' if we are currently parsing a lambda
+        if (expectLambda && peek().is(TokenType.OPERATOR, "|"))
+            return nextLambdaType(type);
+
+        // handle scalar type
+        return type;
+    }
+
+    /**
+     * Parse the next variadic type specified declaration.
+     * @return true if the previous type was variadic
+     */
+    private boolean nextVarargs() {
+        // check if the previous type wasn't variadic
+        if (!peek().is(TokenType.OPERATOR, "."))
+            return false;
+        // skip the variadic type specifier
+        for (int i = 0; i < 3; i++)
+            get(TokenType.OPERATOR, ".");
+        return true;
     }
 
     private Name nextName() {
@@ -395,7 +483,7 @@ public class Parser {
         // skip the '=' symbol
         get(TokenType.OPERATOR, "=");
         // get the default value of the generic type
-        return new GenericType(name, nextNamedType(false));
+        return new GenericType(name, nextNamedType());
     }
 
     /**
@@ -538,7 +626,7 @@ public class Parser {
         // ^           ^  multi-return types are placed in between parenthesis
         // (bool code, string message) authenticate(String username, String password)
         //       ^^^^         ^^^^^^^ you can even name these return types
-        NamedType type = nextNamedType(false);
+        NamedType type = nextNamedType();
 
         // parse the name of the method
         // void greet(string person) { println($"Hi, {person}") }

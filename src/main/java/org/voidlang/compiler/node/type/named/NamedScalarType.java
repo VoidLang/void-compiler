@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.type.core.ScalarType;
+import org.voidlang.compiler.node.type.core.Type;
 
 /**
  * Represents a type that optionally has a unique name given.
@@ -25,7 +26,7 @@ public class NamedScalarType implements NamedType {
      * The type of the named type.
      */
     @NotNull
-    private final ScalarType scalarType;
+    private final Type scalarType;
 
     /**
      * The name of the type.

@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.type.named.NamedType;
+import org.voidlang.compiler.node.type.parameter.LambdaParameter;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,13 +25,13 @@ public class LambdaType implements Type {
      * the return type of the lambda type.
      */
     @NotNull
-    private final NamedType type;
+    private final Type type;
 
     /**
      * The held parameter types of the lambda.
      */
     @NotNull
-    private final List<NamedScalarType> parameters;
+    private final List<LambdaParameter> parameters;
 
     /**
      * Get the string representation of the lambda type.
@@ -41,7 +42,7 @@ public class LambdaType implements Type {
         StringBuilder builder = new StringBuilder(type.toString())
             .append(" |");
         String collect = parameters.stream()
-            .map(NamedScalarType::toString)
+            .map(LambdaParameter::toString)
             .collect(Collectors.joining(", "));
         return builder
             .append(collect)
