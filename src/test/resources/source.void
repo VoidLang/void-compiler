@@ -1,1 +1,3 @@
-|(T, U) (x, y), U| main()
+List<(Player, Data)> getMyList(int |T| func) {
+
+}

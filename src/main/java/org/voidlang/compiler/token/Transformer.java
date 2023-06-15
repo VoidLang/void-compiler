@@ -53,6 +53,8 @@ public class Transformer {
         forbiddenAfter.add(Token.of(TokenType.OPERATOR, "~"));
         forbiddenAfter.add(Token.of(TokenType.OPERATOR, "$"));
         forbiddenAfter.add(Token.of(TokenType.OPERATOR, "."));
+        forbiddenAfter.add(Token.of(TokenType.OPERATOR, "%"));
+        forbiddenAfter.add(Token.of(TokenType.OPERATOR, "|"));
         forbiddenAfter.add(Token.of(TokenType.EXPRESSION, "where"));
     }
 

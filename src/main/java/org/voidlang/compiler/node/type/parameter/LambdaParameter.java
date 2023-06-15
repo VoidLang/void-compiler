@@ -7,8 +7,6 @@ import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.name.Name;
 
-import java.util.stream.Collectors;
-
 /**
  * Represents a lambda parameter in the Abstract Syntax Tree. Lambdas are callable anonymous function.
  * <p>Example:</p>

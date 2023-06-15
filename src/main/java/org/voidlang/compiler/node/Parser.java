@@ -22,12 +22,14 @@ import org.voidlang.compiler.node.type.modifier.ModifierList;
 import org.voidlang.compiler.node.type.name.CompoundName;
 import org.voidlang.compiler.node.type.name.Name;
 import org.voidlang.compiler.node.type.name.ScalarName;
+import org.voidlang.compiler.node.type.named.MethodParameter;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.type.named.NamedType;
 import org.voidlang.compiler.node.type.named.NamedTypeGroup;
 import org.voidlang.compiler.node.type.parameter.LambdaParameter;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
+import sun.java2d.pipe.SpanClipRenderer;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -272,16 +274,6 @@ public class Parser {
     }
 
     private Type nextLambdaType(Type returnType) {
-        /*
-        // check if the lambda does not have an explicit return type
-        // because the parameter list is already started
-        Type returnType;
-        if (peek().is(TokenType.OPERATOR, "|"))
-            returnType = Type.primitive("void");
-        // lambda has an explicit return type, parse the type
-        else
-            returnType = nextNamedType();
-         */
         // skip the '|' symbol
         get(TokenType.OPERATOR, "|");
         // parse the parameter list of hte lambda
@@ -351,6 +343,7 @@ public class Parser {
         while (!peek().is(TokenType.CLOSE)) {
             // parse the next member of the group
             Type member = nextType();
+            members.add(member);
             // continue parsing if there are more members expected
             if (peek(TokenType.COMMA, TokenType.CLOSE).is(TokenType.COMMA))
                 get();
@@ -644,7 +637,107 @@ public class Parser {
         //               ^^^^^^^^^^^^^ generic types may have a default value specified
         GenericTypeList genericTypes = nextGenericTypes();
 
-        System.out.println(type + " " + name + genericTypes);
+        // handle method parameter list
+        // int multiply(int i, int j)
+        //             ^ open parenthesis indicates, that the declaration of the parameter list has begun
+        // skip the '(' symbol as it is already handled
+        get(TokenType.OPEN);
+
+        System.out.print(type + " " + name + genericTypes + '(');
+
+        // parse the method parameters
+        List<MethodParameter> parameters = new ArrayList<>();
+        while (!peek().is(TokenType.CLOSE)) {
+            // parse the next parameter type
+            Type paramType = nextType();
+
+            boolean paramVar = nextVarargs();
+
+            Name paramName = nextName();
+
+            MethodParameter parameter = new MethodParameter(paramType, paramVar, paramName);
+            parameters.add(parameter);
+            System.out.print(parameter);
+
+            // check if there are more parameters to be parsed
+            if (peek().is(TokenType.COMMA))
+                get();
+            // no more parameters expected, exit the loop
+            else
+                break;
+        }
+
+        get(TokenType.CLOSE);
+
+        System.out.println(")");
+
+        // skip the auto-inserted semicolon before the method body
+        if (peek().is(TokenType.SEMICOLON, "auto"))
+            get();
+
+        // TODO handle direct body assigning to method
+        //  int isFruit(Produce produce) = switch (produce) { BANANA|APPLE -> true; else -> false }
+        // TODO handle constant value getter
+        //  int getName() => "John, Doe" | or ->, haven't decided yet
+
+        // handle method body begin
+        get(TokenType.BEGIN);
+
+
+        // handle method body end
+        get(TokenType.END);
+
+        // skip the auto-inserted semicolon
+        if (peek().is(TokenType.SEMICOLON))
+            get();
+
+        return new Error();
+    }
+
+    /**
+     * Parse the next expression instruction.
+     * @param ignoreJoin TODO
+     * @return expression
+     */
+    private Node nextExpression(boolean ignoreJoin) {
+        return new Error();
+    }
+
+    private Node nextLiteralOrMethodCall(boolean ignoreJoin) {
+        // handle local variable declaration
+        // let myVariable = 100
+        // ^^^ the "let" keyword indicates that, the local variable declaration has been started
+        if (peek().is(TokenType.TYPE))
+            return nextLocalDeclaration();
+
+        // handle literal constant or identifier
+        // let name = "John Doe"
+        //            ^^^^^^^^^^ the literal token indicates, that a value is expected
+        else if (peek().isLiteral() || peek().is(TokenType.IDENTIFIER))
+            return nextLiteralOrMethodCall(ignoreJoin);
+
+        return new Error();
+    }
+
+    /**
+     * Parse the new local declaration.
+     * @return new local declaration
+     */
+    Node nextLocalDeclaration() {
+        // get the type of the local variable
+        // float myNumber = 3
+        // ^^^^^ the type or identifier indicates the type of the local variable
+        Token type = get(TokenType.TYPE, TokenType.IDENTIFIER);
+
+        // handle tuple destructuring
+        // let (a, b) = foo()
+        //     ^ the open parenthesis after "let" indicates, that the tuple value should be destructured
+        // TODO if (peek().is(TokenType.OPEN)) {
+
+        // get the name of the local variable
+        // let variable = "Hello, World"
+        //     ^^^^^^^^ the identifier indicates the name of the local variable
+        String name = get(TokenType.IDENTIFIER).getValue();
 
         return new Error();
     }
@@ -767,6 +860,4 @@ public class Parser {
     private boolean has(int index) {
         return index >= 0 && index < tokens.size();
     }
-
-
 }

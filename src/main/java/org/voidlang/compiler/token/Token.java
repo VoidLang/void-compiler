@@ -102,6 +102,49 @@ public class Token {
     }
 
     /**
+     * Determine if the type of this token is a number.
+     * @return true if this token is a number
+     */
+    public boolean isNumber() {
+        switch (type) {
+            case BYTE:
+            case SHORT:
+            case INTEGER:
+            case LONG:
+            case FLOAT:
+            case DOUBLE:
+            case HEXADECIMAL:
+            case BINARY:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Determine if the type of this token is a literal token type.
+     * @return true if this token is a constant literal
+     */
+    public boolean isLiteral() {
+        switch (type) {
+            case STRING:
+            case CHARACTER:
+            case BOOLEAN:
+                return true;
+            default:
+                return isNumber();
+        }
+    }
+
+    /**
+     * Indicate, whether the value of this token is specific, and must be checked.
+     * @return true if the token value should be checked
+     */
+    public boolean isSpecific() {
+        return isLiteral() || is(TokenType.IDENTIFIER);
+    }
+
+    /**
      * Get the string representation of this token.
      * @return token debug information
      */
