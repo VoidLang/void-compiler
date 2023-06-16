@@ -60,4 +60,9 @@ public interface Type {
             Array.noArray()
         );
     }
+
+    /**
+     * The type wrapper for the "let" keyword.
+     */
+    Type LET = primitive("let");
 }

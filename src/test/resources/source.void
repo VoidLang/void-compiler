@@ -1,3 +1,5 @@
-List<(Player, Data)> getMyList(int |T| func) {
-
+void main(int a) {
+    let (x, y) = 123
+    let foo = 100
+    foo = 20
 }

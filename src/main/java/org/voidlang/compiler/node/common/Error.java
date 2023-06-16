@@ -18,14 +18,6 @@ public class Error extends Node {
     }
 
     /**
-     * Print the string representation of this node.
-     */
-    @Override
-    public void debug() {
-        System.out.println("Error");
-    }
-
-    /**
      * Generate an LLVM instruction for this node
      * @return node ir code wrapper
      */

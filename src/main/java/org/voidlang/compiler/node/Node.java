@@ -15,10 +15,12 @@ import org.voidlang.llvm.element.Value;
 @Getter
 @AllArgsConstructor
 public abstract class Node {
+    protected static final Prettier prettier = new Prettier();
+
     /**
      * The type of the node.
      */
-    private final NodeType type;
+    private final NodeType nodeType;
 
     /**
      * The target package of the node.
@@ -31,7 +33,7 @@ public abstract class Node {
      * @return true if the type matches this node
      */
     public boolean is(NodeType type) {
-        return this.type == type;
+        return this.nodeType == type;
     }
 
     /**
@@ -46,10 +48,15 @@ public abstract class Node {
     /**
      * Print the string representation of this node.
      */
-    public abstract void debug();
+    public final void debug() {
+        prettier.begin(this);
+        prettier.content(this);
+        prettier.end();
+    }
 
     /**
      * Generate an LLVM instruction for this node
+     * @param builder instruction builder for the current context
      * @return node ir code wrapper
      */
     public abstract Value generate(Builder builder);

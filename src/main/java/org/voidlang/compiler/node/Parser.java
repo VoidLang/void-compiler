@@ -1,11 +1,17 @@
 package org.voidlang.compiler.node;
 
+import dev.inventex.octa.console.ConsoleFormat;
 import dev.inventex.octa.data.primitive.Tuple;
 import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
 import org.voidlang.compiler.node.info.PackageImport;
 import org.voidlang.compiler.node.info.PackageSet;
+import org.voidlang.compiler.node.local.LocalAssign;
+import org.voidlang.compiler.node.local.LocalDeclare;
+import org.voidlang.compiler.node.local.LocalDeclareAssign;
+import org.voidlang.compiler.node.local.LocalDeclareDestructureTuple;
+import org.voidlang.compiler.node.operand.Value;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.array.Dimension;
 import org.voidlang.compiler.node.type.core.LambdaType;
@@ -29,7 +35,6 @@ import org.voidlang.compiler.node.type.named.NamedTypeGroup;
 import org.voidlang.compiler.node.type.parameter.LambdaParameter;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
-import sun.java2d.pipe.SpanClipRenderer;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -643,7 +648,7 @@ public class Parser {
         // skip the '(' symbol as it is already handled
         get(TokenType.OPEN);
 
-        System.out.print(type + " " + name + genericTypes + '(');
+        System.out.print(type + " " + ConsoleFormat.BLUE + name + genericTypes + ConsoleFormat.CYAN + '(');
 
         // parse the method parameters
         List<MethodParameter> parameters = new ArrayList<>();
@@ -669,7 +674,7 @@ public class Parser {
 
         get(TokenType.CLOSE);
 
-        System.out.println(")");
+        System.out.println(ConsoleFormat.CYAN + ") " + ConsoleFormat.DARK_GRAY + "{");
 
         // skip the auto-inserted semicolon before the method body
         if (peek().is(TokenType.SEMICOLON, "auto"))
@@ -683,6 +688,25 @@ public class Parser {
         // handle method body begin
         get(TokenType.BEGIN);
 
+        List<Node> body = new ArrayList<>();
+        while (!peek().is(TokenType.END)) {
+            Node expression = nextExpression();
+            if (!expression.hasNext())
+                break;
+            body.add(expression);
+        }
+
+        Prettier prettier = Node.prettier;
+        prettier.enterScope();
+        for (Node node : body) {
+            prettier.indent();
+            prettier.begin(node);
+            prettier.content(node);
+            prettier.end();
+        }
+        prettier.exitScope();
+
+        System.out.println(ConsoleFormat.DARK_GRAY + "}");
 
         // handle method body end
         get(TokenType.END);
@@ -694,52 +718,136 @@ public class Parser {
         return new Error();
     }
 
+    private Node nextExpression() {
+        return nextExpression(false);
+    }
+
     /**
      * Parse the next expression instruction.
      * @param ignoreJoin TODO
      * @return expression
      */
     private Node nextExpression(boolean ignoreJoin) {
-        return new Error();
-    }
-
-    private Node nextLiteralOrMethodCall(boolean ignoreJoin) {
-        // handle local variable declaration
-        // let myVariable = 100
-        // ^^^ the "let" keyword indicates that, the local variable declaration has been started
-        if (peek().is(TokenType.TYPE))
+        if (peek().is(TokenType.TYPE, "let"))
             return nextLocalDeclaration();
 
-        // handle literal constant or identifier
+        // handle variable assignation
+        if (peek().is(TokenType.IDENTIFIER) && at(cursor + 1).is(TokenType.OPERATOR, "=")
+                && !at(cursor + 2).is(TokenType.OPERATOR, "="))
+            return nextLocalAssignation();
+
+        // handle literal constant value
         // let name = "John Doe"
         //            ^^^^^^^^^^ the literal token indicates, that a value is expected
-        else if (peek().isLiteral() || peek().is(TokenType.IDENTIFIER))
-            return nextLiteralOrMethodCall(ignoreJoin);
+        else if (peek().isLiteral())
+            return nextLiteral();
 
+        System.out.println("Error (Expression) " + peek());
         return new Error();
     }
 
     /**
-     * Parse the new local declaration.
-     * @return new local declaration
+     * Parse the next local variable value assignation.
+     * @return new local assignation
      */
-    Node nextLocalDeclaration() {
-        // get the type of the local variable
-        // float myNumber = 3
-        // ^^^^^ the type or identifier indicates the type of the local variable
-        Token type = get(TokenType.TYPE, TokenType.IDENTIFIER);
-
-        // handle tuple destructuring
-        // let (a, b) = foo()
-        //     ^ the open parenthesis after "let" indicates, that the tuple value should be destructured
-        // TODO if (peek().is(TokenType.OPEN)) {
-
+    private Node nextLocalAssignation() {
         // get the name of the local variable
-        // let variable = "Hello, World"
-        //     ^^^^^^^^ the identifier indicates the name of the local variable
-        String name = get(TokenType.IDENTIFIER).getValue();
+        String name = get().getValue();
 
+        // skip the equals sign
+        get(TokenType.OPERATOR, "=");
+
+        // parse the value of the local variable
+        Node value = nextExpression();
+
+        // skip the semicolon after the declaration
+        if (peek().is(TokenType.SEMICOLON))
+            get();
+
+        return new LocalAssign(pkg, name, value);
+    }
+
+    /**
+     * Parse the next literal value declaration.
+     * @return new literal
+     */
+    private Node nextLiteral() {
+        // handle literal constant or identifier
+        //
+        // let name = "John Doe"
+        //            ^^^^^^^^^^ the literal token indicates, that a value is expected
+        Token value = get(
+            TokenType.BOOLEAN, TokenType.CHARACTER, TokenType.STRING,
+            TokenType.BYTE, TokenType.SHORT, TokenType.INTEGER,
+            TokenType.LONG, TokenType.FLOAT, TokenType.DOUBLE,
+            TokenType.HEXADECIMAL, TokenType.BINARY
+        );
+
+        // handle single value expression, in which case the local variable is initialized with a single value
+        // let myVar = 100;
+        //                ^ the (auto-inserted) semicolon indicates, initialized with a single value
+        if (peek().is(TokenType.SEMICOLON))
+            return new Value(pkg, value);
+
+        // TODO handle operator
+
+        // TODO handle close, comma, stop, end
+
+        System.out.println("Error (Literal)");
         return new Error();
+    }
+
+    private Node nextLocalDeclaration() {
+        // skip the 'let' keyword
+        get(TokenType.TYPE, "let");
+        // parse the name of the local variable
+        Name name = nextName();
+        // check if the name is a tuple destructuring
+        if (name.isCompound()) {
+            // tuple destructuring requires an initialization, skip the '=' symbol
+            // let (a, b) = foo()
+            //            ^ the equals sign indicates that the assignation of the local variable has been started
+            get(TokenType.OPERATOR, "=");
+            // parse the value of the local variable
+            // let (code, msg) = requestSomething()
+            //                   ^^^^^^^^^^^^^^^^^^ the instructions after the equals sign is the value of the local variable
+            Node value = nextExpression();
+            // skip the semicolon after the declaration
+            // let (a, b, c) = fooBar();
+            //                         ^ the (auto-inserted) semicolon indicates, that the assigning variable declaration has been ended
+            if (peek().is(TokenType.SEMICOLON))
+                get();
+
+            return new LocalDeclareDestructureTuple(pkg, (CompoundName) name, value);
+        }
+
+        // skip the semicolon after the declaration
+        // let variable;
+        //             ^ the (auto-inserted) semicolon indicates, that the declaration has been ended
+        if (peek().is(TokenType.SEMICOLON))
+            get();
+
+        // check if the local variable does not have an initialization declared
+        if (!peek().is(TokenType.OPERATOR, "="))
+            return new LocalDeclare(pkg, Type.LET, ((ScalarName) name).getValue());
+
+        // handle the assignation of the local variable
+        // let number = 100
+        //            ^ the equals sign indicates that the assignation of the local variable has been started
+        get(TokenType.OPERATOR, "=");
+
+        // parse the value of the local variable
+        // let value = 100 + 50 - 25
+        //             ^^^^^^^^^^^^^ the instructions after the equals sign is the value of the local variable
+        Node value = nextExpression();
+
+        // skip the semicolon after the declaration
+        // let variable = 100;
+        //                   ^ the (auto-inserted) semicolon indicates, that the assigning variable declaration has been ended
+        if (peek().is(TokenType.SEMICOLON))
+            get();
+
+        return new LocalDeclareAssign(pkg, Type.LET, ((ScalarName) name).getValue(), value);
     }
 
     /**

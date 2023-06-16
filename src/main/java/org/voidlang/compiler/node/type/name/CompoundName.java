@@ -1,5 +1,6 @@
 package org.voidlang.compiler.node.type.name;
 
+import dev.inventex.octa.console.ConsoleFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -28,13 +29,13 @@ public class CompoundName implements Name {
      */
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("(");
+        StringBuilder builder = new StringBuilder().append(ConsoleFormat.LIGHT_GRAY).append("(");
         if (!members.isEmpty()) {
             String collect = members.stream()
                 .map(Name::toString)
-                .collect(Collectors.joining(", "));
+                .collect(Collectors.joining(ConsoleFormat.LIGHT_GRAY + ", "));
             builder.append(collect);
         }
-        return builder.append(')').toString();
+        return builder.append(ConsoleFormat.LIGHT_GRAY).append(')').toString();
     }
 }

@@ -1,5 +1,6 @@
 package org.voidlang.compiler.node.type.name;
 
+import dev.inventex.octa.console.ConsoleFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -25,6 +26,6 @@ public class ScalarName implements Name {
      */
     @Override
     public String toString() {
-        return value;
+        return ConsoleFormat.WHITE + value;
     }
 }

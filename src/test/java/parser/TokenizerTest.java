@@ -1,5 +1,6 @@
 package parser;
 
+import dev.inventex.octa.console.ConsoleFormat;
 import lombok.SneakyThrows;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.Parser;
@@ -19,6 +20,10 @@ public class TokenizerTest {
         debugTokens(tokens);
 
         Parser parser = new Parser(null, tokens);
+
+        System.out.println();
+        System.out.println(ConsoleFormat.RED + "           " + ConsoleFormat.BOLD + "PARSED NODES");
+        System.out.println(ConsoleFormat.DEFAULT);
 
         Node node;
         do {
@@ -41,6 +46,10 @@ public class TokenizerTest {
     }
 
     private static void debugTokens(List<Token> tokens) {
+        System.out.println();
+        System.out.println(ConsoleFormat.RED + "           " + ConsoleFormat.BOLD + "PARSED TOKENS");
+        System.out.println(ConsoleFormat.DEFAULT);
+
         int longestType = tokens.stream()
                 .filter(x -> x.getMeta() != null)
                 .mapToInt(x -> x.getType().name().length())

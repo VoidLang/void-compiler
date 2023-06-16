@@ -1,8 +1,10 @@
 package org.voidlang.compiler.node.type;
 
+import dev.inventex.octa.console.ConsoleFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
 
@@ -37,12 +39,21 @@ public class QualifiedName {
     }
 
     /**
+     * Indicate, whether this fully qualified name is a "let" keyword.
+     * @return true if this is a "let" keyword
+     */
+    public boolean isLet() {
+        return types.size() == 1 && types.get(0).is(TokenType.TYPE, "let");
+    }
+
+    /**
      * Get the string representation of the qualified name.
      * @return name debug information
      */
     @Override
     public String toString() {
-        return types.stream()
+        return (isPrimitive() ? ConsoleFormat.LIGHT_RED : ConsoleFormat.YELLOW)
+            + types.stream()
             .map(Token::getValue)
             .collect(Collectors.joining("."));
     }
