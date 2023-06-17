@@ -3,14 +3,9 @@ package org.voidlang.compiler.node.type.core;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.array.Array;
-import org.voidlang.compiler.node.type.generic.GenericArgument;
 import org.voidlang.compiler.node.type.generic.GenericArgumentList;
-import org.voidlang.compiler.token.Token;
-
-import java.util.List;
 
 /**
  * Represents a type use in the Void syntax that has a type token, generic arguments and array dimensions.
@@ -22,8 +17,7 @@ import java.util.List;
  * {@code []} is a one-dimensional array specifier.
  */
 @Getter
-@AllArgsConstructor
-public class ScalarType implements Type {
+public class ScalarType extends Type {
     /**
      * The fully qualified name of the type.
      */
@@ -41,6 +35,13 @@ public class ScalarType implements Type {
      */
     @NotNull
     private final Array array;
+
+    public ScalarType(@NotNull QualifiedName name, @NotNull GenericArgumentList generics,
+                      @NotNull Array array) {
+        this.name = name;
+        this.generics = generics;
+        this.array = array;
+    }
 
     /**
      * Indicate, whether this type is an array.

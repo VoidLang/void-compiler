@@ -13,8 +13,8 @@ public class LocalDeclare extends Node {
 
     private final String name;
 
-    public LocalDeclare(Package pkg, Type type, String name) {
-        super(NodeType.LOCAL_DECLARE, pkg);
+    public LocalDeclare(Type type, String name) {
+        super(NodeType.LOCAL_DECLARE);
         this.type = type;
         this.name = name;
     }

@@ -4,6 +4,7 @@ import dev.inventex.octa.console.ConsoleFormat;
 import lombok.SneakyThrows;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.Parser;
+import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.Tokenizer;
 import org.voidlang.compiler.token.Transformer;
@@ -28,7 +29,14 @@ public class TokenizerTest {
         Node node;
         do {
             node = parser.next();
+
+            if (node instanceof Method method)
+                handleMethod(method);
         } while (node.hasNext());
+    }
+
+    private static void handleMethod(Method method) {
+        System.out.println("nice method " + method.getName());
     }
 
     private static List<Token> tokenizeSource() {

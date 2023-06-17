@@ -10,8 +10,8 @@ import org.voidlang.llvm.element.Builder;
 public class Value extends Node {
     private final Token value;
 
-    public Value(Package pkg, Token value) {
-        super(NodeType.VALUE, pkg);
+    public Value(Token value) {
+        super(NodeType.VALUE);
         this.value = value;
     }
 

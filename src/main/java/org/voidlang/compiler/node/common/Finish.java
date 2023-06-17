@@ -13,7 +13,7 @@ public class Finish extends Node {
      * Initialize the node.
      */
     public Finish() {
-        super(NodeType.FINISH, null);
+        super(NodeType.FINISH);
     }
 
     /**

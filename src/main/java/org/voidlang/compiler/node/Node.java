@@ -23,11 +23,6 @@ public abstract class Node {
     private final NodeType nodeType;
 
     /**
-     * The target package of the node.
-     */
-    private final Package pkg;
-
-    /**
      * Indicate, whether this node has the given type.
      * @param type target type to check
      * @return true if the type matches this node

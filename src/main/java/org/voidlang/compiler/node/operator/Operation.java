@@ -38,13 +38,12 @@ public class Operation extends Node {
 
     /**
      * Initialize the operation.
-     * @param pkg node package
      * @param left left operand
      * @param operator target operator
      * @param right right operand
      */
-    public Operation(Package pkg, Node left, Operator operator, Node right) {
-        super(NodeType.OPERATION, pkg);
+    public Operation(Node left, Operator operator, Node right) {
+        super(NodeType.OPERATION);
         this.left = left;
         this.operator = operator;
         this.right = right;

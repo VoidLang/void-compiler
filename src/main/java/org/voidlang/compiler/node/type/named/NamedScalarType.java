@@ -21,7 +21,7 @@ import org.voidlang.compiler.node.type.core.Type;
  */
 @AllArgsConstructor
 @Getter
-public class NamedScalarType implements NamedType {
+public class NamedScalarType extends NamedType {
     /**
      * The type of the named type.
      */

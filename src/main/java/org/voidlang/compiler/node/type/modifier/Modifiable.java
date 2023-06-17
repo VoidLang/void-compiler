@@ -18,20 +18,18 @@ public abstract class Modifiable extends Node {
     /**
      * Initialize the node.
      * @param type node type
-     * @param pkg node package
      */
-    public Modifiable(NodeType type, Package pkg, List<String> modifiers) {
-        super(type, pkg);
+    public Modifiable(NodeType type, List<String> modifiers) {
+        super(type);
         this.modifiers = modifiers;
     }
 
     /**
      * Initialize the node.
      * @param type node type
-     * @param pkg node package
      */
-    public Modifiable(NodeType type, Package pkg) {
-        super(type, pkg);
+    public Modifiable(NodeType type) {
+        super(type);
         modifiers = new ArrayList<>();
     }
 

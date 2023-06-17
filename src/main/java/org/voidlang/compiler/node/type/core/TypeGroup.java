@@ -15,13 +15,16 @@ import java.util.stream.Collectors;
  * } </pre>
  * Here {@code (bool, string)} is a {@link TypeGroup} of two {@link ScalarType} elements: {@code bool} and {@code string}.
  */
-@AllArgsConstructor
 @Getter
-public class TypeGroup implements Type {
+public class TypeGroup extends Type {
     /**
      * The list of the held nested type entries.
      */
     private final List<Type> members;
+
+    public TypeGroup(List<Type> members) {
+        this.members = members;
+    }
 
     /**
      * Get the string representation of the type group.

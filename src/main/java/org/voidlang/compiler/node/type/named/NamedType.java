@@ -1,5 +1,6 @@
 package org.voidlang.compiler.node.type.named;
 
+import org.voidlang.compiler.builder.Package;
 import org.voidlang.compiler.node.type.core.Type;
 
 /**
@@ -18,12 +19,12 @@ import org.voidlang.compiler.node.type.core.Type;
  * @see NamedLambdaType
  * @see Type
  */
-public interface NamedType extends Type {
+public abstract class NamedType extends Type {
     /**
      * Indicate, whether this entry is a {@link NamedScalarType}, so it does not have any nested members.
      * @return true if this type entry is a direct type
      */
-    default boolean isReturnType() {
+    public boolean isReturnType() {
         return this instanceof NamedScalarType;
     }
 
@@ -31,7 +32,7 @@ public interface NamedType extends Type {
      * Indicate, whether this entry is a {@link NamedTypeGroup}, so it has nested members only.
      * @return true if this type entry is a group of type entries
      */
-    default boolean isReturnGroup() {
+    public boolean isReturnGroup() {
         return this instanceof NamedTypeGroup;
     }
 
@@ -39,7 +40,7 @@ public interface NamedType extends Type {
      * Indicate, whether this entry is a {@link NamedLambdaType}, so it has nested parameter types.
      * @return true if this type entry is a callable lambda function
      */
-    default boolean isLambda() {
+    public boolean isLambda() {
         return this instanceof NamedLambdaType;
     }
 }

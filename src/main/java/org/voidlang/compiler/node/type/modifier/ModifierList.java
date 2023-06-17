@@ -18,10 +18,9 @@ public class ModifierList extends Node {
 
     /**
      * Initialize the node.
-     * @param pkg node package
      */
-    public ModifierList(Package pkg, List<String> modifiers) {
-        super(NodeType.MODIFIER_LIST, pkg);
+    public ModifierList(List<String> modifiers) {
+        super(NodeType.MODIFIER_LIST);
         this.modifiers = modifiers;
     }
 

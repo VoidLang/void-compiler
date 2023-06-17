@@ -21,8 +21,8 @@ public class Method extends Node {
 
     private final List<Node> body;
 
-    public Method(Package pkg, Type returnType, String name, List<MethodParameter> parameters, List<Node> body) {
-        super(NodeType.METHOD, pkg);
+    public Method(Type returnType, String name, List<MethodParameter> parameters, List<Node> body) {
+        super(NodeType.METHOD);
         this.returnType = returnType;
         this.name = name;
         this.parameters = parameters;

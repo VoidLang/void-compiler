@@ -15,8 +15,8 @@ public class LocalDeclareAssign extends Node {
 
     private final Node value;
 
-    public LocalDeclareAssign(Package pkg, Type type, String name, Node value) {
-        super(NodeType.LOCAL_DECLARE_ASSIGN, pkg);
+    public LocalDeclareAssign(Type type, String name, Node value) {
+        super(NodeType.LOCAL_DECLARE_ASSIGN);
         this.type = type;
         this.name = name;
         this.value = value;

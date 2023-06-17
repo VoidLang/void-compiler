@@ -20,8 +20,8 @@ public class ModifierBlock extends Node {
      * Initialize the node.
      * @param pkg node package
      */
-    public ModifierBlock(Package pkg, List<String> modifiers) {
-        super(NodeType.MODIFIER_BLOCK, pkg);
+    public ModifierBlock(List<String> modifiers) {
+        super(NodeType.MODIFIER_BLOCK);
         this.modifiers = modifiers;
     }
 

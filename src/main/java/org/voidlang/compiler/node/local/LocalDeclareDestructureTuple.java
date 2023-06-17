@@ -13,8 +13,8 @@ public class LocalDeclareDestructureTuple extends Node {
 
     private final Node value;
 
-    public LocalDeclareDestructureTuple(Package pkg, CompoundName name, Node value) {
-        super(NodeType.LOCAL_DECLARE_DESTRUCTURE_TUPLE, pkg);
+    public LocalDeclareDestructureTuple(CompoundName name, Node value) {
+        super(NodeType.LOCAL_DECLARE_DESTRUCTURE_TUPLE);
         this.name = name;
         this.value = value;
     }

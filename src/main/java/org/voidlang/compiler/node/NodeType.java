@@ -4,6 +4,7 @@ package org.voidlang.compiler.node;
  * Represents a registry of the parsable node types.
  */
 public enum NodeType {
+    TYPE,
     MODIFIER_LIST,
     MODIFIER_BLOCK,
     METHOD,

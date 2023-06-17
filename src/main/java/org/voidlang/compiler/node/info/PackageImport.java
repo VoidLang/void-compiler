@@ -16,11 +16,10 @@ public class PackageImport extends Node {
 
     /**
      * Initialize the node.
-     * @param pkg node package
      * @param name package name
      */
-    public PackageImport(Package pkg, String name) {
-        super(NodeType.IMPORT, pkg);
+    public PackageImport(String name) {
+        super(NodeType.IMPORT);
         this.name = name;
     }
 

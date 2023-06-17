@@ -1,10 +1,7 @@
 package org.voidlang.compiler.node.type.core;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import org.voidlang.compiler.node.type.named.NamedScalarType;
-import org.voidlang.compiler.node.type.named.NamedType;
 import org.voidlang.compiler.node.type.parameter.LambdaParameter;
 
 import java.util.List;
@@ -18,9 +15,8 @@ import java.util.stream.Collectors;
  * } </pre>
  * Here {@code |int a, bool b|} are the two named parameters of the lambda.
  */
-@AllArgsConstructor
 @Getter
-public class LambdaType implements Type {
+public class LambdaType extends Type {
     /**
      * the return type of the lambda type.
      */
@@ -32,6 +28,11 @@ public class LambdaType implements Type {
      */
     @NotNull
     private final List<LambdaParameter> parameters;
+
+    public LambdaType(@NotNull Type type, @NotNull List<LambdaParameter> parameters) {
+        this.type = type;
+        this.parameters = parameters;
+    }
 
     /**
      * Get the string representation of the lambda type.

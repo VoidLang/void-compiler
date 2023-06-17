@@ -131,7 +131,7 @@ public class Parser {
         // ensure that the package is ended by a semicolon
         get(TokenType.SEMICOLON);
         System.out.println("package \"" + name + '"');
-        return new PackageSet(pkg, name);
+        return new PackageSet(name);
     }
 
     /**
@@ -146,7 +146,7 @@ public class Parser {
         // ensure that the package is ended by a semicolon
         get(TokenType.SEMICOLON);
         System.out.println("import \"" + name + '"');
-        return new PackageImport(pkg, name);
+        return new PackageImport(name);
     }
 
     /**
@@ -162,11 +162,11 @@ public class Parser {
             // skip the ':' symbol
             get();
             System.out.println(String.join(" ", modifiers) + ": ");
-            return new ModifierBlock(pkg, modifiers);
+            return new ModifierBlock(modifiers);
         }
         // handle normal modifier list
         System.out.println(String.join(" ", modifiers) + " ");
-        return new ModifierList(pkg, modifiers);
+        return new ModifierList(modifiers);
     }
 
     /**
@@ -719,7 +719,7 @@ public class Parser {
         if (peek().is(TokenType.SEMICOLON))
             get();
 
-        return new Method(pkg, type, name, parameters, body);
+        return new Method(type, name, parameters, body);
     }
 
     private Node nextExpression() {
@@ -768,7 +768,7 @@ public class Parser {
         if (peek().is(TokenType.SEMICOLON))
             get();
 
-        return new LocalAssign(pkg, name, value);
+        return new LocalAssign(name, value);
     }
 
     /**
@@ -786,7 +786,7 @@ public class Parser {
             TokenType.LONG, TokenType.FLOAT, TokenType.DOUBLE,
             TokenType.HEXADECIMAL, TokenType.BINARY
         );
-        Value value = new Value(pkg, token);
+        Value value = new Value(token);
 
         // handle single value expression, in which case the local variable is initialized with a single value
         // let myVar = 100;
@@ -813,7 +813,7 @@ public class Parser {
     }
 
     private Node makeOperator(Node left, Operator operator, Node right) {
-        return fixOperationTree(new Operation(pkg, left, operator, right));
+        return fixOperationTree(new Operation(left, operator, right));
     }
 
     private Node fixOperationTree(Node node) {
@@ -904,7 +904,7 @@ public class Parser {
             if (peek().is(TokenType.SEMICOLON))
                 get();
 
-            return new LocalDeclareDestructureTuple(pkg, (CompoundName) name, value);
+            return new LocalDeclareDestructureTuple((CompoundName) name, value);
         }
 
         // skip the semicolon after the declaration
@@ -915,7 +915,7 @@ public class Parser {
 
         // check if the local variable does not have an initialization declared
         if (!peek().is(TokenType.OPERATOR, "="))
-            return new LocalDeclare(pkg, Type.LET, ((ScalarName) name).getValue());
+            return new LocalDeclare(Type.LET, ((ScalarName) name).getValue());
 
         // handle the assignation of the local variable
         // let number = 100
@@ -933,7 +933,7 @@ public class Parser {
         if (peek().is(TokenType.SEMICOLON))
             get();
 
-        return new LocalDeclareAssign(pkg, Type.LET, ((ScalarName) name).getValue(), value);
+        return new LocalDeclareAssign(Type.LET, ((ScalarName) name).getValue(), value);
     }
 
     /**

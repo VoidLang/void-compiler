@@ -19,7 +19,7 @@ import java.util.List;
  */
 @AllArgsConstructor
 @Getter
-public class NamedLambdaType implements NamedType {
+public class NamedLambdaType extends NamedType {
     /**
      * the return type of the lambda type.
      */

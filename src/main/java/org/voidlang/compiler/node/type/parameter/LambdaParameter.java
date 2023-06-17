@@ -18,7 +18,7 @@ import org.voidlang.compiler.node.type.name.Name;
  */
 @AllArgsConstructor
 @Getter
-public class LambdaParameter implements Type {
+public class LambdaParameter extends Type {
     /**
      * The type of the lambda parameter.
      */

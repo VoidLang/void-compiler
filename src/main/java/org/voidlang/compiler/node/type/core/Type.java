@@ -1,13 +1,13 @@
 package org.voidlang.compiler.node.type.core;
 
+import org.voidlang.compiler.builder.Package;
+import org.voidlang.compiler.node.Node;
+import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.generic.GenericArgumentList;
-import org.voidlang.compiler.token.Token;
-import org.voidlang.compiler.token.TokenType;
-
-import java.util.ArrayList;
-import java.util.Collections;
+import org.voidlang.llvm.element.Builder;
+import org.voidlang.llvm.element.Value;
 
 /**
  * Represents an entry which may be a {@link ScalarType} or a {@link TypeGroup}.
@@ -23,12 +23,16 @@ import java.util.Collections;
  * @see ScalarType
  * @see TypeGroup
  */
-public interface Type {
+public class Type extends Node {
+    public Type() {
+        super(NodeType.TYPE);
+    }
+
     /**
      * Indicate, whether this entry is a {@link ScalarType}, so it does not have any nested members.
      * @return true if this type entry is a direct type
      */
-    default boolean isScalar() {
+    public boolean isScalar() {
         return this instanceof ScalarType;
     }
 
@@ -36,7 +40,7 @@ public interface Type {
      * Indicate, whether this entry is a {@link TypeGroup}, so it has nested members only.
      * @return true if this type entry is a group of type entries
      */
-    default boolean isGroup() {
+    public boolean isGroup() {
         return this instanceof TypeGroup;
     }
 
@@ -44,7 +48,7 @@ public interface Type {
      * Indicate, whether this entry is a {@link LambdaType}, so it has nested parameter types.
      * @return true if this type entry is a callable lambda function
      */
-    default boolean isLambda() {
+    public boolean isLambda() {
         return this instanceof LambdaType;
     }
 
@@ -53,7 +57,7 @@ public interface Type {
      * @param type primitive type name
      * @return primitive type wrapper
      */
-    static Type primitive(String type) {
+    public static Type primitive(String type) {
         return new ScalarType(
             QualifiedName.primitive(type),
             GenericArgumentList.implicit(),
@@ -64,5 +68,16 @@ public interface Type {
     /**
      * The type wrapper for the "let" keyword.
      */
-    Type LET = primitive("let");
+    public static final Type LET = primitive("let");
+
+    /**
+     * Generate an LLVM instruction for this node
+     *
+     * @param builder instruction builder for the current context
+     * @return node ir code wrapper
+     */
+    @Override
+    public Value generate(Builder builder) {
+        return null;
+    }
 }

@@ -1,9 +1,8 @@
 package org.voidlang.compiler.node.type.named;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.voidlang.compiler.builder.Package;
 import org.voidlang.compiler.node.type.core.ScalarType;
-import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.core.TypeGroup;
 
 import java.util.List;
@@ -17,13 +16,16 @@ import java.util.stream.Collectors;
  * } </pre>
  * Here {@code (bool, string)} is a {@link TypeGroup} of two {@link ScalarType} elements: {@code bool} and {@code string}.
  */
-@AllArgsConstructor
 @Getter
-public class NamedTypeGroup implements NamedType {
+public class NamedTypeGroup extends NamedType {
     /**
      * The list of the held nested named type entries.
      */
     private final List<NamedType> members;
+
+    public NamedTypeGroup(List<NamedType> members) {
+        this.members = members;
+    }
 
     /**
      * Get the string representation of the named type group.

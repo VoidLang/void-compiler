@@ -12,8 +12,8 @@ public class LocalAssign extends Node {
 
     private final Node value;
 
-    public LocalAssign(Package pkg, String name, Node value) {
-        super(NodeType.LOCAL_ASSIGN, pkg);
+    public LocalAssign(String name, Node value) {
+        super(NodeType.LOCAL_ASSIGN);
         this.name = name;
         this.value = value;
     }

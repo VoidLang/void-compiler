@@ -14,7 +14,7 @@ public class Error extends Node {
      * Initialize the node.
      */
     public Error() {
-        super(NodeType.ERROR, null);
+        super(NodeType.ERROR);
     }
 
     /**

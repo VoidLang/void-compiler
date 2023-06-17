@@ -17,11 +17,10 @@ public class PackageSet extends Node {
 
     /**
      * Initialize the node.
-     * @param pkg node package
      * @param name package name
      */
-    public PackageSet(Package pkg, String name) {
-        super(NodeType.PACKAGE, pkg);
+    public PackageSet(String name) {
+        super(NodeType.PACKAGE);
         this.name = name;
     }
 
