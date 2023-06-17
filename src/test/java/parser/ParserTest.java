@@ -2,18 +2,25 @@ package parser;
 
 import dev.inventex.octa.console.ConsoleFormat;
 import lombok.SneakyThrows;
+import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.Pointer;
+import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.Parser;
 import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.Tokenizer;
 import org.voidlang.compiler.token.Transformer;
+import org.voidlang.llvm.element.*;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.bytedeco.llvm.global.LLVM.*;
+import static org.bytedeco.llvm.global.LLVM.LLVMInitializeNativeTarget;
 
 public class ParserTest {
     public static void main(String[] args) {
@@ -36,7 +43,35 @@ public class ParserTest {
     }
 
     private static void handleMethod(Method method) {
-        System.out.println("nice method " + method.getName());
+        LLVMInitializeCore(LLVMGetGlobalPassRegistry());
+        LLVMLinkInMCJIT();
+        LLVMInitializeNativeAsmPrinter();
+        LLVMInitializeNativeAsmParser();
+        LLVMInitializeNativeTarget();
+
+        IRContext context = IRContext.create();
+        IRModule module = IRModule.create(context, "test_module");
+        IRBuilder builder = IRBuilder.create(context);
+
+        Generator generator = new Generator(context, module, builder);
+
+        method.generate(generator);
+
+        BytePointer error = new BytePointer((Pointer) null);
+        if (!module.verify(IRModule.VerifierFailureAction.PRINT_MESSAGE, error)) {
+            System.err.println("Error: " + error.getString());
+            LLVMDisposeMessage(error);
+            return;
+        }
+
+        module.dump();
+
+        IRExecutionEngine engine = IRExecutionEngine.create();
+        MMCJITCompilerOptions options = MMCJITCompilerOptions.create();
+        if (!engine.createMCJITCompilerForModule(module, options, error)) {
+            System.err.println("Failed to create JIT compiler: " + error.getString());
+            LLVMDisposeMessage(error);
+        }
     }
 
     private static List<Token> tokenizeSource() {
@@ -59,22 +94,22 @@ public class ParserTest {
         System.out.println(ConsoleFormat.DEFAULT);
 
         int longestType = tokens.stream()
-                .filter(x -> x.getMeta() != null)
-                .mapToInt(x -> x.getType().name().length())
-                .max()
-                .orElse(0);
+            .filter(x -> x.getMeta() != null)
+            .mapToInt(x -> x.getType().name().length())
+            .max()
+            .orElse(0);
 
         int longestValue = tokens.stream()
-                .filter(x -> x.getMeta() != null)
-                .mapToInt(x -> x.getValue().length())
-                .max()
-                .orElse(0);
+            .filter(x -> x.getMeta() != null)
+            .mapToInt(x -> x.getValue().length())
+            .max()
+            .orElse(0);
 
         int longestRange = tokens.stream()
-                .filter(x -> x.getMeta() != null)
-                .mapToInt(x -> x.getMeta().range().length())
-                .max()
-                .orElse(0);
+            .filter(x -> x.getMeta() != null)
+            .mapToInt(x -> x.getMeta().range().length())
+            .max()
+            .orElse(0);
 
         for (Token element : tokens) {
             int typeLength = element.getType().name().length();

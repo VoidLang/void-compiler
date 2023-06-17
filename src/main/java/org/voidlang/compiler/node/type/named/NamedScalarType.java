@@ -63,6 +63,6 @@ public class NamedScalarType extends NamedType {
      */
     @Override
     public IRType generateType(IRContext context) {
-        return null;
+        return scalarType.generateType(context);
     }
 }

@@ -35,12 +35,13 @@ public class Method extends Node {
      */
     @Override
     public IRValue generate(Generator generator) {
+        // extract the context from the generator
         IRContext context = generator.getContext();
         IRModule module = generator.getModule();
-
+        // create the signature of the LLVM function
         IRType returnType = getReturnType().generateType(context);
         IRFunctionType functionType = IRFunctionType.create(returnType, new ArrayList<>());
-
+        // create hte LLVM function for the target context
         return IRFunction.create(module, name, functionType);
     }
 }
