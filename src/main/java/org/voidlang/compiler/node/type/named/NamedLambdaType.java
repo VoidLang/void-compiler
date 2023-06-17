@@ -6,6 +6,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.llvm.element.Builder;
+import org.voidlang.llvm.element.Value;
 
 import java.util.List;
 
@@ -31,4 +33,14 @@ public class NamedLambdaType extends NamedType {
      */
     @NotNull
     private final List<NamedScalarType> parameters;
+
+    /**
+     * Generate an LLVM instruction for this node
+     * @param builder instruction builder for the current context
+     * @return node ir code wrapper
+     */
+    @Override
+    public Value generate(Builder builder) {
+        return null;
+    }
 }

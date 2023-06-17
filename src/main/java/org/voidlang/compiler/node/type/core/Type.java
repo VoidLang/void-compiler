@@ -23,7 +23,12 @@ import org.voidlang.llvm.element.Value;
  * @see ScalarType
  * @see TypeGroup
  */
-public class Type extends Node {
+public abstract class Type extends Node {
+    /**
+     * The type wrapper for the "let" keyword.
+     */
+    public static final Type LET = primitive("let");
+    
     public Type() {
         super(NodeType.TYPE);
     }
@@ -63,21 +68,5 @@ public class Type extends Node {
             GenericArgumentList.implicit(),
             Array.noArray()
         );
-    }
-
-    /**
-     * The type wrapper for the "let" keyword.
-     */
-    public static final Type LET = primitive("let");
-
-    /**
-     * Generate an LLVM instruction for this node
-     *
-     * @param builder instruction builder for the current context
-     * @return node ir code wrapper
-     */
-    @Override
-    public Value generate(Builder builder) {
-        return null;
     }
 }

@@ -6,6 +6,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.llvm.element.Builder;
+import org.voidlang.llvm.element.Value;
 
 /**
  * Represents a type that optionally has a unique name given.
@@ -50,5 +52,15 @@ public class NamedScalarType extends NamedType {
         if (named)
             builder.append(' ').append(name);
         return builder.toString();
+    }
+
+    /**
+     * Generate an LLVM instruction for this node
+     * @param builder instruction builder for the current context
+     * @return node ir code wrapper
+     */
+    @Override
+    public Value generate(Builder builder) {
+        return null;
     }
 }

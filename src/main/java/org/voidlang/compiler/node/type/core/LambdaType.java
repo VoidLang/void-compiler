@@ -3,6 +3,8 @@ package org.voidlang.compiler.node.type.core;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.type.parameter.LambdaParameter;
+import org.voidlang.llvm.element.Builder;
+import org.voidlang.llvm.element.Value;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,5 +51,15 @@ public class LambdaType extends Type {
             .append(collect)
             .append('|')
             .toString();
+    }
+
+    /**
+     * Generate an LLVM instruction for this node
+     * @param builder instruction builder for the current context
+     * @return node ir code wrapper
+     */
+    @Override
+    public Value generate(Builder builder) {
+        return null;
     }
 }

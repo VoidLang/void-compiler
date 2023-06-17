@@ -6,6 +6,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.name.Name;
+import org.voidlang.llvm.element.Builder;
+import org.voidlang.llvm.element.Value;
 
 /**
  * Represents a lambda parameter in the Abstract Syntax Tree. Lambdas are callable anonymous function.
@@ -53,5 +55,15 @@ public class LambdaParameter extends Type {
         if (named)
             builder.append(' ').append(name);
         return builder.toString();
+    }
+
+    /**
+     * Generate an LLVM instruction for this node
+     * @param builder instruction builder for the current context
+     * @return node ir code wrapper
+     */
+    @Override
+    public Value generate(Builder builder) {
+        return null;
     }
 }

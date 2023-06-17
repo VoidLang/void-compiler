@@ -6,6 +6,8 @@ import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.generic.GenericArgumentList;
+import org.voidlang.llvm.element.Builder;
+import org.voidlang.llvm.element.Value;
 
 /**
  * Represents a type use in the Void syntax that has a type token, generic arguments and array dimensions.
@@ -58,5 +60,15 @@ public class ScalarType extends Type {
     @Override
     public String toString() {
         return String.valueOf(name) + generics + array;
+    }
+
+    /**
+     * Generate an LLVM instruction for this node
+     * @param builder instruction builder for the current context
+     * @return node ir code wrapper
+     */
+    @Override
+    public Value generate(Builder builder) {
+        return null;
     }
 }
