@@ -1,5 +1,3 @@
-void main(int a) {
-    let (x, y) = 123
-    let foo = 100
-    foo = 20
+void main() {
+    let i = 1 + 2 * 3
 }

@@ -1,5 +1,6 @@
 package org.voidlang.compiler.node.type.generic;
 
+import dev.inventex.octa.console.ConsoleFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -59,11 +60,12 @@ public class GenericArgumentList implements Iterable<GenericArgument> {
         StringBuilder builder = new StringBuilder();
         if (!explicit)
             return builder.toString();
-        builder.append('<');
+        builder.append(ConsoleFormat.CYAN).append('<');
         String collect = generics.stream()
             .map(GenericArgument::toString)
-            .collect(Collectors.joining(", "));
+            .collect(Collectors.joining(ConsoleFormat.CYAN + ", "));
         return builder.append(collect)
+            .append(ConsoleFormat.CYAN)
             .append('>')
             .toString();
     }

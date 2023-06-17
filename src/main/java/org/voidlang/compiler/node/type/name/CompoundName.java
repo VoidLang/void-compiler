@@ -29,13 +29,18 @@ public class CompoundName implements Name {
      */
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder().append(ConsoleFormat.LIGHT_GRAY).append("(");
+        StringBuilder builder = new StringBuilder()
+            .append(ConsoleFormat.CYAN)
+            .append("(");
         if (!members.isEmpty()) {
             String collect = members.stream()
                 .map(Name::toString)
-                .collect(Collectors.joining(ConsoleFormat.LIGHT_GRAY + ", "));
+                .collect(Collectors.joining(ConsoleFormat.CYAN + ", "));
             builder.append(collect);
         }
-        return builder.append(ConsoleFormat.LIGHT_GRAY).append(')').toString();
+        return builder
+            .append(ConsoleFormat.CYAN)
+            .append(')')
+            .toString();
     }
 }

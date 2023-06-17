@@ -1,5 +1,6 @@
 package org.voidlang.compiler.node.type.core;
 
+import dev.inventex.octa.console.ConsoleFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -28,13 +29,18 @@ public class TypeGroup implements Type {
      */
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("(");
+        StringBuilder builder = new StringBuilder()
+            .append(ConsoleFormat.CYAN)
+            .append("(");
         if (!members.isEmpty()) {
             String collect = members.stream()
                 .map(Type::toString)
-                .collect(Collectors.joining(", "));
+                .collect(Collectors.joining(ConsoleFormat.CYAN + ", "));
             builder.append(collect);
         }
-        return builder.append(')').toString();
+        return builder
+            .append(ConsoleFormat.CYAN)
+            .append(')')
+            .toString();
     }
 }

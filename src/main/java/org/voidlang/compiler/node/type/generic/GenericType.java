@@ -1,5 +1,6 @@
 package org.voidlang.compiler.node.type.generic;
 
+import dev.inventex.octa.console.ConsoleFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
@@ -47,9 +48,9 @@ public class GenericType {
      */
     @Override
     public String toString() {
-        String result = name;
+        String result = ConsoleFormat.YELLOW + name;
         if (defaultValue != null)
-            result += " = " + defaultValue;
+            result += ConsoleFormat.CYAN + " = " + defaultValue;
         return result;
     }
 }

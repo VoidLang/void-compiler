@@ -5,13 +5,16 @@ import dev.inventex.octa.data.primitive.Tuple;
 import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
+import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.node.info.PackageImport;
 import org.voidlang.compiler.node.info.PackageSet;
 import org.voidlang.compiler.node.local.LocalAssign;
 import org.voidlang.compiler.node.local.LocalDeclare;
 import org.voidlang.compiler.node.local.LocalDeclareAssign;
 import org.voidlang.compiler.node.local.LocalDeclareDestructureTuple;
-import org.voidlang.compiler.node.operand.Value;
+import org.voidlang.compiler.node.operator.Operation;
+import org.voidlang.compiler.node.operator.Operator;
+import org.voidlang.compiler.node.operator.Value;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.array.Dimension;
 import org.voidlang.compiler.node.type.core.LambdaType;
@@ -221,7 +224,7 @@ public class Parser {
 
         // TODO generic type implementation (where T implements MyType)
 
-
+        System.out.println("Error (Type)");
         return new Error();
     }
 
@@ -707,6 +710,7 @@ public class Parser {
         prettier.exitScope();
 
         System.out.println(ConsoleFormat.DARK_GRAY + "}");
+        System.out.println();
 
         // handle method body end
         get(TokenType.END);
@@ -715,7 +719,7 @@ public class Parser {
         if (peek().is(TokenType.SEMICOLON))
             get();
 
-        return new Error();
+        return new Method(pkg, type, name, parameters, body);
     }
 
     private Node nextExpression() {
@@ -776,25 +780,107 @@ public class Parser {
         //
         // let name = "John Doe"
         //            ^^^^^^^^^^ the literal token indicates, that a value is expected
-        Token value = get(
+        Token token = get(
             TokenType.BOOLEAN, TokenType.CHARACTER, TokenType.STRING,
             TokenType.BYTE, TokenType.SHORT, TokenType.INTEGER,
             TokenType.LONG, TokenType.FLOAT, TokenType.DOUBLE,
             TokenType.HEXADECIMAL, TokenType.BINARY
         );
+        Value value = new Value(pkg, token);
 
         // handle single value expression, in which case the local variable is initialized with a single value
         // let myVar = 100;
         //                ^ the (auto-inserted) semicolon indicates, initialized with a single value
         if (peek().is(TokenType.SEMICOLON))
-            return new Value(pkg, value);
+            return value;
 
-        // TODO handle operator
+        // handle operation between two expressions
+        // let var = 100 +
+        //               ^ the operator after a literal indicates, that there are more expressions to be parsed
+        //                 the two operands are grouped together by an Operation node
+        if (peek().is(TokenType.OPERATOR)) {
+            // parse the operator of the operation
+            Operator operator = nextOperator();
+            if (!isComplexOperator(operator.getValue()))
+                throw new IllegalStateException("Expected complex operator, but got " + operator);
+            return makeOperator(value, operator, nextExpression());
+        }
 
         // TODO handle close, comma, stop, end
 
-        System.out.println("Error (Literal)");
+        System.out.println("Error (Literal) " + peek());
         return new Error();
+    }
+
+    private Node makeOperator(Node left, Operator operator, Node right) {
+        return fixOperationTree(new Operation(pkg, left, operator, right));
+    }
+
+    private Node fixOperationTree(Node node) {
+        // return if the node is not an operation
+        if (!(node instanceof Operation operation))
+            return node;
+
+        // recursively correct the order of the left and right nodes
+        operation.setLeft(fixOperationTree(operation.getLeft()));
+        operation.setRight(fixOperationTree(operation.getRight()));
+
+        // check if the current operator has lower precedence than the operator
+        // of its right child
+        if (operation.getRight() instanceof Operation
+                && hasPrecedence(operation.getOperator(), ((Operation) operation.getRight()).getOperator())) {
+            // perform a right rotation
+            Node temp = operation.getRight();
+            operation.setRight(((Operation) temp).getLeft());
+            ((Operation) temp).setLeft(operation);
+            return temp;
+        }
+
+        // check if the current operator has lower or equal precedence than the
+        // operator of its left child, and the left child is also an operation
+        if (operation.getLeft() instanceof Operation
+                && hasPrecedence(operation.getOperator(), ((Operation) operation.getLeft()).getOperator())
+                && operation.getOperator().getAssociativity() == 0) {
+            // perform a left rotation
+            Node temp = operation.getLeft();
+            operation.setLeft(((Operation) temp).getRight());
+            ((Operation) temp).setRight(operation);
+            return temp;
+        }
+
+        // the current order is correct, so return the node as it is
+        return node;
+    }
+
+    /**
+     * Check if the first operator has a precedence priority over the second operator.
+     * @param first first operator to check
+     * @param second second operator to check
+     * @return true if the first operator has higher precedence than the second one
+     */
+    private boolean hasPrecedence(Operator first, Operator second) {
+        return first.getPrecedence() > second.getPrecedence()
+            || (first.getPrecedence() == second.getPrecedence() && first.getAssociativity() == 0);
+    }
+
+    /**
+     * Parse the next operator target.
+     * @return parsed operator
+     */
+    private Operator nextOperator() {
+        // loop until the token is an operator
+        StringBuilder builder = new StringBuilder();
+        while (peek().is(TokenType.OPERATOR)) {
+            builder.append(get().getValue());
+            String operator = builder.toString();
+            // check if the current operator has been ended
+            if (shouldOperatorTerminate(operator))
+                return Operator.of(operator);
+        }
+        // handle colons as operators as well
+        while (peek().is(TokenType.COLON))
+            builder.append(get().getValue());
+        return Operator.of(builder.toString());
     }
 
     private Node nextLocalDeclaration() {
@@ -849,6 +935,58 @@ public class Parser {
 
         return new LocalDeclareAssign(pkg, Type.LET, ((ScalarName) name).getValue(), value);
     }
+
+    /**
+     * Indicate, whether the given operator is applicable for a left-right use.
+     * @param operator target operator
+     * @return true if the operator expects two values
+     */
+    private boolean isComplexOperator(String operator) {
+        // TODO check triple shift operators
+        // TODO "?." should be handled by QualifiedName
+        return switch (operator) {
+            case "+", "+=", "-", "-=", "*", "*=", "/", "/=", "&", "&=", "|", "|=", "&&", "||", "::",
+                 "<", "<=", ">", ">=", "==", ">>", ">>>", "<<", "??", "?", ":", ".", "^", "%"
+                    -> true;
+            default -> false;
+        };
+    }
+
+    /**
+     * Determine if the given operator should be terminated as it is.
+     * @param operator target operator
+     * @return true if the operator parsing should terminate
+     */
+    private boolean shouldOperatorTerminate(String operator) {
+        return switch (operator) {
+            case "&&", "||" -> true;
+            default -> false;
+        };
+    }
+
+
+    /**
+     * Test if the given operator is applicable before a value.
+     * @return true if the operator expects a value on its right
+     */
+    private boolean isLeftOperator(String target) {
+        return switch (target) {
+            case "!", "++", "--", "+", "-" -> true;
+            default -> false;
+        };
+    }
+
+    /**
+     * Test if the given operator is applicable after a value.
+     * @return true if the operator expects a value on its left
+     */
+    private boolean sRightOperator(String target) {
+        return switch (target) {
+            case "++", "--" -> true;
+            default -> false;
+        };
+    }
+
 
     /**
      * Get the node at the current index.

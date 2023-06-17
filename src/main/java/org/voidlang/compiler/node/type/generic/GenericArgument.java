@@ -1,5 +1,6 @@
 package org.voidlang.compiler.node.type.generic;
 
+import dev.inventex.octa.console.ConsoleFormat;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.type.core.Type;
@@ -43,11 +44,16 @@ public class GenericArgument {
     public String toString() {
         StringBuilder builder = new StringBuilder(type.toString());
         if (explicit) {
-            builder.append('<');
+            builder
+                .append(ConsoleFormat.YELLOW)
+                .append('<');
             String collect = members.stream()
                 .map(GenericArgument::toString)
                 .collect(Collectors.joining(", "));
-            builder.append(collect).append('>');
+            builder
+                .append(collect)
+                .append(ConsoleFormat.CYAN)
+                .append('>');
         }
         return builder.toString();
     }

@@ -48,7 +48,7 @@ public abstract class Node {
     /**
      * Print the string representation of this node.
      */
-    public final void debug() {
+    public void debug() {
         prettier.begin(this);
         prettier.content(this);
         prettier.end();

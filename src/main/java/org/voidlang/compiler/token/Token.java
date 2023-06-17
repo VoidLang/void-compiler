@@ -65,8 +65,10 @@ public class Token {
      * @return true if there are more tokens to be parsed
      */
     public boolean hasNext() {
-        return type != TokenType.UNEXPECTED
-            && type != TokenType.FINISH;
+        return switch (type) {
+            case UNEXPECTED, FINISH -> false;
+            default -> true;
+        };
     }
 
     /**
@@ -106,19 +108,10 @@ public class Token {
      * @return true if this token is a number
      */
     public boolean isNumber() {
-        switch (type) {
-            case BYTE:
-            case SHORT:
-            case INTEGER:
-            case LONG:
-            case FLOAT:
-            case DOUBLE:
-            case HEXADECIMAL:
-            case BINARY:
-                return true;
-            default:
-                return false;
-        }
+        return switch (type) {
+            case BYTE, SHORT, INTEGER, LONG, FLOAT, DOUBLE, HEXADECIMAL, BINARY -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -126,14 +119,10 @@ public class Token {
      * @return true if this token is a constant literal
      */
     public boolean isLiteral() {
-        switch (type) {
-            case STRING:
-            case CHARACTER:
-            case BOOLEAN:
-                return true;
-            default:
-                return isNumber();
-        }
+        return switch (type) {
+            case STRING, CHARACTER, BOOLEAN -> true;
+            default -> isNumber();
+        };
     }
 
     /**
