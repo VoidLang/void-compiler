@@ -1,10 +1,10 @@
 package org.voidlang.compiler.node.local;
 
 import lombok.Getter;
+import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeType;
-import org.voidlang.llvm.element.Builder;
-import org.voidlang.llvm.element.Value;
+import org.voidlang.llvm.element.IRValue;
 
 @Getter
 public class LocalAssign extends Node {
@@ -20,12 +20,10 @@ public class LocalAssign extends Node {
 
     /**
      * Generate an LLVM instruction for this node
-     *
-     * @param builder instruction builder for the current context
-     * @return node ir code wrapper
+     * @param generator LLVM instruction generation context
      */
     @Override
-    public Value generate(Builder builder) {
+    public IRValue generate(Generator generator) {
         return null;
     }
 }

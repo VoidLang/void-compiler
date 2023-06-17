@@ -4,8 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
-import org.voidlang.llvm.element.Builder;
-import org.voidlang.llvm.element.Value;
+import org.voidlang.llvm.element.IRValue;
 
 /**
  * Represents an instruction node that is parsed from raw tokens.
@@ -51,8 +50,7 @@ public abstract class Node {
 
     /**
      * Generate an LLVM instruction for this node
-     * @param builder instruction builder for the current context
-     * @return node ir code wrapper
+     * @param generator LLVM instruction generation context
      */
-    public abstract Value generate(Builder builder);
+    public abstract IRValue generate(Generator generator);
 }

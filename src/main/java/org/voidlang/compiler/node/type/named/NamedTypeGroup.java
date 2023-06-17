@@ -1,11 +1,10 @@
 package org.voidlang.compiler.node.type.named;
 
 import lombok.Getter;
-import org.voidlang.compiler.builder.Package;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.TypeGroup;
-import org.voidlang.llvm.element.Builder;
-import org.voidlang.llvm.element.Value;
+import org.voidlang.llvm.element.IRContext;
+import org.voidlang.llvm.element.IRType;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,12 +45,12 @@ public class NamedTypeGroup extends NamedType {
     }
 
     /**
-     * Generate an LLVM instruction for this node
-     * @param builder instruction builder for the current context
-     * @return node ir code wrapper
+     * Generate an LLVM type for this type wrapper
+     * @param context LLVM module context
+     * @return type ir code wrapper
      */
     @Override
-    public Value generate(Builder builder) {
+    public IRType generateType(IRContext context) {
         return null;
     }
 }

@@ -1,9 +1,10 @@
 package org.voidlang.compiler.node.type.modifier;
 
+import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeType;
-import org.voidlang.llvm.element.Builder;
-import org.voidlang.llvm.element.Value;
+import org.voidlang.llvm.element.IRBuilder;
+import org.voidlang.llvm.element.IRValue;
 
 import java.util.List;
 
@@ -18,7 +19,6 @@ public class ModifierBlock extends Node {
 
     /**
      * Initialize the node.
-     * @param pkg node package
      */
     public ModifierBlock(List<String> modifiers) {
         super(NodeType.MODIFIER_BLOCK);
@@ -26,19 +26,18 @@ public class ModifierBlock extends Node {
     }
 
     /**
-     * Generate an LLVM instruction for this node
-     *
-     * @return node ir code wrapper
-     */
-    @Override
-    public Value generate(Builder builder) {
-        throw new IllegalStateException("Cannot generate IR code for " + ModifierBlock.class);
-    }
-
-    /**
      * Get the list of the access modifiers in this block.
      */
     public List<String> getModifiers() {
         return modifiers;
+    }
+
+    /**
+     * Generate an LLVM instruction for this node
+     * @param generator LLVM instruction generation context
+     */
+    @Override
+    public IRValue generate(Generator generator) {
+        return null;
     }
 }

@@ -15,7 +15,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TokenizerTest {
+public class ParserTest {
     public static void main(String[] args) {
         List<Token> tokens = tokenizeSource();
         debugTokens(tokens);
@@ -108,7 +108,7 @@ public class TokenizerTest {
     @SneakyThrows
     private static String readSource() {
         StringBuilder builder = new StringBuilder();
-        try (InputStream stream = TokenizerTest.class.getClassLoader().getResourceAsStream("source.void");
+        try (InputStream stream = ParserTest.class.getClassLoader().getResourceAsStream("source.void");
              BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
             String line;
             while ((line = reader.readLine()) != null)

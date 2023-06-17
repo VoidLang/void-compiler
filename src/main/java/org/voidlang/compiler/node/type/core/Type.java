@@ -1,13 +1,10 @@
 package org.voidlang.compiler.node.type.core;
 
-import org.voidlang.compiler.builder.Package;
-import org.voidlang.compiler.node.Node;
-import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.generic.GenericArgumentList;
-import org.voidlang.llvm.element.Builder;
-import org.voidlang.llvm.element.Value;
+import org.voidlang.llvm.element.IRContext;
+import org.voidlang.llvm.element.IRType;
 
 /**
  * Represents an entry which may be a {@link ScalarType} or a {@link TypeGroup}.
@@ -23,16 +20,12 @@ import org.voidlang.llvm.element.Value;
  * @see ScalarType
  * @see TypeGroup
  */
-public abstract class Type extends Node {
+public abstract class Type {
     /**
      * The type wrapper for the "let" keyword.
      */
     public static final Type LET = primitive("let");
     
-    public Type() {
-        super(NodeType.TYPE);
-    }
-
     /**
      * Indicate, whether this entry is a {@link ScalarType}, so it does not have any nested members.
      * @return true if this type entry is a direct type
@@ -69,4 +62,11 @@ public abstract class Type extends Node {
             Array.noArray()
         );
     }
+
+    /**
+     * Generate an LLVM type for this type wrapper
+     * @param context LLVM module context
+     * @return type ir code wrapper
+     */
+    public abstract IRType generateType(IRContext context);
 }

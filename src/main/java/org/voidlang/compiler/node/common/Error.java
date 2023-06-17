@@ -1,9 +1,9 @@
 package org.voidlang.compiler.node.common;
 
+import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeType;
-import org.voidlang.llvm.element.Builder;
-import org.voidlang.llvm.element.Value;
+import org.voidlang.llvm.element.IRValue;
 
 /**
  * Represents a node that holds the information of a compiling error
@@ -19,10 +19,10 @@ public class Error extends Node {
 
     /**
      * Generate an LLVM instruction for this node
-     * @return node ir code wrapper
+     * @param generator LLVM instruction generation context
      */
     @Override
-    public Value generate(Builder builder) {
-        throw new IllegalStateException("Cannot generate IR code for " + Error.class);
+    public IRValue generate(Generator generator) {
+        return null;
     }
 }

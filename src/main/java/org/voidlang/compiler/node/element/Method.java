@@ -1,14 +1,14 @@
 package org.voidlang.compiler.node.element;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.named.MethodParameter;
-import org.voidlang.llvm.element.Builder;
-import org.voidlang.llvm.element.Value;
+import org.voidlang.llvm.element.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -31,12 +31,16 @@ public class Method extends Node {
 
     /**
      * Generate an LLVM instruction for this node
-     *
-     * @param builder instruction builder for the current context
-     * @return node ir code wrapper
+     * @param generator LLVM instruction generation context
      */
     @Override
-    public Value generate(Builder builder) {
-        return null;
+    public IRValue generate(Generator generator) {
+        IRContext context = generator.getContext();
+        IRModule module = generator.getModule();
+
+        IRType returnType = getReturnType().generateType(context);
+        IRFunctionType functionType = IRFunctionType.create(returnType, new ArrayList<>());
+
+        return IRFunction.create(module, name, functionType);
     }
 }

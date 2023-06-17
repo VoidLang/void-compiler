@@ -39,6 +39,16 @@ public class QualifiedName {
     }
 
     /**
+     * Get the primitive value of this qualified name.
+     * @return primitive token value
+     */
+    public String getPrimitive() {
+        if (!isPrimitive())
+            throw new IllegalStateException("QualifiedName is not primitive: " + types);
+        return types.get(0).getValue();
+    }
+
+    /**
      * Indicate, whether this fully qualified name is a "let" keyword.
      * @return true if this is a "let" keyword
      */

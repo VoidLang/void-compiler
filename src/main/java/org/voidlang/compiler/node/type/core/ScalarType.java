@@ -1,13 +1,12 @@
 package org.voidlang.compiler.node.type.core;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.generic.GenericArgumentList;
-import org.voidlang.llvm.element.Builder;
-import org.voidlang.llvm.element.Value;
+import org.voidlang.llvm.element.IRContext;
+import org.voidlang.llvm.element.IRType;
 
 /**
  * Represents a type use in the Void syntax that has a type token, generic arguments and array dimensions.
@@ -63,12 +62,21 @@ public class ScalarType extends Type {
     }
 
     /**
-     * Generate an LLVM instruction for this node
-     * @param builder instruction builder for the current context
-     * @return node ir code wrapper
+     * Generate an LLVM type for this type wrapper
+     * @param context LLVM module context
+     * @return type ir code wrapper
      */
     @Override
-    public Value generate(Builder builder) {
-        return null;
+    public IRType generateType(IRContext context) {
+        if (!name.isPrimitive())
+            return null;
+        return switch (name.getPrimitive()) {
+            case "bool" -> IRType.int1(context);
+            case "byte" -> IRType.int8(context);
+            case "short" -> IRType.int16(context);
+            case "int" -> IRType.int32(context);
+            case "long" -> IRType.int64(context);
+            default -> null;
+        };
     }
 }
