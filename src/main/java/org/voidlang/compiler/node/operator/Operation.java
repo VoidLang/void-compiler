@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRValue;
 
 /**
@@ -55,6 +56,10 @@ public class Operation extends Node {
      */
     @Override
     public IRValue generate(Generator generator) {
-        return null;
+        IRBuilder builder = generator.getBuilder();
+        return switch (operator) {
+            case ADD -> builder.add(left.generate(generator), right.generate(generator), "add_result");
+            default -> null;
+        };
     }
 }

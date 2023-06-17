@@ -21,6 +21,8 @@ public class Method extends Node {
 
     private final List<Node> body;
 
+    private IRFunction function;
+
     public Method(Type returnType, String name, List<MethodParameter> parameters, List<Node> body) {
         super(NodeType.METHOD);
         this.returnType = returnType;
@@ -38,10 +40,26 @@ public class Method extends Node {
         // extract the context from the generator
         IRContext context = generator.getContext();
         IRModule module = generator.getModule();
+        IRBuilder builder = generator.getBuilder();
+
         // create the signature of the LLVM function
         IRType returnType = getReturnType().generateType(context);
         IRFunctionType functionType = IRFunctionType.create(returnType, new ArrayList<>());
-        // create hte LLVM function for the target context
-        return IRFunction.create(module, name, functionType);
+        // create the LLVM function for the target context
+        function = IRFunction.create(module, name, functionType);
+
+        // create an entry block for the function
+        IRBlock block = IRBlock.create(context, function, "entry");
+        builder.positionAtEnd(block);
+
+        // generate the LLVM instructions for the body of the function
+        for (Node instruction : body)
+            instruction.generate(generator);
+
+        return function;
+    }
+
+    public IRFunction getFunction() {
+        return function;
     }
 }

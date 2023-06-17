@@ -4,6 +4,7 @@ import dev.inventex.octa.console.ConsoleFormat;
 import lombok.SneakyThrows;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
+import org.bytedeco.llvm.LLVM.LLVMMemoryBufferRef;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.Parser;
@@ -16,6 +17,7 @@ import org.voidlang.llvm.element.*;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +66,9 @@ public class ParserTest {
             return;
         }
 
-        module.dump();
+        System.out.println(ConsoleFormat.RED + "           " + ConsoleFormat.BOLD + "LLVM BITCODE");
+        System.out.println(ConsoleFormat.DEFAULT);
+        System.out.println(module.print());
 
         IRExecutionEngine engine = IRExecutionEngine.create();
         MMCJITCompilerOptions options = MMCJITCompilerOptions.create();

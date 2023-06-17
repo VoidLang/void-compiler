@@ -5,6 +5,7 @@ import dev.inventex.octa.data.primitive.Tuple;
 import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
+import org.voidlang.compiler.node.control.Return;
 import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.node.info.PackageImport;
 import org.voidlang.compiler.node.info.PackageSet;
@@ -115,7 +116,7 @@ public class Parser {
             return nextMethod();
 
         // handle unexpected token
-        System.out.println("Error (Next) " + peek());
+        System.out.println(ConsoleFormat.RED + "Error (Next) " + peek());
         return new Error();
     }
 
@@ -188,7 +189,7 @@ public class Parser {
             return nextTypeDeclaration();
         // handle unexpected token
         Token error = peek();
-        System.out.println("Error (Type/Method) " + error);
+        System.out.println(ConsoleFormat.RED + "Error (Type/Method) " + error);
         return new Error();
     }
 
@@ -224,7 +225,7 @@ public class Parser {
 
         // TODO generic type implementation (where T implements MyType)
 
-        System.out.println("Error (Type)");
+        System.out.println(ConsoleFormat.RED + "Error (Type)");
         return new Error();
     }
 
@@ -284,7 +285,7 @@ public class Parser {
     private Type nextLambdaType(Type returnType) {
         // skip the '|' symbol
         get(TokenType.OPERATOR, "|");
-        // parse the parameter list of hte lambda
+        // parse the parameter list of the lambda
         List<LambdaParameter> parameters = new ArrayList<>();
         while (!peek().is(TokenType.OPERATOR, "|")) {
             // parse the next lambda parameter type
@@ -746,8 +747,36 @@ public class Parser {
         else if (peek().isLiteral())
             return nextLiteral();
 
-        System.out.println("Error (Expression) " + peek());
+        // handle return statement
+        else if (peek().is(TokenType.EXPRESSION, "return"))
+            return nextReturnStatement();
+
+        System.out.println(ConsoleFormat.RED + "Error (Expression) " + peek());
         return new Error();
+    }
+
+    /**
+     * Parse the next value return statement declaration.
+     * @return new return statement
+     */
+    private Node nextReturnStatement() {
+        // skip the "return" keyword
+        get(TokenType.EXPRESSION, "return");
+
+        // check if the return statement has no value to return
+        if (peek().is(TokenType.SEMICOLON)) {
+            get();
+            return new Return(null);
+        }
+
+        // parse the value to be retured
+        Node value = nextExpression();
+
+        // handle the semicolon after the return statement
+        if (peek().is(TokenType.SEMICOLON))
+            get();
+
+        return new Return(value);
     }
 
     /**
@@ -808,7 +837,7 @@ public class Parser {
 
         // TODO handle close, comma, stop, end
 
-        System.out.println("Error (Literal) " + peek());
+        System.out.println(ConsoleFormat.RED + "Error (Literal) " + peek());
         return new Error();
     }
 
