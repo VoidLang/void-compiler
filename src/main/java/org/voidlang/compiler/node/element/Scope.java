@@ -1,20 +1,15 @@
-package org.voidlang.compiler.node.value;
+package org.voidlang.compiler.node.element;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
-import org.voidlang.compiler.node.NodeInfo;
-import org.voidlang.compiler.node.NodeType;
 import org.voidlang.llvm.element.IRValue;
 
 import java.util.List;
 
 @RequiredArgsConstructor
-@Getter
-@NodeInfo(type = NodeType.TUPLE)
-public class Tuple extends Node {
-    private final List<Node> members;
+public abstract class Scope extends Node {
+    private final List<Node> body;
 
     /**
      * Generate an LLVM instruction for this node

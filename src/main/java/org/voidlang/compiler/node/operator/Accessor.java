@@ -1,20 +1,19 @@
 package org.voidlang.compiler.node.operator;
 
 import lombok.Getter;
-import org.voidlang.compiler.Instruction;
+import lombok.RequiredArgsConstructor;
 import org.voidlang.compiler.node.Generator;
+import org.voidlang.compiler.node.Node;
+import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.llvm.element.IRValue;
 
+@RequiredArgsConstructor
 @Getter
-public class Accessor extends Instruction {
+@NodeInfo(type = NodeType.ACCESSOR)
+public class Accessor extends Node {
     private final QualifiedName name;
-
-    public Accessor(QualifiedName name) {
-        super(NodeType.ACCESSOR);
-        this.name = name;
-    }
 
     /**
      * Generate an LLVM instruction for this node

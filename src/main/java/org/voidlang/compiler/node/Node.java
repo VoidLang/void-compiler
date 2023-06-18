@@ -1,6 +1,5 @@
 package org.voidlang.compiler.node;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
@@ -12,7 +11,6 @@ import org.voidlang.llvm.element.IRValue;
  * The node hierarchy is then transformed to executable bytecode.
  */
 @Getter
-@AllArgsConstructor
 public abstract class Node {
     protected static final Prettier prettier = new Prettier();
 
@@ -20,6 +18,13 @@ public abstract class Node {
      * The type of the node.
      */
     private final NodeType nodeType;
+
+    public Node() {
+        NodeInfo info = getClass().getAnnotation(NodeInfo.class);
+        if (info == null)
+            throw new IllegalStateException(getClass().getSimpleName() + " does not have @NodeInfo");
+        nodeType = info.type();
+    }
 
     /**
      * Indicate, whether this node has the given type.

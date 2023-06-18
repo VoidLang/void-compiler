@@ -1,17 +1,16 @@
 package org.voidlang.compiler.node.value;
 
+import lombok.RequiredArgsConstructor;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
+import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.llvm.element.IRValue;
 
+@RequiredArgsConstructor
+@NodeInfo(type = NodeType.GROUP)
 public class Group extends Node {
     private final Node value;
-
-    public Group(Node value) {
-        super(NodeType.GROUP);
-        this.value = value;
-    }
 
     /**
      * Generate an LLVM instruction for this node

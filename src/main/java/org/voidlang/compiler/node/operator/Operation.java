@@ -1,9 +1,12 @@
 package org.voidlang.compiler.node.operator;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
+import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRValue;
@@ -19,8 +22,10 @@ import org.voidlang.llvm.element.IRValue;
  * The previous code will resolve to {@code (1 + 2) * 3}, according to the tree parsing.
  * However, the transformer will convert this operation to {@code 1 + (2 * 3)}.
  */
+@AllArgsConstructor
 @Getter
 @Setter
+@NodeInfo(type = NodeType.OPERATION)
 public class Operation extends Node {
     /**
      * The left operand target of the operation.
@@ -36,19 +41,6 @@ public class Operation extends Node {
      * The right operand target of the operation.
      */
     private Node right;
-
-    /**
-     * Initialize the operation.
-     * @param left left operand
-     * @param operator target operator
-     * @param right right operand
-     */
-    public Operation(Node left, Operator operator, Node right) {
-        super(NodeType.OPERATION);
-        this.left = left;
-        this.operator = operator;
-        this.right = right;
-    }
 
     /**
      * Generate an LLVM instruction for this node

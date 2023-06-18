@@ -909,6 +909,26 @@ public class Parser {
         else if (peek().is(TokenType.CLOSE))
             return value;
 
+        // handle argument list or array fill
+        // foo(123, 450.7)
+        //        ^ the comma indicates, that the expression has been terminated
+        else if (peek().is(TokenType.COMMA))
+            return value;
+
+        // handle index closing or array end
+        // foo[10] = 404
+        //       ^ the closing square bracket indicates, that the expression has been terminated
+        else if (peek().is(TokenType.STOP))
+            return value;
+
+        // handle initializator end
+        // new Pair { key: "value" }
+        //                         ^ the closing bracket indicates, that the initializator has been terminated
+        else if (peek().is(TokenType.END))
+            return value;
+
+        // TODO handle indexing
+
         System.out.println(ConsoleFormat.RED + "Error (Literal) " + peek());
         return new Error();
     }

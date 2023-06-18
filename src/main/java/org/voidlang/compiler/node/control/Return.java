@@ -1,21 +1,19 @@
 package org.voidlang.compiler.node.control;
 
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Nullable;
-import org.voidlang.compiler.Instruction;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
+import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRValue;
 
-public class Return extends Instruction {
+@RequiredArgsConstructor
+@NodeInfo(type = NodeType.RETURN)
+public class Return extends Node {
     @Nullable
     private final Node value;
-
-    public Return(@Nullable Node value) {
-        super(NodeType.RETURN);
-        this.value = value;
-    }
 
     /**
      * Generate an LLVM instruction for this node
