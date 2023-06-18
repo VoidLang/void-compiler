@@ -24,6 +24,7 @@ public enum NodeType {
     LOCAL_DECLARE_DESTRUCTURE_STRUCT,
     LOCAL_ASSIGN,
     VALUE,
+    ACCESSOR,
     NEW,
     INITIALIZATOR,
     OPERATION,

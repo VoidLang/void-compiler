@@ -1,7 +1,6 @@
 package org.voidlang.compiler.node;
 
 import dev.inventex.octa.console.ConsoleFormat;
-import dev.inventex.octa.data.primitive.Tuple;
 import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
@@ -13,9 +12,12 @@ import org.voidlang.compiler.node.local.LocalAssign;
 import org.voidlang.compiler.node.local.LocalDeclare;
 import org.voidlang.compiler.node.local.LocalDeclareAssign;
 import org.voidlang.compiler.node.local.LocalDeclareDestructureTuple;
+import org.voidlang.compiler.node.method.MethodCall;
+import org.voidlang.compiler.node.operator.Accessor;
 import org.voidlang.compiler.node.operator.Operation;
 import org.voidlang.compiler.node.operator.Operator;
-import org.voidlang.compiler.node.operator.Value;
+import org.voidlang.compiler.node.value.Group;
+import org.voidlang.compiler.node.value.Value;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.array.Dimension;
 import org.voidlang.compiler.node.type.core.LambdaType;
@@ -39,6 +41,7 @@ import org.voidlang.compiler.node.type.named.NamedTypeGroup;
 import org.voidlang.compiler.node.type.parameter.LambdaParameter;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
+import org.voidlang.compiler.node.value.Tuple;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -47,20 +50,6 @@ import java.util.stream.Collectors;
  * Represents a parser that transforms raw tokens to instruction nodes.
  */
 public class Parser {
-    /**
-     * The map of the operation's precedences and associativity.
-     */
-    private final Map<String, Tuple<Integer, Integer>> operationPriority = new HashMap<>();
-    {
-        operationPriority.put("+", new Tuple<>(1, 0));
-        operationPriority.put("-", new Tuple<>(1, 0));
-        operationPriority.put("*", new Tuple<>(2, 0));
-        operationPriority.put("/", new Tuple<>(2, 0));
-        operationPriority.put("%", new Tuple<>(2, 0));
-        operationPriority.put("^", new Tuple<>(3, 1));
-        operationPriority.put(".", new Tuple<>(4, 0));
-    }
-
     /**
      * The target package of the node parser.
      */
@@ -741,11 +730,21 @@ public class Parser {
                 && !at(cursor + 2).is(TokenType.OPERATOR, "="))
             return nextLocalAssignation();
 
+        // handle node grouping
+        // let a = (b + c) + d
+        //         ^ the open parenthesis indicate, that the following nodes should be placed in a node group
+        else if (peek().is(TokenType.OPEN))
+            return nextGroupOrTuple(ignoreJoin);
+
         // handle literal constant value
         // let name = "John Doe"
         //            ^^^^^^^^^^ the literal token indicates, that a value is expected
         else if (peek().isLiteral())
             return nextLiteral();
+        
+        // handle qualified name or method call
+        else if (peek().is(TokenType.IDENTIFIER))
+            return nextQualifiedNameOrCall();
 
         // handle return statement
         else if (peek().is(TokenType.EXPRESSION, "return"))
@@ -753,6 +752,73 @@ public class Parser {
 
         System.out.println(ConsoleFormat.RED + "Error (Expression) " + peek());
         return new Error();
+    }
+
+    /**
+     * Parse the next group or tuple declaration.
+     * @return new group or tuple
+     */
+    private Node nextGroupOrTuple(boolean ignoreJoin) {
+        // let a = (b + c) + d
+        //         ^ the open parenthesis indicate, that the following nodes should be placed in a node group
+        // skip the '(' sign
+        get(TokenType.OPEN);
+
+        // parse the expression inside the group
+        // let res = (1 + 2 + 3) / 4
+        //            ^^^^^^^^^ the nodes between parenthesis are the content of the node group
+        Node value = nextExpression();
+
+        // handle tuple declaration
+        // let tup = (1, 2, 3)
+        //             ^ the comma after the first member indicates, that this is a tuple declaration
+        if (peek().is(TokenType.COMMA)) {
+            // register the first member of the tuple
+            List<Node> members = new ArrayList<>();
+            members.add(value);
+            // skip the ',' symbol
+            get();
+
+            // parse the remaining members of the tuple
+            while (!peek().is(TokenType.CLOSE)) {
+                // parse the next member of the tuple
+                members.add(nextExpression());
+
+                // check if there are more members to be parsed
+                if (peek().is(TokenType.COMMA))
+                    get();
+                // no more elements to be parsed, exit loop
+                else
+                    break;
+            }
+
+            // handle tuple ending
+            get(TokenType.CLOSE);
+
+            return new Tuple(members);
+        }
+
+        // handle the group closing
+        // let test = (7 - 1)
+        //                  ^ the closing parenthesis indicate, that the declaration of node group has been ended
+        get(TokenType.CLOSE);
+
+        // warp the value around a group node, therefore the operation tree transformer
+        // will correctly parse precedence
+        Group group = new Group(value);
+
+        // handle operation after a node group
+        // (2 + 3) + 7
+        //         ^ the operator indicates, that the method call should be grouped with the expression afterward
+        if (peek().is(TokenType.OPERATOR)) {
+            // parse the operator of the operation
+            Operator operator = nextOperator();
+            if (!isComplexOperator(operator.getValue()))
+                throw new IllegalStateException("Expected complex operator, but got " + operator);
+            return makeOperator(group, operator, nextExpression());
+        }
+
+        return group;
     }
 
     /**
@@ -769,7 +835,7 @@ public class Parser {
             return new Return(null);
         }
 
-        // parse the value to be retured
+        // parse the value to be returned
         Node value = nextExpression();
 
         // handle the semicolon after the return statement
@@ -837,8 +903,79 @@ public class Parser {
 
         // TODO handle close, comma, stop, end
 
+        // handle group closing
+        // let val = (1 + 2) / 3
+        //                 ^ the close parenthesis indicates, that we are not expecting any value after the current token
+        else if (peek().is(TokenType.CLOSE))
+            return value;
+
         System.out.println(ConsoleFormat.RED + "Error (Literal) " + peek());
         return new Error();
+    }
+
+    /**
+     * Parse the next qualified name or method call declaration.
+     * @return new qualified name or method call
+     */
+    private Node nextQualifiedNameOrCall() {
+        // parse the qualified name
+        QualifiedName name = nextQualifiedName();
+
+        Node value = new Accessor(name);
+
+        // handle method call
+        // println("Hello, World!")
+        //        ^ the open parenthesis token after an identifier indicates, that a method call is expected
+        if (peek().is(TokenType.OPEN)) {
+            // parse the arguments of the method call
+            List<Node> arguments = parseArgumentList();
+            value = new MethodCall(name, arguments);
+        }
+
+        // handle single value expression, in which case the local variable is initialized with a single value
+        // let myVar = foo;
+        //                ^ the (auto-inserted) semicolon indicates, initialized with a single value
+        if (peek().is(TokenType.SEMICOLON))
+            return value;
+
+        // handle operation between two expressions
+        // let var = foo +
+        //               ^ the operator after an identifier indicates, that there are more expressions to be parsed
+        //                 the two operands are grouped together by an Operation node
+        if (peek().is(TokenType.OPERATOR)) {
+            // parse the operator of the operation
+            Operator operator = nextOperator();
+            if (!isComplexOperator(operator.getValue()))
+                throw new IllegalStateException("Expected complex operator, but got " + operator);
+            return makeOperator(value, operator, nextExpression());
+        }
+
+        System.out.println(ConsoleFormat.RED + "Error (Qualified Name / Call) " + peek());
+        return new Error();
+    }
+
+    private List<Node> parseArgumentList() {
+        // skip the '(' symbol
+        get(TokenType.OPEN);
+        // handle call arguments
+        // foo(123)
+        //     ^^^ the tokens in between parenthesis are the arguments
+        List<Node> arguments = new ArrayList<>();
+        while (!peek().is(TokenType.CLOSE)) {
+            // parse the next call argument
+            arguments.add(nextExpression());
+            // check if there are more arguments to be parsed
+            if (peek().is(TokenType.COMMA))
+                get();
+            // argument list declaration ended, exit loop
+            else
+                break;
+        }
+        // handle argument list ending
+        // baz("John Doe")
+        //               ^ the close parenthesis indicates, that the argument list has been ended
+        get(TokenType.CLOSE);
+        return arguments;
     }
 
     private Node makeOperator(Node left, Operator operator, Node right) {

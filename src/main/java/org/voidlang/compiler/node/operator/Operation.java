@@ -57,8 +57,12 @@ public class Operation extends Node {
     @Override
     public IRValue generate(Generator generator) {
         IRBuilder builder = generator.getBuilder();
+        IRValue left = getLeft().generate(generator);
+        IRValue right = getRight().generate(generator);
         return switch (operator) {
-            case ADD -> builder.add(left.generate(generator), right.generate(generator), "add_result");
+            case ADD -> builder.add(left, right);
+            case SUBTRACT -> builder.subtract(left, right);
+            case MULTIPLY -> builder.multiply(left, right);
             default -> null;
         };
     }

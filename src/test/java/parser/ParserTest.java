@@ -4,7 +4,6 @@ import dev.inventex.octa.console.ConsoleFormat;
 import lombok.SneakyThrows;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
-import org.bytedeco.llvm.LLVM.LLVMMemoryBufferRef;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.Parser;
@@ -17,12 +16,10 @@ import org.voidlang.llvm.element.*;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.bytedeco.llvm.global.LLVM.*;
-import static org.bytedeco.llvm.global.LLVM.LLVMInitializeNativeTarget;
 
 public class ParserTest {
     public static void main(String[] args) {
@@ -35,16 +32,20 @@ public class ParserTest {
         System.out.println(ConsoleFormat.RED + "           " + ConsoleFormat.BOLD + "PARSED NODES");
         System.out.println(ConsoleFormat.DEFAULT);
 
+        Generator generator = initLLVM();
+
         Node node;
         do {
             node = parser.next();
 
             if (node instanceof Method method)
-                handleMethod(method);
+                method.generate(generator);
         } while (node.hasNext());
+
+        debugBitcode(generator);
     }
 
-    private static void handleMethod(Method method) {
+    private static Generator initLLVM() {
         LLVMInitializeCore(LLVMGetGlobalPassRegistry());
         LLVMLinkInMCJIT();
         LLVMInitializeNativeAsmPrinter();
@@ -55,9 +56,11 @@ public class ParserTest {
         IRModule module = IRModule.create(context, "test_module");
         IRBuilder builder = IRBuilder.create(context);
 
-        Generator generator = new Generator(context, module, builder);
+        return new Generator(context, module, builder);
+    }
 
-        method.generate(generator);
+    private static void debugBitcode(Generator generator) {
+        IRModule module = generator.getModule();
 
         BytePointer error = new BytePointer((Pointer) null);
         if (!module.verify(IRModule.VerifierFailureAction.PRINT_MESSAGE, error)) {

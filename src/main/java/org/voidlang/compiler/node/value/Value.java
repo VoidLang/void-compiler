@@ -1,4 +1,4 @@
-package org.voidlang.compiler.node.operator;
+package org.voidlang.compiler.node.value;
 
 import lombok.Getter;
 import lombok.Setter;

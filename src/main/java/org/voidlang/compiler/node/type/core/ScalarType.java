@@ -71,6 +71,7 @@ public class ScalarType extends Type {
         if (!name.isPrimitive())
             return null;
         return switch (name.getPrimitive()) {
+            case "void" -> IRType.voidType(context);
             case "bool" -> IRType.int1(context);
             case "byte" -> IRType.int8(context);
             case "short" -> IRType.int16(context);
