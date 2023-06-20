@@ -16,6 +16,7 @@ import org.voidlang.compiler.node.method.MethodCall;
 import org.voidlang.compiler.node.operator.Accessor;
 import org.voidlang.compiler.node.operator.Operation;
 import org.voidlang.compiler.node.operator.Operator;
+import org.voidlang.compiler.node.type.Class;
 import org.voidlang.compiler.node.value.Group;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.compiler.node.type.array.Array;
@@ -202,11 +203,11 @@ public class Parser {
         //                       ^^^^^^ the generic names are placed in between angle brackets
         // class Collection<T = Document> {
         //                    ^^^^^^^^^^^ generic types may have a default value
-        GenericTypeList genericTypes = nextGenericTypes();
+        GenericTypeList generics = nextGenericTypes();
 
-        System.out.println(kind + " " + name);
-        if (genericTypes.isExplicit()) {
-            String debug = genericTypes.getGenerics().stream()
+        System.out.print(kind + " " + name);
+        if (generics.isExplicit()) {
+            String debug = generics.getGenerics().stream()
                 .map(GenericType::toString)
                 .collect(Collectors.joining(", "));
             System.out.print("<" + String.join(", ", debug) + ">");
@@ -214,11 +215,86 @@ public class Parser {
 
         // TODO generic type implementation (where T implements MyType)
 
-        System.out.println(ConsoleFormat.RED + "Error (Type)");
+        // handle type-specific body parsing
+        return switch (kind) {
+            case "class" -> nextClass(name, generics);
+            case "struct" -> nextStruct(name, generics);
+            case "enum" -> nextEnum(name, generics);
+            case "union" -> nextUnion(name, generics);
+            case "interface" -> nextInterface(name, generics);
+            default -> {
+                System.out.println(ConsoleFormat.RED + "Error (Type)");
+                yield new Error();
+            }
+        };
+    }
+
+    /**
+     * Parse the next class type declaration.
+     * @param name type name
+     * @param generics generic type list
+     * @return new declared class
+     */
+    private Node nextClass(String name, GenericTypeList generics) {
+        // handle type body begin
+        get(TokenType.BEGIN);
+
+        System.out.println(" {");
+
+        // parse the body of the class
+        Node.prettier.enterScope();
+        List<Node> body = new ArrayList<>();
+        while (!peek().is(TokenType.END))
+            body.add(nextContent());
+        Node.prettier.exitScope();
+
+        // handle type body end
+        get(TokenType.END);
+
+        System.out.println("}");
+
+        // handle auto-inserted semicolon at the end or the body
+        if (peek().is(TokenType.SEMICOLON, "auto"))
+            get();
+
+        return new Class(name, generics, body);
+    }
+
+    /**
+     * Parse the next content of a type, which might be a nested type, a method or a field.
+     * @return new declared type, method or field
+     */
+    private Node nextContent() {
+        // handle nested type declaration
+        if (peek().is(TokenType.EXPRESSION))
+            return nextTypeDeclaration();
+
+        // handle scalar type method or field declaration
+        else if (peek().is(TokenType.TYPE, TokenType.IDENTIFIER) && at(cursor + 1).is(TokenType.IDENTIFIER)) {
+            if (at(cursor + 2).is(TokenType.OPEN))
+                return nextMethod();
+            return nextField();
+        }
+
+        System.err.println(ConsoleFormat.RED + "Error (Content) " + peek());
         return new Error();
     }
 
+    private Node nextStruct(String name, GenericTypeList generics) {
+        return null;
+    }
 
+    private Node nextEnum(String name, GenericTypeList generics) {
+        return null;
+    }
+
+    private Node nextUnion(String name, GenericTypeList generics) {
+        return null;
+    }
+
+    private Node nextInterface(String name, GenericTypeList generics) {
+        return null;
+    }
 
     private NamedType nextNamedType(boolean expectLambda) {
         return nextNamedTypeInternal(false, expectLambda);
@@ -641,6 +717,7 @@ public class Parser {
         // skip the '(' symbol as it is already handled
         get(TokenType.OPEN);
 
+        Node.prettier.indent();
         System.out.print(type + " " + ConsoleFormat.BLUE + name + genericTypes + ConsoleFormat.CYAN + '(');
 
         // parse the method parameters
@@ -699,6 +776,7 @@ public class Parser {
         }
         prettier.exitScope();
 
+        Node.prettier.indent();
         System.out.println(ConsoleFormat.DARK_GRAY + "}");
         System.out.println();
 
@@ -710,6 +788,11 @@ public class Parser {
             get();
 
         return new Method(type, name, parameters, body);
+    }
+
+    private Node nextField() {
+        System.err.println(ConsoleFormat.RED + "Error (Field) " + peek());
+        return new Error();
     }
 
     private Node nextExpression() {

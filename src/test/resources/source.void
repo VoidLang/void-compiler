@@ -1,8 +1,12 @@
-int test() {
-    return (1 + 2) * 3
-}
+package "main"
 
-void main() {
-    let foo = bar
-    return
+class Program {
+    int test() {
+        return (1 + 2) * 3
+    }
+
+    void main() {
+        let foo = bar
+        return
+    }
 }

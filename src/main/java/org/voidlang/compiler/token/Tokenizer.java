@@ -468,15 +468,10 @@ public class Tokenizer {
      * @return true if the character is a whitespace
      */
     private boolean isWhitespace(char c) {
-        switch (c) {
-            case ' ':
-            case '\t':
-            case '\r':
-            case '\n':
-                return true;
-            default:
-                return false;
-        }
+        return switch (c) {
+            case ' ', '\t', '\r', '\n' -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -539,17 +534,10 @@ public class Tokenizer {
      * @return true if the character is a number suffix
      */
     private boolean isNumberSuffix(char c) {
-        switch (c) {
-            case 'B':
-            case 'S':
-            case 'I':
-            case 'L':
-            case 'F':
-            case 'D':
-                return true;
-            default:
-                return false;
-        }
+        return switch (c) {
+            case 'B', 'S', 'I', 'L', 'F', 'D' -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -558,17 +546,10 @@ public class Tokenizer {
      * @return true if the character is a hexadecimal char
      */
     private boolean isHexValue(char c) {
-        switch (c) {
-            case 'A':
-            case 'B':
-            case 'C':
-            case 'D':
-            case 'E':
-            case 'F':
-                return true;
-            default:
-                return isNumber(c);
-        }
+        return switch (c) {
+            case 'A', 'B', 'C', 'D', 'E', 'F' -> true;
+            default -> isNumber(c);
+        };
     }
 
     /**
@@ -577,13 +558,10 @@ public class Tokenizer {
      * @return true if the character is a binary char
      */
     private boolean isBinary(char c) {
-        switch (c) {
-            case '0':
-            case '1':
-                return true;
-            default:
-                return false;
-        }
+        return switch (c) {
+            case '0', '1' -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -592,13 +570,10 @@ public class Tokenizer {
      * @return true if the character is a number content
      */
     private boolean isNumberContent(char c) {
-        switch (c) {
-            case '.':
-            case '_':
-                return true;
-            default:
-                return isHexValue(c) || isNumberSuffix(c);
-        }
+        return switch (c) {
+            case '.', '_' -> true;
+            default -> isHexValue(c) || isNumberSuffix(c);
+        };
     }
 
     /**
@@ -607,27 +582,10 @@ public class Tokenizer {
      * @return true if the character is an operator
      */
     private boolean isOperator(char c) {
-        switch (c) {
-            case '.':
-            case '=':
-            case '+':
-            case '-':
-            case '*':
-            case '/':
-            case '<':
-            case '>':
-            case '?':
-            case '!':
-            case '^':
-            case '&':
-            case '~':
-            case '$':
-            case '|':
-            case '%':
-                return true;
-            default:
-                return false;
-        }
+        return switch (c) {
+            case '.', '=', '+', '-', '*', '/', '<', '>', '?', '!', '^', '&', '~', '$', '|', '%' -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -636,20 +594,10 @@ public class Tokenizer {
      * @return true if the character is a separator
      */
     private boolean isSeparator(char c) {
-        switch (c) {
-            case ';':
-            case ':':
-            case ',':
-            case '{':
-            case '}':
-            case '(':
-            case ')':
-            case '[':
-            case ']':
-                return true;
-            default:
-                return false;
-        }
+        return switch (c) {
+            case ';', ':', ',', '{', '}', '(', ')', '[', ']' -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -658,36 +606,12 @@ public class Tokenizer {
      * @return true if the token is an expression
      */
     private boolean isExpression(String token) {
-        switch (token) {
-            case "new":
-            case "class":
-            case "enum":
-            case "struct":
-            case "interface":
-            case "for":
-            case "while":
-            case "repeat":
-            case "do":
-            case "if":
-            case "else":
-            case "switch":
-            case "case":
-            case "loop":
-            case "continue":
-            case "break":
-            case "return":
-            case "await":
-            case "goto":
-            case "is":
-            case "in":
-            case "as":
-            case "where":
-            case "defer":
-            case "assert":
-                return true;
-            default:
-                return false;
-        }
+        return switch (token) {
+            case "new", "class", "enum", "union", "struct", "interface", "for", "while", "repeat", "do",
+                "if", "else", "switch", "case", "loop", "continue", "break", "return", "await", "goto",
+                "is", "in", "as", "where", "defer", "assert" -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -696,28 +620,11 @@ public class Tokenizer {
      * @return true if the token is a type
      */
     private boolean isType(String token) {
-        switch (token) {
-            case "let":
-            case "byte":
-            case "ubyte":
-            case "short":
-            case "ushort":
-            case "int":
-            case "uint":
-            case "double":
-            case "udouble":
-            case "float":
-            case "ufloat":
-            case "long":
-            case "ulong":
-            case "void":
-            case "bool":
-            case "char":
-            case "string":
-                return true;
-            default:
-                return false;
-        }
+        return switch (token) {
+            case "let", "byte", "ubyte", "short", "ushort", "int", "uint", "double", "udouble",
+                "float", "ufloat", "long", "ulong", "void", "bool", "char", "string" -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -726,26 +633,11 @@ public class Tokenizer {
      * @return true if the token is a modifier
      */
     private boolean isModifier(String token) {
-        switch (token) {
-            case "public":
-            case "protected":
-            case "private":
-            case "static":
-            case "final":
-            case "native":
-            case "extern":
-            case "transient":
-            case "synchronized":
-            case "async":
-            case "const":
-            case "unsafe":
-            case "weak":
-            case "strong":
-            case "default":
-                return true;
-            default:
-                return false;
-        }
+        return switch (token) {
+            case "public", "protected", "private", "static", "final", "native", "extern", "transient",
+                "synchronized", "async", "const", "unsafe", "weak", "strong", "default" -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -754,13 +646,10 @@ public class Tokenizer {
      * @return true if the token is a boolean
      */
     private boolean isBoolean(String token) {
-        switch (token) {
-            case "true":
-            case "false":
-                return true;
-            default:
-                return false;
-        }
+        return switch (token) {
+            case "true", "false" -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -769,13 +658,10 @@ public class Tokenizer {
      * @return true if the token is an information
      */
     private boolean isInfo(String token) {
-        switch (token) {
-            case "package":
-            case "import":
-                return true;
-            default:
-                return false;
-        }
+        return switch (token) {
+            case "package", "import" -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -784,13 +670,10 @@ public class Tokenizer {
      * @return true if the token is a null
      */
     private boolean isNull(String token) {
-        switch (token) {
-            case "null":
-            case "nullptr":
-                return true;
-            default:
-                return false;
-        }
+        return switch (token) {
+            case "null", "nullptr" -> true;
+            default -> false;
+        };
     }
 
     /**
