@@ -1,20 +1,24 @@
-package org.voidlang.compiler.node.common;
+package org.voidlang.compiler.node.element;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.llvm.element.IRValue;
 
-/**
- * Represents a node that holds the information of a compiling error
- * that occurred whilst parsing tokens to nodes.
- */
-@NodeInfo(type = NodeType.ERROR)
-public class Error extends Node {
-    public Error() {
-        System.exit(-1);
-    }
+import java.util.Map;
+
+@RequiredArgsConstructor
+@Getter
+@NodeInfo(type = NodeType.MULTI_FIELD)
+public class MultiField extends Node {
+    private final Type type;
+
+    private final Map<String, @Nullable Node> values;
 
     /**
      * Generate an LLVM instruction for this node

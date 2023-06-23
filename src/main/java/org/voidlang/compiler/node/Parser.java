@@ -2,10 +2,14 @@ package org.voidlang.compiler.node;
 
 import dev.inventex.octa.console.ConsoleFormat;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.voidlang.compiler.node.common.Empty;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
-import org.voidlang.compiler.node.control.Return;
+import org.voidlang.compiler.node.control.*;
+import org.voidlang.compiler.node.element.Field;
 import org.voidlang.compiler.node.element.Method;
+import org.voidlang.compiler.node.element.MultiField;
 import org.voidlang.compiler.node.info.PackageImport;
 import org.voidlang.compiler.node.info.PackageSet;
 import org.voidlang.compiler.node.local.LocalAssign;
@@ -16,7 +20,7 @@ import org.voidlang.compiler.node.method.MethodCall;
 import org.voidlang.compiler.node.operator.Accessor;
 import org.voidlang.compiler.node.operator.Operation;
 import org.voidlang.compiler.node.operator.Operator;
-import org.voidlang.compiler.node.type.Class;
+import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.value.Group;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.compiler.node.type.array.Array;
@@ -26,7 +30,7 @@ import org.voidlang.compiler.node.type.generic.GenericArgumentList;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
-import org.voidlang.compiler.node.type.core.TypeGroup;
+import org.voidlang.compiler.node.type.core.CompoundType;
 import org.voidlang.compiler.node.type.generic.GenericArgument;
 import org.voidlang.compiler.node.type.generic.GenericType;
 import org.voidlang.compiler.node.type.generic.GenericTypeList;
@@ -121,7 +125,7 @@ public class Parser {
         String name = get(TokenType.STRING).getValue();
         // ensure that the package is ended by a semicolon
         get(TokenType.SEMICOLON);
-        System.out.println("package \"" + name + '"');
+        System.out.println(ConsoleFormat.BLUE + "package " + ConsoleFormat.GREEN + "\"" + name + '"');
         return new PackageSet(name);
     }
 
@@ -205,7 +209,7 @@ public class Parser {
         //                    ^^^^^^^^^^^ generic types may have a default value
         GenericTypeList generics = nextGenericTypes();
 
-        System.out.print(kind + " " + name);
+        System.out.print(ConsoleFormat.YELLOW + kind + " " + ConsoleFormat.BLUE + name);
         if (generics.isExplicit()) {
             String debug = generics.getGenerics().stream()
                 .map(GenericType::toString)
@@ -239,7 +243,7 @@ public class Parser {
         // handle type body begin
         get(TokenType.BEGIN);
 
-        System.out.println(" {");
+        System.out.println(ConsoleFormat.LIGHT_GRAY + " {");
 
         // parse the body of the class
         Node.prettier.enterScope();
@@ -409,7 +413,7 @@ public class Parser {
         return nextScalarType(expectLambda);
     }
 
-    private TypeGroup nextTypeGroup() {
+    private CompoundType nextTypeGroup() {
         List<Type> members = new ArrayList<>();
         // skip the '(' symbol
         get(TokenType.OPEN);
@@ -429,7 +433,7 @@ public class Parser {
         // skip the ')' symbol
         get(TokenType.CLOSE);
 
-        return new TypeGroup(members);
+        return new CompoundType(members);
     }
 
     private Type nextScalarType(boolean expectLambda) {
@@ -778,7 +782,6 @@ public class Parser {
 
         Node.prettier.indent();
         System.out.println(ConsoleFormat.DARK_GRAY + "}");
-        System.out.println();
 
         // handle method body end
         get(TokenType.END);
@@ -791,8 +794,104 @@ public class Parser {
     }
 
     private Node nextField() {
-        System.err.println(ConsoleFormat.RED + "Error (Field) " + peek());
-        return new Error();
+        // parse the type of the field
+        NamedType type = nextNamedType();
+
+        // get the name of the field
+        String name = get(TokenType.IDENTIFIER).getValue();
+
+        // handle field without an explicit default value
+        if (peek().is(TokenType.SEMICOLON)) {
+            get();
+            Node.prettier.indent();
+            System.out.print(type + " " + ConsoleFormat.BLUE + name);
+            System.out.println();
+            return new Field(type, name, null);
+        }
+
+        // handle multi-field declaration
+        else if (peek().is(TokenType.COMMA))
+            return nextMultiField(type, name, null);
+
+        // handle field value assignation
+        get(TokenType.OPERATOR, "=");
+
+        // parse the value of the field
+        Node value = nextExpression();
+
+        // handle multi-field declaration
+        if (peek().is(TokenType.COMMA))
+            return nextMultiField(type, name, value);
+
+        // skip the semicolon after the field declaration
+        get(TokenType.SEMICOLON);
+
+        Node.prettier.indent();
+        System.out.print(type + " " + ConsoleFormat.BLUE + name);
+        System.out.print(ConsoleFormat.CYAN + " = ");
+        Node.prettier.processValue(value);
+
+        return new Field(type, name, value);
+    }
+
+    private Node nextMultiField(Type type, String name, @Nullable Node value) {
+        // skip the ',' symbol
+        get(TokenType.COMMA);
+
+        Node.prettier.indent();
+        System.out.println(type);
+
+        Node.prettier.enterScope();
+        Node.prettier.indent();
+        System.out.print(ConsoleFormat.BLUE + name);
+
+        // create a map for the fields that keep the order they've been declared at
+        Map<String, Node> values = new LinkedHashMap<>();
+        values.put(name, value);
+
+        if (value != null) {
+            System.out.print(ConsoleFormat.CYAN + " = ");
+            Node.prettier.processValue(value);
+        }
+        else
+            System.out.println();
+
+        while (has(cursor)) {
+            // parse the name of the field
+            String fieldName = get(TokenType.IDENTIFIER).getValue();
+
+            Node.prettier.indent();
+            System.out.print(ConsoleFormat.BLUE + fieldName);
+
+            // parse the value of the field
+            Node fieldValue = null;
+            if (peek().is(TokenType.OPERATOR, "=")) {
+                get();
+                fieldValue = nextExpression();
+                System.out.print(ConsoleFormat.CYAN + " = ");
+                Node.prettier.processValue(fieldValue);
+            }
+
+            // register the field
+            // TODO error if the field name is already in the map
+            values.put(fieldName, fieldValue);
+
+            System.out.println();
+
+            // check for more fields
+            if (peek().is(TokenType.COMMA))
+                get();
+
+            // check if the multi-field declaration has been ended
+            else if (peek().is(TokenType.SEMICOLON))
+                break;
+        }
+
+        Node.prettier.exitScope();
+
+        get(TokenType.SEMICOLON);
+
+        return new MultiField(type, values);
     }
 
     private Node nextExpression() {
@@ -833,8 +932,201 @@ public class Parser {
         else if (peek().is(TokenType.EXPRESSION, "return"))
             return nextReturnStatement();
 
+        // handle if statement
+        else if (peek().is(TokenType.EXPRESSION, "if"))
+            return nextIfStatement();
+
+        // handle while statement
+        else if (peek().is(TokenType.EXPRESSION, "while"))
+            return nextWhileStatement();
+
+        // handle do while statement
+        else if (peek().is(TokenType.EXPRESSION, "do"))
+            return nextDoWhileStatement();
+
+        // ignore unexpected auto-inserted semicolon
+        else if (peek().is(TokenType.SEMICOLON, "auto")) {
+            get();
+            return new Empty();
+        }
+
         System.out.println(ConsoleFormat.RED + "Error (Expression) " + peek());
         return new Error();
+    }
+
+    /**
+     * Parse the next while loop statement declaration.
+     * @return new while statement
+     */
+    private Node nextWhileStatement() {
+        // skip the "while" keyword
+        get(TokenType.EXPRESSION, "while");
+
+        // parse the condition of the while statement
+        Node condition = nextCondition();
+
+        // handle while statement without an explicit body
+        // tbh, I'm not quite sure why is this allowed in so many languages, but I'll just support doing it
+        if (peek().is(TokenType.SEMICOLON)) {
+            get();
+            return new While(condition, new ArrayList<>());
+        }
+
+        // parse the body of the while statement
+        List<Node> body = nextStatementBody();
+        return new While(condition, body);
+    }
+
+    /**
+     * Parse the next do-while statement declaration.
+     */
+    private Node nextDoWhileStatement() {
+        // skip the "do" keyword
+        get(TokenType.EXPRESSION, "do");
+
+        // parse the body of the do-while statement
+        List<Node> body = nextStatementBody();
+
+        // skip the "while" keyword
+        get(TokenType.EXPRESSION, "while");
+
+        // parse the condition of the do-while statement
+        Node condition = nextCondition();
+        return new DoWhile(body, condition);
+    }
+
+    /**
+     * Parse the next if statement declaration.
+     * @return new if statement
+     */
+    private Node nextIfStatement() {
+        // skip the "if" keyword
+        get(TokenType.EXPRESSION, "if");
+
+        // parse the statement condition
+        Node condition = nextCondition();
+
+        // handle if statement without an explicit body
+        // tbh, I'm not quite sure why is this allowed in so many languages, but I'll just support doing it
+        if (peek().is(TokenType.SEMICOLON)) {
+            get();
+            return new If(condition, new ArrayList<>());
+        }
+
+        // parse the body of the if statement
+        If statement = new If(condition, nextStatementBody());
+
+        // handle else or else if cases
+        if (peek().is(TokenType.EXPRESSION, "else")) {
+            // handle else if cases
+            if (at(cursor + 1).is(TokenType.EXPRESSION, "if")) {
+                // parse the next else if statements
+                while (peek().is(TokenType.EXPRESSION, "else")
+                        && at(cursor + 1).is(TokenType.EXPRESSION, "if"))
+                    statement.getElseIfs().add((ElseIf) nextElseIfStatement());
+            }
+            // check if an else case still follows
+            // maybe there were else cases before
+            else if (peek().is(TokenType.EXPRESSION, "else"))
+                statement.setElseCase((Else) nextElseStatement());
+        }
+
+        return statement;
+    }
+
+    /**
+     * Parse the next else if statement declaration.
+     * @return new else if statement
+     */
+    private Node nextElseIfStatement() {
+        // skip the "else" keyword
+        get(TokenType.EXPRESSION, "else");
+        // skip the "if" keyword
+        get(TokenType.EXPRESSION, "if");
+
+        // parse the statement condition
+        Node condition = nextCondition();
+
+        // handle else if statement without an explicit body
+        // tbh, I'm not quite sure why is this allowed in so many languages, but I'll just support doing it
+        if (peek().is(TokenType.SEMICOLON)) {
+            get();
+            return new ElseIf(condition, new ArrayList<>());
+        }
+
+        // parse the body of the else if statement
+        List<Node> body = nextStatementBody();
+        return new ElseIf(condition, body);
+    }
+
+    /**
+     * Parse the next else statement declaration.
+     * @return new else statement
+     */
+    Node nextElseStatement() {
+        // skip the "else" keyword
+        get(TokenType.EXPRESSION, "else");
+
+        // parse the body of the else statement
+        List<Node> body = nextStatementBody();
+        return new Else(body);
+    }
+
+    /**
+     * Parse the next block of instructions that belong to a block, such as if, else if, while.
+     * @return new block statement body
+     */
+    private List<Node> nextStatementBody() {
+        // parse the body of the statement
+        List<Node> body = new ArrayList<>();
+
+        // check if multiple instructions should be assigned for the body
+        // <expression> (condition) { /* do something */ }
+        //                   ^ the open curly bracket indicates, that the statement body has multiple instructions inside
+        if (peek().is(TokenType.BEGIN)) {
+            get(TokenType.BEGIN);
+            // parse the while statement instructions
+            while (!peek().is(TokenType.END))
+                body.add(nextExpression());
+            get(TokenType.END);
+        }
+
+        // handle single-instruction statement
+        // <expression> (condition) foo()
+        //                          ^ if there is no open curly bracket after the condition, it means
+        //                            that there is only one instruction for the statement body
+        else /* there is no '{' after the condition */
+            body.add(nextExpression());
+
+        // skip the auto-inserted semicolon after  statement body
+        // TODO might want to ignore manually inserted semicolon as well
+        if (peek().is(TokenType.SEMICOLON, "auto"))
+            get();
+
+        return body;
+    }
+
+    /**
+     * Parse the next condition of a condition block, such as if, else if, while.
+     * @return new conditional node
+     */
+    private Node nextCondition() {
+        // handle the beginning of the condition
+        get(TokenType.OPEN);
+
+        // parse the statement condition
+        // TODO support conditional let, instanceof simplifier, pattern matching
+        Node condition = nextExpression();
+
+        // handle the ending of the condition
+        get(TokenType.CLOSE);
+
+        // handle auto-inserted semicolon after condition
+        if (peek().is(TokenType.SEMICOLON, "auto")) // make sure to only handle auto-inserted semicolons here, as manually inserting
+            get();                                        // one would mean the statement has no statement body
+                                                          // <expression> (condition); outer();
+                                                          //                         ^ statement terminated here
+        return condition;
     }
 
     /**
@@ -1031,9 +1323,15 @@ public class Parser {
         //        ^ the open parenthesis token after an identifier indicates, that a method call is expected
         if (peek().is(TokenType.OPEN)) {
             // parse the arguments of the method call
-            List<Node> arguments = parseArgumentList();
+            List<Node> arguments = nextArgumentList();
             value = new MethodCall(name, arguments);
         }
+
+        // handle group closing
+        // print(foo)
+        //          ^ we don't need to handle this closing tag here, just finish qualified name parsing
+        if (peek().is(TokenType.CLOSE))
+            return value;
 
         // handle single value expression, in which case the local variable is initialized with a single value
         // let myVar = foo;
@@ -1057,7 +1355,7 @@ public class Parser {
         return new Error();
     }
 
-    private List<Node> parseArgumentList() {
+    private List<Node> nextArgumentList() {
         // skip the '(' symbol
         get(TokenType.OPEN);
         // handle call arguments

@@ -6,16 +6,8 @@ import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.llvm.element.IRValue;
 
-/**
- * Represents a node that holds the information of a compiling error
- * that occurred whilst parsing tokens to nodes.
- */
-@NodeInfo(type = NodeType.ERROR)
-public class Error extends Node {
-    public Error() {
-        System.exit(-1);
-    }
-
+@NodeInfo(type = NodeType.EMPTY)
+public class Empty extends Node {
     /**
      * Generate an LLVM instruction for this node
      * @param generator LLVM instruction generation context

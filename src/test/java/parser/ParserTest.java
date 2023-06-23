@@ -73,7 +73,7 @@ public class ParserTest {
         System.out.println(ConsoleFormat.DEFAULT);
         System.out.println(module.print());
 
-        IRExecutionEngine engine = IRExecutionEngine.create();
+        ExecutionEngine engine = ExecutionEngine.create();
         MMCJITCompilerOptions options = MMCJITCompilerOptions.create();
         if (!engine.createMCJITCompilerForModule(module, options, error)) {
             System.err.println("Failed to create JIT compiler: " + error.getString());

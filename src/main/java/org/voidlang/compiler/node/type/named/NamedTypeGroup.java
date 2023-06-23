@@ -2,7 +2,7 @@ package org.voidlang.compiler.node.type.named;
 
 import lombok.Getter;
 import org.voidlang.compiler.node.type.core.ScalarType;
-import org.voidlang.compiler.node.type.core.TypeGroup;
+import org.voidlang.compiler.node.type.core.CompoundType;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
 
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  * <pre> {@code
  *     (bool success, (string token, string msg)) login()
  * } </pre>
- * Here {@code (bool, string)} is a {@link TypeGroup} of two {@link ScalarType} elements: {@code bool} and {@code string}.
+ * Here {@code (bool, string)} is a {@link CompoundType} of two {@link ScalarType} elements: {@code bool} and {@code string}.
  */
 @Getter
 public class NamedTypeGroup extends NamedType {

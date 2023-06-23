@@ -46,6 +46,7 @@ public enum NodeType {
     DO_WHILE,
     FOR,
     FOR_EACH,
+    EMPTY,
     ERROR,
     FINISH
 }

@@ -1,12 +1,8 @@
 package "main"
 
 class Program {
-    int test() {
-        return (1 + 2) * 3
-    }
+    int foo, bar = 1
 
-    void main() {
-        let foo = bar
-        return
+    int main() {
     }
 }

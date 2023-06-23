@@ -1,23 +1,25 @@
-package org.voidlang.compiler.node.common;
+package org.voidlang.compiler.node.control;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.llvm.element.IRValue;
 
-/**
- * Represents a node that holds the information of a compiling error
- * that occurred whilst parsing tokens to nodes.
- */
-@NodeInfo(type = NodeType.ERROR)
-public class Error extends Node {
-    public Error() {
-        System.exit(-1);
-    }
+import java.util.List;
 
+@RequiredArgsConstructor
+@Getter
+@NodeInfo(type = NodeType.ELSE_IF)
+public class ElseIf extends Node {
+    private final Node condition;
+
+    private final List<Node> body;
     /**
      * Generate an LLVM instruction for this node
+     *
      * @param generator LLVM instruction generation context
      */
     @Override

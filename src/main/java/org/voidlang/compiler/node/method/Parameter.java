@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.name.Name;
 import org.voidlang.compiler.node.type.core.ScalarType;
-import org.voidlang.compiler.node.type.core.TypeGroup;
+import org.voidlang.compiler.node.type.core.CompoundType;
 
 /**
  * Represents an information holder of a method parameter.
@@ -18,7 +18,7 @@ import org.voidlang.compiler.node.type.core.TypeGroup;
  *     void abc(int[] [x, y, z])
  * } </pre>
  * The {@link Type} allows the parameter type to be a single scalar type {@link ScalarType} or a compound
- * type {@link TypeGroup} for grouping multiple types together.
+ * type {@link CompoundType} for grouping multiple types together.
  * The {@link Name} allows the parameter to use deconstruction on compound types:
  */
 @AllArgsConstructor

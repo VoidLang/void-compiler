@@ -1,5 +1,6 @@
 package org.voidlang.compiler.node.operator;
 
+import dev.inventex.octa.console.ConsoleFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -66,5 +67,10 @@ public enum Operator {
             .filter(operator -> operator.value.equals(value))
             .findFirst()
             .orElse(UNKNOWN);
+    }
+
+    @Override
+    public String toString() {
+        return ConsoleFormat.YELLOW + name();
     }
 }

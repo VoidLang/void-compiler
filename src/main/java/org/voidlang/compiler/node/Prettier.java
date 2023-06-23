@@ -2,9 +2,12 @@ package org.voidlang.compiler.node;
 
 import com.google.common.base.Strings;
 import dev.inventex.octa.console.ConsoleFormat;
+import org.voidlang.compiler.node.common.Empty;
 import org.voidlang.compiler.node.type.core.Type;
 
 import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Objects;
 
 public class Prettier {
     public static final String INDENTATION = "    ";
@@ -22,14 +25,17 @@ public class Prettier {
         Field[] fields = node.getClass().getDeclaredFields();
         for (Field field : fields) {
             field.setAccessible(true);
-            indent();
-            printName(field.getName());
+            Object value = null;
             try {
-                Object value = field.get(node);
-                processValue(value);
+                value = field.get(node);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
+            if (value == null || (value instanceof List<?> && ((List<?>) value).isEmpty()))
+                continue;
+            indent();
+            printName(field.getName());
+            processValue(value);
         }
     }
 
@@ -38,6 +44,22 @@ public class Prettier {
             begin(node);
             content(node);
             end();
+            return;
+        }
+
+        else if (value instanceof List) {
+            List<?> list = (List<?>) value;
+            beginArray();
+            enterScope();
+            for (Object o : list) {
+                if (o instanceof Empty)
+                    continue;
+                indent();
+                processValue(o);
+            }
+            exitScope();
+            indent();
+            endArray();
             return;
         }
 
@@ -73,6 +95,14 @@ public class Prettier {
 
     public void endObject() {
         System.out.println(ConsoleFormat.DARK_GRAY + "}");
+    }
+
+    public void beginArray() {
+        System.out.println(ConsoleFormat.DARK_GRAY + "[");
+    }
+
+    public void endArray() {
+        System.out.println(ConsoleFormat.DARK_GRAY + "]");
     }
 
     public void enterScope() {

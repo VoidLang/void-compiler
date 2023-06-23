@@ -14,16 +14,16 @@ import java.util.stream.Collectors;
  * <pre> {@code
  *     (bool, string) login()
  * } </pre>
- * Here {@code (bool, string)} is a {@link TypeGroup} of two {@link ScalarType} elements: {@code bool} and {@code string}.
+ * Here {@code (bool, string)} is a {@link CompoundType} of two {@link ScalarType} elements: {@code bool} and {@code string}.
  */
 @Getter
-public class TypeGroup extends Type {
+public class CompoundType extends Type {
     /**
      * The list of the held nested type entries.
      */
     private final List<Type> members;
 
-    public TypeGroup(List<Type> members) {
+    public CompoundType(List<Type> members) {
         this.members = members;
     }
 
@@ -49,7 +49,7 @@ public class TypeGroup extends Type {
     }
 
     /**
-     * Generate an LLVM type for this type wrapper
+     * Generate an LLVM type for this type wrapper.
      * @param context LLVM module context
      * @return type ir code wrapper
      */
