@@ -27,4 +27,14 @@ public class Return extends Node {
         else
             return builder.returnVoid();
     }
+
+    /**
+     * Initialize all the child nodes for this node.
+     * @param parent parent node of the overriding node
+     */
+    @Override
+    public void preProcess(Node parent) {
+        if (value != null)
+            value.preProcess(parent);
+    }
 }

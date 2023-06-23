@@ -9,7 +9,6 @@ import org.voidlang.llvm.element.IRModule;
 @AllArgsConstructor
 @Getter
 public class Generator {
-    
     private final IRContext context;
     
     private final IRModule module;

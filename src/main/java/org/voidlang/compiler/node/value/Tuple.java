@@ -18,6 +18,17 @@ public class Tuple extends Value {
     private final List<Value> members;
 
     /**
+     * Initialize all the child nodes for this node.
+     * @param parent parent node of the overriding node
+     */
+    @Override
+    public void preProcess(Node parent) {
+        this.parent = parent;
+        for (Node node : members)
+            node.preProcess(this);
+    }
+
+    /**
      * Generate an LLVM instruction for this node
      *
      * @param generator LLVM instruction generation context

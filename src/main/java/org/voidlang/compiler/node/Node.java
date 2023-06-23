@@ -1,6 +1,7 @@
 package org.voidlang.compiler.node;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
@@ -31,7 +32,8 @@ public abstract class Node {
      */
     private final NodeType nodeType;
 
-    private Node parent;
+    @Setter
+    protected Node parent;
 
     public Node() {
         NodeInfo info = getClass().getAnnotation(NodeInfo.class);
@@ -75,15 +77,9 @@ public abstract class Node {
 
     /**
      * Initialize all the child nodes for this node.
-     * This is
+     * @param parent parent node of the overriding node
      */
-    public void preProcess(Node root) {
-        this.parent = root;
-        getChildren().forEach(e -> {
-            e.parent = this;
-            e.preProcess(this);
-        });
-    }
+    public abstract void preProcess(Node parent);
 
     /**
      *
@@ -101,6 +97,8 @@ public abstract class Node {
         for (Field field : getClass().getDeclaredFields()) {
             field.setAccessible(true);
             if (field.getName().equals("parent"))
+                continue;
+            if (Modifier.isTransient(field.getModifiers()))
                 continue;
             //if (!Modifier.isFinal(field.getModifiers()))
             //    continue;
@@ -169,6 +167,6 @@ public abstract class Node {
      */
     @Nullable
     public Method resolveMethod(String name, List<Type> types) {
-        return parent.resolveMethod(name, types);
+        return parent != null ? parent.resolveMethod(name, types) : null;
     }
 }

@@ -33,4 +33,13 @@ public class PackageSet extends Node {
     public IRValue generate(Generator generator) {
         return null;
     }
+
+    /**
+     * Initialize all the child nodes for this node.
+     * @param parent parent node of the overriding node
+     */
+    @Override
+    public void preProcess(Node parent) {
+        this.parent = parent;
+    }
 }

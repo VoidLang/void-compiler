@@ -28,4 +28,18 @@ public class MultiField extends Node {
     public IRValue generate(Generator generator) {
         return null;
     }
+
+    /**
+     * Initialize all the child nodes for this node.
+     * @param parent parent node of the overriding node
+     */
+    @Override
+    public void preProcess(Node parent) {
+        this.parent = parent;
+        for (Node node : values.values()) {
+            if (node == null)
+                continue;
+            node.preProcess(this);
+        }
+    }
 }

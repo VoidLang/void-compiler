@@ -2,12 +2,15 @@ package org.voidlang.compiler.node.operator;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import org.voidlang.compiler.node.Generator;
+import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.value.Value;
+import org.voidlang.llvm.element.Comparator;
 import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRValue;
 
@@ -30,6 +33,7 @@ public class Operation extends Value {
     /**
      * The left operand target of the operation.
      */
+    @NonNull
     private Value left;
 
     /**
@@ -40,7 +44,19 @@ public class Operation extends Value {
     /**
      * The right operand target of the operation.
      */
+    @NonNull
     private Value right;
+
+    /**
+     * Initialize all the child nodes for this node.
+     * @param parent parent node of the overriding node
+     */
+    @Override
+    public void preProcess(Node parent) {
+        this.parent = parent;
+        left.preProcess(this);
+        right.preProcess(this);
+    }
 
     /**
      * Generate an LLVM instruction for this node
@@ -55,7 +71,17 @@ public class Operation extends Value {
             case ADD -> builder.add(left, right);
             case SUBTRACT -> builder.subtract(left, right);
             case MULTIPLY -> builder.multiply(left, right);
-            default -> null;
+
+            case EQUAL -> builder.compareInt(Comparator.INTEGER_EQUAL, left, right);
+            case NOT_EQUAL -> builder.compareInt(Comparator.INTEGER_NOT_EQUAL, left, right);
+
+            case GREATER_THAN -> builder.compareInt(Comparator.SIGNED_INTEGER_GREATER_THAN, left, right);
+            case GREATER_OR_EQUAL -> builder.compareInt(Comparator.SIGNED_INTEGER_GREATER_OR_EQUAL, left, right);
+
+            case LESS_THAN -> builder.compareInt(Comparator.SIGNED_INTEGER_LESS_THAN, left, right);
+            case LESS_OR_EQUAL -> builder.compareInt(Comparator.SIGNED_INTEGER_LESS_OR_EQUAL, left, right);
+
+            default -> throw new IllegalStateException("Unable to generate complex operator for " + operator);
         };
     }
 

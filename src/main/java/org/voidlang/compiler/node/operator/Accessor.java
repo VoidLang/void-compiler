@@ -3,6 +3,7 @@ package org.voidlang.compiler.node.operator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.voidlang.compiler.node.Generator;
+import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.local.Loadable;
@@ -18,6 +19,17 @@ public class Accessor extends Value {
     private final QualifiedName name;
 
     private Value value;
+
+    /**
+     * Initialize all the child nodes for this node.
+     * @param parent parent node of the overriding node
+     */
+    @Override
+    public void preProcess(Node parent) {
+        this.parent = parent;
+        if (value != null)
+            value.preProcess(this);
+    }
 
     @Override
     public void postProcessUse(Generator generator) {

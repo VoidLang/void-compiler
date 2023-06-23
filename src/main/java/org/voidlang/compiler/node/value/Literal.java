@@ -20,6 +20,15 @@ public class Literal extends Value {
     private final Token value;
 
     /**
+     * Initialize all the child nodes for this node.
+     * @param parent parent node of the overriding node
+     */
+    @Override
+    public void preProcess(Node parent) {
+        this.parent = parent;
+    }
+
+    /**
      * Generate an LLVM instruction for this node
      * @param generator LLVM instruction generation context
      */
@@ -32,7 +41,8 @@ public class Literal extends Value {
 
         return switch (type) {
             case INTEGER -> IRType.int32(context).constInt(Integer.parseInt(value));
-            default -> null;
+            case BOOLEAN -> IRType.int1(context).constInt("true".equals(value) ? 1 : 0);
+            default -> throw new IllegalStateException("Unable to generate literal value for type " + type);
         };
     }
 
@@ -43,12 +53,14 @@ public class Literal extends Value {
      */
     @Override
     public Type getValueType() {
-        return switch (getValue().getType()) {
+        TokenType type = value.getType();
+        return switch (type) {
             case BYTE -> Type.BYTE;
             case SHORT -> Type.SHORT;
             case INTEGER -> Type.INT;
             case LONG -> Type.LONG;
-            default -> null;
+            case BOOLEAN -> Type.BOOL;
+            default -> throw new IllegalStateException("Unable to get value type for literal " + type);
         };
     }
 }

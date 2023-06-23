@@ -27,6 +27,17 @@ public class LocalDeclareAssign extends Value implements PointerOwner, Loadable 
     private IRValue pointer;
 
     /**
+     * Initialize all the child nodes for this node.
+     * @param parent parent node of the overriding node
+     */
+    @Override
+    public void preProcess(Node parent) {
+        this.parent = parent;
+        if (value != null)
+            value.preProcess(this);
+    }
+
+    /**
      * Generate an LLVM instruction for this node
      * @param generator LLVM instruction generation context
      */

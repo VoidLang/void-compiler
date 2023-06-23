@@ -45,6 +45,11 @@ public abstract class Type {
      * The type wrapper for a 64-bit integer.
      */
     public static final Type LONG = primitive("long");
+
+    /**
+     * The type wrapper for a 1-bit boolean.
+     */
+    public static final Type BOOL = primitive("bool");
     
     /**
      * Indicate, whether this entry is a {@link ScalarType}, so it does not have any nested members.

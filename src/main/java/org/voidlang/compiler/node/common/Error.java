@@ -28,6 +28,15 @@ public class Error extends Value {
     }
 
     /**
+     * Initialize all the child nodes for this node.
+     * @param parent parent node of the overriding node
+     */
+    @Override
+    public void preProcess(Node parent) {
+        this.parent = parent;
+    }
+
+    /**
      * Get the wrapped type of this value.
      * @return wrapped value type
      */

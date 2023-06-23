@@ -46,6 +46,17 @@ public class Class extends Node {
     }
 
     /**
+     * Initialize all the child nodes for this node.
+     * @param parent parent node of the overriding node
+     */
+    @Override
+    public void preProcess(Node parent) {
+        this.parent = parent;
+        for (Node node : body)
+            node.setParent(this);
+    }
+
+    /**
      * Generate an LLVM type for this type element type.
      * @param context LLVM module context
      * @return type ir code wrapper

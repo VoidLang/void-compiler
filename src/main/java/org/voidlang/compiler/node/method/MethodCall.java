@@ -27,9 +27,15 @@ public class MethodCall extends Value {
 
     private Method method;
 
+    /**
+     * Initialize all the child nodes for this node.
+     * @param parent parent node of the overriding node
+     */
     @Override
-    public void preProcess(Node root) {
-        super.preProcess(root);
+    public void preProcess(Node parent) {
+        this.parent = parent;
+        for (Value node : arguments)
+            node.preProcess(this);
     }
 
     @Override

@@ -15,26 +15,31 @@ import java.util.Arrays;
 @Getter
 public enum Operator {
     ADD("+", 1, 0),
-    ADD_EQUALS("+=", 1, 0),
+    ADD_EQUAL("+=", 1, 0),
     INCREMENT("++", 1, 0),
 
     SUBTRACT("-", 1, 0),
-    SUBTRACT_EQUALS("-=", 1, 0),
+    SUBTRACT_EQUAL("-=", 1, 0),
     DECREMENT("--", 1, 0),
 
     MULTIPLY("*", 2, 0),
-    MULTIPLY_EQUALS("*=", 2, 0),
+    MULTIPLY_EQUAL("*=", 2, 0),
 
     DIVIDE("/", 2, 0),
-    DIVIDE_EQUALS("/=", 2, 0),
+    DIVIDE_EQUAL("/=", 2, 0),
 
     REMAINDER("%", 2, 0),
-    REMAINDER_EQUALS("%=", 2, 0),
+    REMAINDER_EQUAL("%=", 2, 0),
 
     POWER("^", 3, 1),
-    POWER_EQUALS("^=", 3, 1),
+    POWER_EQUAL("^=", 3, 1),
 
-    EQUALS("==", 4, 0),
+    EQUAL("==", 4, 0),
+    NOT_EQUAL("!=", 4, 0),
+    GREATER_THAN(">", 4, 0),
+    GREATER_OR_EQUAL(">=", 4, 0),
+    LESS_THAN("<", 4, 0),
+    LESS_OR_EQUAL("<=", 4, 0),
 
     SLICE(":", 5, 0),
     LAMBDA("::", 5, 0),

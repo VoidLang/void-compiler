@@ -1,8 +1,9 @@
-int foo(int n) {
-    return n + 10
+int test(int n) {
+    if (n > 100)
+        return 1337
+    return n
 }
 
 int main() {
-    return foo(5)
+    return test(150)
 }
-

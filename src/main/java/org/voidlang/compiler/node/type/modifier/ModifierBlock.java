@@ -24,6 +24,15 @@ public class ModifierBlock extends Node {
     private final List<String> modifiers;
 
     /**
+     * Initialize all the child nodes for this node.
+     * @param parent parent node of the overriding node
+     */
+    @Override
+    public void preProcess(Node parent) {
+        this.parent = parent;
+    }
+
+    /**
      * Generate an LLVM instruction for this node
      * @param generator LLVM instruction generation context
      */

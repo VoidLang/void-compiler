@@ -3,6 +3,7 @@ package org.voidlang.compiler.node.local;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.voidlang.compiler.node.Generator;
+import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.type.core.Type;
@@ -20,6 +21,17 @@ public class LocalAssign extends Value {
     private final Value value;
 
     private PointerOwner owner;
+
+    /**
+     * Initialize all the child nodes for this node.
+     * @param parent parent node of the overriding node
+     */
+    @Override
+    public void preProcess(Node parent) {
+        this.parent = parent;
+        if (value != null)
+            value.preProcess(this);
+    }
 
     @Override
     public void postProcessType(Generator generator) {

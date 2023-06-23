@@ -2,10 +2,7 @@ package org.voidlang.compiler.node.element;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.voidlang.compiler.node.Generator;
-import org.voidlang.compiler.node.Node;
-import org.voidlang.compiler.node.NodeInfo;
-import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.*;
 import org.voidlang.compiler.node.local.LocalDeclareAssign;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.name.Name;
@@ -31,6 +28,16 @@ public class Method extends Node {
 
     private IRFunction function;
     private List<IRType> paramTypes;
+
+    @Override
+    public void preProcess(Node parent) {
+        this.parent = parent;
+        for (Node node : body) {
+            node.preProcess(this);
+            if (node instanceof Instruction instruction)
+                instruction.setContext(this);
+        }
+    }
 
     @Override
     public void postProcessType(Generator generator) {
@@ -68,8 +75,8 @@ public class Method extends Node {
         builder.positionAtEnd(block);
 
         // generate the LLVM instructions for the body of the function
-        for (Node instruction : body)
-            instruction.generate(generator);
+        for (Node node : body)
+            node.generate(generator);
 
         return function;
     }
@@ -89,6 +96,7 @@ public class Method extends Node {
     public IRFunction getFunction() {
         return function;
     }
+
 
     @Override
     public Value resolveName(String name) {
@@ -138,6 +146,17 @@ public class Method extends Node {
         @Override
         public Type getValueType() {
             return type;
+        }
+
+        /**
+         * Initialize all the child nodes for this node.
+         * @param parent parent node of the overriding node
+         */
+        @Override
+        public void preProcess(Node parent) {
+            this.parent = parent;
+            for (Node node : body)
+                node.preProcess(this);
         }
     }
 }
