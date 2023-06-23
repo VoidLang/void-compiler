@@ -25,6 +25,26 @@ public abstract class Type {
      * The type wrapper for the "let" keyword.
      */
     public static final Type LET = primitive("let");
+
+    /**
+     * The type wrapper for an 8-bit integer.
+     */
+    public static final Type BYTE = primitive("let");
+
+    /**
+     * The type wrapper for a 16-bit integer.
+     */
+    public static final Type SHORT = primitive("let");
+
+    /**
+     * The type wrapper for a 32-bit integer.
+     */
+    public static final Type INT = primitive("let");
+
+    /**
+     * The type wrapper for a 64-bit integer.
+     */
+    public static final Type LONG = primitive("let");
     
     /**
      * Indicate, whether this entry is a {@link ScalarType}, so it does not have any nested members.

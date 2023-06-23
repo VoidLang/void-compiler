@@ -2,12 +2,12 @@ package org.voidlang.compiler.node.operator;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.voidlang.compiler.node.Generator;
-import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRValue;
 
@@ -26,11 +26,11 @@ import org.voidlang.llvm.element.IRValue;
 @Getter
 @Setter
 @NodeInfo(type = NodeType.OPERATION)
-public class Operation extends Node {
+public class Operation extends Value {
     /**
      * The left operand target of the operation.
      */
-    private Node left;
+    private Value left;
 
     /**
      * The target operator of the operation.
@@ -40,7 +40,7 @@ public class Operation extends Node {
     /**
      * The right operand target of the operation.
      */
-    private Node right;
+    private Value right;
 
     /**
      * Generate an LLVM instruction for this node
@@ -57,5 +57,15 @@ public class Operation extends Node {
             case MULTIPLY -> builder.multiply(left, right);
             default -> null;
         };
+    }
+
+    /**
+     * Get the wrapped type of this value.
+     *
+     * @return wrapped value type
+     */
+    @Override
+    public Type getValueType() {
+        return null;
     }
 }

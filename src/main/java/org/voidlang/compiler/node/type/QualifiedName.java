@@ -57,6 +57,24 @@ public class QualifiedName {
     }
 
     /**
+     * Indicate, whether this fully qualified name refers to directly an object.
+     * @return true if this accessor does not access nested members
+     */
+    public boolean isDirect() {
+        return types.size() == 1 && !isPrimitive();
+    }
+
+    /**
+     * Get the direct target of this fully qualified name.
+     * @return root name value
+     */
+    public String getDirect() {
+        if (!isDirect())
+            throw new IllegalStateException("QualifiedName is not direct: " + types);
+        return types.get(0).getValue();
+    }
+
+    /**
      * Get the string representation of the qualified name.
      * @return name debug information
      */

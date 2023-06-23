@@ -4,9 +4,11 @@ import dev.inventex.octa.console.ConsoleFormat;
 import lombok.SneakyThrows;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
+import org.voidlang.compiler.builder.Package;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.Parser;
+import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.Tokenizer;
@@ -26,7 +28,8 @@ public class ParserTest {
         List<Token> tokens = tokenizeSource();
         debugTokens(tokens);
 
-        Parser parser = new Parser(null, tokens);
+        Package root = new Package();
+        Parser parser = new Parser(root, tokens);
 
         System.out.println();
         System.out.println(ConsoleFormat.RED + "           " + ConsoleFormat.BOLD + "PARSED NODES");
@@ -35,12 +38,24 @@ public class ParserTest {
         Generator generator = initLLVM();
 
         Node node;
+        List<Node> nodes = new ArrayList<>();
+        // preprocess nodes
         do {
-            node = parser.next();
-
-            if (node instanceof Method method)
-                method.generate(generator);
+            nodes.add(node = parser.next());
+            node.preprocess(root);
         } while (node.hasNext());
+
+        // preprocess types
+        for (Node e : nodes) {
+            if (e instanceof Class clazz)
+                clazz.generateType(generator.getContext());
+            else if (e instanceof Method method)
+                root.defineMethod(method);
+        }
+
+        // generate bitcode
+        for (Node e : nodes)
+            e.generate(generator);
 
         debugBitcode(generator);
     }

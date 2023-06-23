@@ -1,9 +1,17 @@
 package org.voidlang.compiler.node;
 
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
+import org.voidlang.compiler.node.element.Method;
 import org.voidlang.llvm.element.IRValue;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import org.voidlang.compiler.node.type.core.Type;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Represents an instruction node that is parsed from raw tokens.
@@ -18,6 +26,8 @@ public abstract class Node {
      * The type of the node.
      */
     private final NodeType nodeType;
+
+    private Node parent;
 
     public Node() {
         NodeInfo info = getClass().getAnnotation(NodeInfo.class);
@@ -58,4 +68,86 @@ public abstract class Node {
      * @param generator LLVM instruction generation context
      */
     public abstract IRValue generate(Generator generator);
+
+    /**
+     * Initialize all the child nodes for this node.
+     */
+    public void preprocess(Node root) {
+        this.parent = root;
+        for (Field field : getClass().getDeclaredFields()) {
+            field.setAccessible(true);
+            Object value;
+            try {
+                value = field.get(this);
+            } catch (IllegalAccessException e) {
+                System.err.println("Unable to initialize parent " + field + " for class " + getClass());
+                continue;
+            }
+            if (value instanceof Node node) {
+                node.parent = this;
+                node.preprocess(this);
+            }
+            else if (value instanceof List<?> list) {
+                ParameterizedType genericType = (ParameterizedType) field.getGenericType();
+                Class<?> listType = (Class<?>) genericType.getActualTypeArguments()[0];
+                if (!Node.class.isAssignableFrom(listType)) {
+                    continue;
+                }
+                list
+                    .stream()
+                    .map(e -> (Node) e)
+                    .forEach(e -> {
+                        e.parent = this;
+                        e.preprocess(this);
+                    });
+            }
+            else if (value instanceof Map<?,?> map) {
+                ParameterizedType genericType = (ParameterizedType) field.getGenericType();
+                Class<?> valueType = (Class<?>) genericType.getActualTypeArguments()[1];
+                if (!Node.class.isAssignableFrom(valueType))
+                    continue;
+                map
+                    .values()
+                    .stream()
+                    .map(e -> (Node) e)
+                    .forEach(e -> {
+                        e.parent = this;
+                        e.preprocess(this);
+                    });
+            }
+        }
+    }
+
+    /**
+     * Resolve a type from this node context by its name. If the type is unresolved locally,
+     * the parent element tries to resolve it.
+     * @param name target type name
+     * @return resolved type or null if it was not found
+     */
+    @Nullable
+    public Type resolveType(String name) {
+        return parent.resolveType(name);
+    }
+
+    /**
+     * Resolve a node from this node context by its name. If the name is unresolved locally,
+     * the parent element tries to resolve it.
+     * @param name target node name
+     * @return resolved node or null if it was not found
+     */
+    @Nullable
+    public Node resolveName(String name) {
+        return parent.resolveName(name);
+    }
+
+    /**
+     * Resolve a method from this node context by its name. If the method is unresolved locally,
+     * the parent element tries to resolve it.
+     * @param name target method name
+     * @return resolved method or null if it was not found
+     */
+    @Nullable
+    public Method resolveMethod(String name, List<Type> types) {
+        return parent.resolveMethod(name, types);
+    }
 }

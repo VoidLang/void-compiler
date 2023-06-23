@@ -6,6 +6,7 @@ import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.llvm.element.IRValue;
 
 import java.util.List;
@@ -13,8 +14,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Getter
 @NodeInfo(type = NodeType.TUPLE)
-public class Tuple extends Node {
-    private final List<Node> members;
+public class Tuple extends Value {
+    private final List<Value> members;
 
     /**
      * Generate an LLVM instruction for this node
@@ -23,6 +24,16 @@ public class Tuple extends Node {
      */
     @Override
     public IRValue generate(Generator generator) {
+        return null;
+    }
+
+    /**
+     * Get the wrapped type of this value.
+     *
+     * @return wrapped value type
+     */
+    @Override
+    public Type getValueType() {
         return null;
     }
 }

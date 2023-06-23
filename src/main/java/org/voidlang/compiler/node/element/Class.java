@@ -12,6 +12,7 @@ import org.voidlang.llvm.element.IRStruct;
 import org.voidlang.llvm.element.IRType;
 import org.voidlang.llvm.element.IRValue;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -32,6 +33,15 @@ public class Class extends Node {
      */
     @Override
     public IRValue generate(Generator generator) {
+        IRContext context = generator.getContext();
+        List<IRType> members = new ArrayList<>();
+        for (Node node : body) {
+            if (node instanceof Field field)
+                members.add(field.getType().generateType(context));
+            else if (node instanceof MultiField multiField)
+                members.add(multiField.getType().generateType(context));
+        }
+        struct.setMembers(members);
         return null;
     }
 
