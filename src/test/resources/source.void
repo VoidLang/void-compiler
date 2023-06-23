@@ -1,7 +1,7 @@
 package "main"
 
 class Program {
-    int foo, bar = 1
+    int foo = 1, bar = 2
 
     int main() {
     }

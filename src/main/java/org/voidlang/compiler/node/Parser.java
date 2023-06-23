@@ -871,12 +871,12 @@ public class Parser {
                 System.out.print(ConsoleFormat.CYAN + " = ");
                 Node.prettier.processValue(fieldValue);
             }
+            else
+                System.out.println();
 
             // register the field
             // TODO error if the field name is already in the map
             values.put(fieldName, fieldValue);
-
-            System.out.println();
 
             // check for more fields
             if (peek().is(TokenType.COMMA))
