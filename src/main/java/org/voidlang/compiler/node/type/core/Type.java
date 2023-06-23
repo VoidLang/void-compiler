@@ -29,22 +29,22 @@ public abstract class Type {
     /**
      * The type wrapper for an 8-bit integer.
      */
-    public static final Type BYTE = primitive("let");
+    public static final Type BYTE = primitive("byte");
 
     /**
      * The type wrapper for a 16-bit integer.
      */
-    public static final Type SHORT = primitive("let");
+    public static final Type SHORT = primitive("short");
 
     /**
      * The type wrapper for a 32-bit integer.
      */
-    public static final Type INT = primitive("let");
+    public static final Type INT = primitive("int");
 
     /**
      * The type wrapper for a 64-bit integer.
      */
-    public static final Type LONG = primitive("let");
+    public static final Type LONG = primitive("long");
     
     /**
      * Indicate, whether this entry is a {@link ScalarType}, so it does not have any nested members.

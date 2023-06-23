@@ -70,6 +70,24 @@ public class GenericArgumentList implements Iterable<GenericArgument> {
             .toString();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        GenericArgumentList that = (GenericArgumentList) o;
+
+        if (explicit != that.explicit) return false;
+        return generics.equals(that.generics);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = generics.hashCode();
+        result = 31 * result + (explicit ? 1 : 0);
+        return result;
+    }
+
     /**
      * Create a generic type list wrapper that does not have any explicit generic types.
      * @return empty implicit generic type list wrapper

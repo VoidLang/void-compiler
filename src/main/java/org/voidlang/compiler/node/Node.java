@@ -5,9 +5,11 @@ import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
 import org.voidlang.compiler.node.element.Method;
+import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRValue;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import org.voidlang.compiler.node.type.core.Type;
 
@@ -86,14 +88,22 @@ public abstract class Node {
     /**
      *
      */
-    public void postProcess() {
-        getChildren().forEach(Node::postProcess);
+    public void postProcessType(Generator generator) {
+        getChildren().forEach(node -> node.postProcessType(generator));
+    }
+
+    public void postProcessUse(Generator generator) {
+        getChildren().forEach(node -> node.postProcessUse(generator));
     }
 
     private List<Node> getChildren() {
         List<Node> children = new ArrayList<>();
         for (Field field : getClass().getDeclaredFields()) {
             field.setAccessible(true);
+            if (field.getName().equals("parent"))
+                continue;
+            //if (!Modifier.isFinal(field.getModifiers()))
+            //    continue;
             Object value;
             try {
                 value = field.get(this);
@@ -125,6 +135,7 @@ public abstract class Node {
                     .toList());
             }
         }
+        // children.removeIf(n -> n.parent != null);
         return children;
     }
 
@@ -146,8 +157,8 @@ public abstract class Node {
      * @return resolved node or null if it was not found
      */
     @Nullable
-    public Node resolveName(String name) {
-        return parent.resolveName(name);
+    public Value resolveName(String name) {
+        return parent != null ? parent.resolveName(name) : null;
     }
 
     /**

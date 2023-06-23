@@ -34,10 +34,14 @@ public enum Operator {
     POWER("^", 3, 1),
     POWER_EQUALS("^=", 3, 1),
 
+    EQUALS("==", 4, 0),
+
     SLICE(":", 5, 0),
     LAMBDA("::", 5, 0),
 
     ARROW("->", 6, 0),
+
+    ASSIGN("=", 7, 0),
 
     UNKNOWN("<unk>", -1, -1);
 

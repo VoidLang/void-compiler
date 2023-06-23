@@ -6,13 +6,15 @@ import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.name.CompoundName;
+import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRValue;
 
 @RequiredArgsConstructor
 @Getter
 @NodeInfo(type = NodeType.LOCAL_DECLARE_DESTRUCTURE_TUPLE)
-public class LocalDeclareDestructureTuple extends Node {
+public class LocalDeclareDestructureTuple extends Value {
     private final CompoundName name;
 
     private final Node value;
@@ -23,6 +25,16 @@ public class LocalDeclareDestructureTuple extends Node {
      */
     @Override
     public IRValue generate(Generator generator) {
+        return null;
+    }
+
+    /**
+     * Get the wrapped type of this value.
+     *
+     * @return wrapped value type
+     */
+    @Override
+    public Type getValueType() {
         return null;
     }
 }

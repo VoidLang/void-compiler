@@ -43,8 +43,7 @@ public class Literal extends Value {
      */
     @Override
     public Type getValueType() {
-        TokenType type = getValue().getType();
-        return switch (type) {
+        return switch (getValue().getType()) {
             case BYTE -> Type.BYTE;
             case SHORT -> Type.SHORT;
             case INTEGER -> Type.INT;

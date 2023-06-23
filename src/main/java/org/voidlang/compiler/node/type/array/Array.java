@@ -5,6 +5,7 @@ import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,6 +32,21 @@ public class Array {
         return dimensions.stream()
             .map(Dimension::toString)
             .collect(Collectors.joining());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Array array = (Array) o;
+
+        return Objects.equals(dimensions, array.dimensions);
+    }
+
+    @Override
+    public int hashCode() {
+        return dimensions != null ? dimensions.hashCode() : 0;
     }
 
     /**

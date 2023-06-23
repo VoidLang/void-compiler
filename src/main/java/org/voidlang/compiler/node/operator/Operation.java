@@ -61,7 +61,6 @@ public class Operation extends Value {
 
     /**
      * Get the wrapped type of this value.
-     *
      * @return wrapped value type
      */
     @Override

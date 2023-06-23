@@ -69,8 +69,6 @@ public class QualifiedName {
      * @return root name value
      */
     public String getDirect() {
-        if (!isDirect())
-            throw new IllegalStateException("QualifiedName is not direct: " + types);
         return types.get(0).getValue();
     }
 
@@ -84,6 +82,21 @@ public class QualifiedName {
             + types.stream()
             .map(Token::getValue)
             .collect(Collectors.joining("."));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        QualifiedName name = (QualifiedName) o;
+
+        return types.equals(name.types);
+    }
+
+    @Override
+    public int hashCode() {
+        return types.hashCode();
     }
 
     /**

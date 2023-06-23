@@ -3,18 +3,29 @@ package org.voidlang.compiler.node.local;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.voidlang.compiler.node.Generator;
-import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.compiler.node.value.Value;
+import org.voidlang.llvm.element.IRBuilder;
+import org.voidlang.llvm.element.IRType;
 import org.voidlang.llvm.element.IRValue;
 
 @RequiredArgsConstructor
 @Getter
 @NodeInfo(type = NodeType.LOCAL_ASSIGN)
-public class LocalAssign extends Node {
+public class LocalAssign extends Value {
     private final String name;
 
-    private final Node value;
+    private final Value value;
+
+    private PointerOwner owner;
+
+    @Override
+    public void postProcessType(Generator generator) {
+        super.postProcessType(generator);
+        owner = (PointerOwner) resolveName(name);
+    }
 
     /**
      * Generate an LLVM instruction for this node
@@ -22,6 +33,23 @@ public class LocalAssign extends Node {
      */
     @Override
     public IRValue generate(Generator generator) {
-        return null;
+        IRBuilder builder = generator.getBuilder();
+
+        IRValue pointer = owner.getPointer();
+        IRType pointerType = owner.getPointerType();
+
+        IRValue value = getValue().generate(generator);
+        builder.store(value, pointer);
+
+        return builder.load(pointerType, pointer, "");
+    }
+
+    /**
+     * Get the wrapped type of this value.
+     * @return wrapped value type
+     */
+    @Override
+    public Type getValueType() {
+        return owner.getValueType();
     }
 }

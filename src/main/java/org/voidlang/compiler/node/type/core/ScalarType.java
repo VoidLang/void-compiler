@@ -61,6 +61,26 @@ public class ScalarType extends Type {
         return String.valueOf(name) + generics + array;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ScalarType type = (ScalarType) o;
+
+        if (!name.equals(type.name)) return false;
+        if (!generics.equals(type.generics)) return false;
+        return array.equals(type.array);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + generics.hashCode();
+        result = 31 * result + array.hashCode();
+        return result;
+    }
+
     /**
      * Generate an LLVM type for this type wrapper
      * @param context LLVM module context

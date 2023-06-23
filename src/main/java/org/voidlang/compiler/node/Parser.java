@@ -903,10 +903,18 @@ public class Parser {
     }
 
     private Value nextValue(boolean ignoreJoin) {
+        if (peek().is(TokenType.TYPE, "let"))
+            return nextLocalDeclaration();
+
+        // handle variable assignation
+        if (peek().is(TokenType.IDENTIFIER) && at(cursor + 1).is(TokenType.OPERATOR, "=")
+                && !at(cursor + 2).is(TokenType.OPERATOR, "="))
+            return nextLocalAssignation();
+
         // handle node grouping
         // let a = (b + c) + d
         //         ^ the open parenthesis indicate, that the following nodes should be placed in a node group
-        if (peek().is(TokenType.OPEN))
+        else if (peek().is(TokenType.OPEN))
             return nextGroupOrTuple(ignoreJoin);
 
         // handle literal constant value
@@ -933,16 +941,8 @@ public class Parser {
      * @return expression
      */
     private Node nextExpression(boolean ignoreJoin) {
-        if (peek().is(TokenType.TYPE, "let"))
-            return nextLocalDeclaration();
-
-        // handle variable assignation
-        if (peek().is(TokenType.IDENTIFIER) && at(cursor + 1).is(TokenType.OPERATOR, "=")
-                && !at(cursor + 2).is(TokenType.OPERATOR, "="))
-            return nextLocalAssignation();
-
         // handle return statement
-        else if (peek().is(TokenType.EXPRESSION, "return"))
+        if (peek().is(TokenType.EXPRESSION, "return"))
             return nextReturnStatement();
 
         // handle if statement
@@ -1236,7 +1236,7 @@ public class Parser {
      * Parse the next local variable value assignation.
      * @return new local assignation
      */
-    private Node nextLocalAssignation() {
+    private Value nextLocalAssignation() {
         // get the name of the local variable
         String name = get().getValue();
 
@@ -1244,7 +1244,7 @@ public class Parser {
         get(TokenType.OPERATOR, "=");
 
         // parse the value of the local variable
-        Node value = nextExpression();
+        Value value = nextValue();
 
         // skip the semicolon after the declaration
         if (peek().is(TokenType.SEMICOLON))
@@ -1342,7 +1342,7 @@ public class Parser {
         // handle group closing
         // print(foo)
         //          ^ we don't need to handle this closing tag here, just finish qualified name parsing
-        if (peek().is(TokenType.CLOSE))
+        if (peek().is(TokenType.CLOSE, TokenType.COMMA, TokenType.STOP, TokenType.END))
             return value;
 
         // handle single value expression, in which case the local variable is initialized with a single value
@@ -1462,7 +1462,7 @@ public class Parser {
         return Operator.of(builder.toString());
     }
 
-    private Node nextLocalDeclaration() {
+    private Value nextLocalDeclaration() {
         // skip the 'let' keyword
         get(TokenType.TYPE, "let");
         // parse the name of the local variable
@@ -1504,7 +1504,7 @@ public class Parser {
         // parse the value of the local variable
         // let value = 100 + 50 - 25
         //             ^^^^^^^^^^^^^ the instructions after the equals sign is the value of the local variable
-        Node value = nextExpression();
+        Value value = nextValue();
 
         // skip the semicolon after the declaration
         // let variable = 100;

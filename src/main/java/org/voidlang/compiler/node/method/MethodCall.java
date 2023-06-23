@@ -7,6 +7,7 @@ import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.element.Method;
+import org.voidlang.compiler.node.local.Loadable;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.value.Value;
@@ -32,9 +33,8 @@ public class MethodCall extends Value {
     }
 
     @Override
-    public void postProcess() {
-        super.postProcess();
-
+    public void postProcessUse(Generator generator) {
+        super.postProcessUse(generator);
         List<Type> argTypes = arguments
             .stream()
             .map(Value::getValueType)
@@ -55,7 +55,11 @@ public class MethodCall extends Value {
 
         return builder.call(method.getFunction(), arguments
             .stream()
-            .map(arg -> arg.generate(generator))
+            .map(arg -> {
+                if (arg instanceof Loadable loadable)
+                    return loadable.load(generator);
+                return arg.generate(generator);
+            })
             .toList());
     }
 

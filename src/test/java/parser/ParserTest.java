@@ -54,7 +54,10 @@ public class ParserTest {
         }
 
         for (Node e : nodes)
-            e.postProcess();
+            e.postProcessType(generator);
+
+        for (Node e : nodes)
+            e.postProcessUse(generator);
 
         // generate bitcode
         for (Node e : nodes)
@@ -99,8 +102,12 @@ public class ParserTest {
             LLVMDisposeMessage(error);
         }
 
+        long start = System.currentTimeMillis();
         IRGenericValue result = engine.runFunction(main.getFunction(), new ArrayList<>());
+        long end = System.currentTimeMillis();
+
         System.out.println("Result: " + result.toInt());
+        System.out.println("Execution took " + (end - start) + "ms");
     }
 
     private static List<Token> tokenizeSource() {
@@ -172,7 +179,7 @@ public class ParserTest {
     @SneakyThrows
     private static String readSource() {
         StringBuilder builder = new StringBuilder();
-        try (InputStream stream = ParserTest.class.getClassLoader().getResourceAsStream("source.void");
+        try (InputStream stream = ParserTest.class.getClassLoader().getResourceAsStream("source.vs");
              BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
             String line;
             while ((line = reader.readLine()) != null)

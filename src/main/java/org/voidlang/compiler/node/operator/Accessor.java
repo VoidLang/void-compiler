@@ -3,9 +3,9 @@ package org.voidlang.compiler.node.operator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.voidlang.compiler.node.Generator;
-import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.local.Loadable;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.value.Value;
@@ -17,20 +17,26 @@ import org.voidlang.llvm.element.IRValue;
 public class Accessor extends Value {
     private final QualifiedName name;
 
+    private Value value;
+
+    @Override
+    public void postProcessUse(Generator generator) {
+        super.postProcessUse(generator);
+        value = resolveName(name.getDirect());
+    }
+
     /**
      * Generate an LLVM instruction for this node
-     *
      * @param generator LLVM instruction generation context
      */
     @Override
     public IRValue generate(Generator generator) {
-        if (name.isDirect()) {
-            Node node = resolveName(name.getDirect());
-            return node != null
-                ? node.generate(generator)
-                : null;
-        } generate(generator);
-        return null;
+        if (value instanceof Loadable loadable)
+            return loadable.load(generator);
+
+        return value != null
+            ? value.generate(generator)
+            : null;
     }
 
     /**
@@ -39,6 +45,6 @@ public class Accessor extends Value {
      */
     @Override
     public Type getValueType() {
-        return null;
+        return value.getValueType();
     }
 }

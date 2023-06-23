@@ -55,6 +55,24 @@ public class Dimension {
         return builder.append(']').toString();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Dimension dimension = (Dimension) o;
+
+        if (explicit != dimension.explicit) return false;
+        return size.equals(dimension.size);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = size.hashCode();
+        result = 31 * result + (explicit ? 1 : 0);
+        return result;
+    }
+
     /**
      * Create an implicitly sized array dimension, that does not have a size specifier.
      * @return non-sized implicit array dimension
