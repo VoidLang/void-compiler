@@ -26,6 +26,22 @@ public class MethodCall extends Value {
 
     private Method method;
 
+    @Override
+    public void preProcess(Node root) {
+        super.preProcess(root);
+    }
+
+    @Override
+    public void postProcess() {
+        super.postProcess();
+
+        List<Type> argTypes = arguments
+            .stream()
+            .map(Value::getValueType)
+            .toList();
+        method = resolveMethod(name.getDirect(), argTypes);
+    }
+
     /**
      * Generate an LLVM instruction for this node
      * @param generator LLVM instruction generation context
@@ -36,12 +52,6 @@ public class MethodCall extends Value {
         IRContext context = generator.getContext();
         IRModule module = generator.getModule();
         IRBuilder builder = generator.getBuilder();
-
-        List<Type> argTypes = arguments
-            .stream()
-            .map(Value::getValueType)
-            .toList();
-        method = resolveMethod(name.getDirect(), argTypes);
 
         return builder.call(method.getFunction(), arguments
             .stream()

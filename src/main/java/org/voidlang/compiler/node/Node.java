@@ -10,6 +10,8 @@ import org.voidlang.llvm.element.IRValue;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import org.voidlang.compiler.node.type.core.Type;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -71,9 +73,25 @@ public abstract class Node {
 
     /**
      * Initialize all the child nodes for this node.
+     * This is
      */
-    public void preprocess(Node root) {
+    public void preProcess(Node root) {
         this.parent = root;
+        getChildren().forEach(e -> {
+            e.parent = this;
+            e.preProcess(this);
+        });
+    }
+
+    /**
+     *
+     */
+    public void postProcess() {
+        getChildren().forEach(Node::postProcess);
+    }
+
+    private List<Node> getChildren() {
+        List<Node> children = new ArrayList<>();
         for (Field field : getClass().getDeclaredFields()) {
             field.setAccessible(true);
             Object value;
@@ -83,39 +101,31 @@ public abstract class Node {
                 System.err.println("Unable to initialize parent " + field + " for class " + getClass());
                 continue;
             }
-            if (value instanceof Node node) {
-                node.parent = this;
-                node.preprocess(this);
-            }
+            if (value instanceof Node node)
+                children.add(node);
             else if (value instanceof List<?> list) {
                 ParameterizedType genericType = (ParameterizedType) field.getGenericType();
                 Class<?> listType = (Class<?>) genericType.getActualTypeArguments()[0];
-                if (!Node.class.isAssignableFrom(listType)) {
+                if (!Node.class.isAssignableFrom(listType))
                     continue;
-                }
-                list
+                children.addAll(list
                     .stream()
                     .map(e -> (Node) e)
-                    .forEach(e -> {
-                        e.parent = this;
-                        e.preprocess(this);
-                    });
+                    .toList());
             }
             else if (value instanceof Map<?,?> map) {
                 ParameterizedType genericType = (ParameterizedType) field.getGenericType();
                 Class<?> valueType = (Class<?>) genericType.getActualTypeArguments()[1];
                 if (!Node.class.isAssignableFrom(valueType))
                     continue;
-                map
+                children.addAll(map
                     .values()
                     .stream()
                     .map(e -> (Node) e)
-                    .forEach(e -> {
-                        e.parent = this;
-                        e.preprocess(this);
-                    });
+                    .toList());
             }
         }
+        return children;
     }
 
     /**

@@ -66,6 +66,7 @@ public class Operation extends Value {
      */
     @Override
     public Type getValueType() {
-        return null;
+        // TODO assert two types equals, if not try to convert
+        return left.getValueType();
     }
 }

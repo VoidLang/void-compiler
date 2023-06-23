@@ -42,7 +42,7 @@ public class ParserTest {
         // preprocess nodes
         do {
             nodes.add(node = parser.next());
-            node.preprocess(root);
+            node.preProcess(root);
         } while (node.hasNext());
 
         // preprocess types
@@ -53,11 +53,15 @@ public class ParserTest {
                 root.defineMethod(method);
         }
 
+        for (Node e : nodes)
+            e.postProcess();
+
         // generate bitcode
         for (Node e : nodes)
             e.generate(generator);
 
-        debugBitcode(generator);
+        Method main = root.resolveMethod("main", new ArrayList<>());
+        debugBitcode(generator, main);
     }
 
     private static Generator initLLVM() {
@@ -74,7 +78,7 @@ public class ParserTest {
         return new Generator(context, module, builder);
     }
 
-    private static void debugBitcode(Generator generator) {
+    private static void debugBitcode(Generator generator, Method main) {
         IRModule module = generator.getModule();
 
         BytePointer error = new BytePointer((Pointer) null);
@@ -94,6 +98,9 @@ public class ParserTest {
             System.err.println("Failed to create JIT compiler: " + error.getString());
             LLVMDisposeMessage(error);
         }
+
+        IRGenericValue result = engine.runFunction(main.getFunction(), new ArrayList<>());
+        System.out.println("Result: " + result.toInt());
     }
 
     private static List<Token> tokenizeSource() {
