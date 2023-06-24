@@ -78,11 +78,7 @@ public class MethodCall extends Value {
 
         return builder.call(method.getFunction(), arguments
             .stream()
-            .map(arg -> {
-                if (arg instanceof Loadable loadable)
-                    return loadable.load(generator);
-                return arg.generate(generator);
-            })
+            .map(arg -> arg.generateAndLoad(generator))
             .toList());
     }
 

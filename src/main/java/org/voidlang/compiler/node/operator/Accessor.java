@@ -61,7 +61,7 @@ public class Accessor extends Value implements Loadable {
     @Override
     public IRValue generate(Generator generator) {
         if (value instanceof Loadable loadable && !getName().isFieldAccess())
-            return loadable.load(generator);
+            return value.generateAndLoad(generator);
 
         IRContext context = generator.getContext();
         IRBuilder builder = generator.getBuilder();
@@ -82,9 +82,9 @@ public class Accessor extends Value implements Loadable {
     }
 
     @Override
-    public IRValue load(Generator generator) {
+    public IRValue generateAndLoad(Generator generator) {
         if (value instanceof Loadable loadable && !getName().isFieldAccess())
-            return loadable.load(generator);
+            return value.generateAndLoad(generator);
 
         IRContext context = generator.getContext();
         IRBuilder builder = generator.getBuilder();
@@ -102,7 +102,6 @@ public class Accessor extends Value implements Loadable {
 
             return builder.load(fieldType, pointer, "");
         }
-
 
         return value.generate(generator);
     }

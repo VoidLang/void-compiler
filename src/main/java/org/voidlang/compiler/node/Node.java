@@ -78,6 +78,14 @@ public abstract class Node {
     public abstract IRValue generate(Generator generator);
 
     /**
+     * Generate an LLVM instruction for this node
+     * @param generator LLVM instruction generation context
+     */
+    public IRValue generateAndLoad(Generator generator) {
+        return generate(generator);
+    }
+
+    /**
      * Initialize all the child nodes for the overriding node.
      * @param parent parent node of the overriding node
      */

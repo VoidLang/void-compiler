@@ -25,14 +25,8 @@ public class Return extends Node {
     @Override
     public IRValue generate(Generator generator) {
         IRBuilder builder = generator.getBuilder();
-        if (value != null) {
-            IRValue result;
-            if (value instanceof Loadable loadable)
-                result = loadable.load(generator);
-            else
-                result = value.generate(generator);
-            return builder.returnValue(result);
-        }
+        if (value != null)
+            return builder.returnValue(value.generateAndLoad(generator));
         else
             return builder.returnVoid();
     }

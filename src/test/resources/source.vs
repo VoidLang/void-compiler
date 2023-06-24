@@ -4,9 +4,9 @@ class Entity {
 }
 
 int main() {
-    let x = new Entity()
-    x.id = 10
-    x.health = 30
+    let e = new Entity()
+    e.id = 10
+    e.health = 30
 
-    return x.health
+    return e.health + e.id
 }

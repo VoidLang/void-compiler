@@ -85,8 +85,8 @@ public class Operation extends Value {
     @Override
     public IRValue generate(Generator generator) {
         IRBuilder builder = generator.getBuilder();
-        IRValue left = getLeft().generate(generator);
-        IRValue right = getRight().generate(generator);
+        IRValue left = getLeft().generateAndLoad(generator);
+        IRValue right = getRight().generateAndLoad(generator);
         return switch (operator) {
             case ADD -> builder.add(left, right);
             case SUBTRACT -> builder.subtract(left, right);
