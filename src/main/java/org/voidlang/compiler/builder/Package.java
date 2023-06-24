@@ -6,19 +6,19 @@ import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.llvm.element.IRValue;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Getter
 @NodeInfo(type = NodeType.ROOT)
 public class Package extends Node {
     private final Map<String, List<Method>> methods = new HashMap<>();
+
+    private final Map<String, Class> classes = new HashMap<>();
 
     /**
      * Generate an LLVM instruction for this node
@@ -79,9 +79,18 @@ public class Package extends Node {
         return null;
     }
 
+    @Override
+    public @Nullable Type resolveType(String name) {
+        return classes.get(name);
+    }
+
     public void defineMethod(Method method) {
         methods
             .computeIfAbsent(method.getName(), name -> new ArrayList<>())
             .add(method);
+    }
+
+    public void defineClass(Class clazz) {
+        classes.put(clazz.getName(), clazz);
     }
 }

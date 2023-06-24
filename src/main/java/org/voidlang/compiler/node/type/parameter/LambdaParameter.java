@@ -20,7 +20,7 @@ import org.voidlang.llvm.element.IRType;
  */
 @AllArgsConstructor
 @Getter
-public class LambdaParameter extends Type {
+public class LambdaParameter implements Type {
     /**
      * The type of the lambda parameter.
      */

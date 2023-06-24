@@ -18,7 +18,7 @@ import org.voidlang.llvm.element.IRType;
  * {@code []} is a one-dimensional array specifier.
  */
 @Getter
-public class ScalarType extends Type {
+public class ScalarType implements Type {
     /**
      * The fully qualified name of the type.
      */

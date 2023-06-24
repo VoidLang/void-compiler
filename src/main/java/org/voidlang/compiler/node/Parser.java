@@ -22,8 +22,7 @@ import org.voidlang.compiler.node.operator.Accessor;
 import org.voidlang.compiler.node.operator.Operation;
 import org.voidlang.compiler.node.operator.Operator;
 import org.voidlang.compiler.node.element.Class;
-import org.voidlang.compiler.node.value.Group;
-import org.voidlang.compiler.node.value.Literal;
+import org.voidlang.compiler.node.value.*;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.array.Dimension;
 import org.voidlang.compiler.node.type.core.LambdaType;
@@ -45,10 +44,8 @@ import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.type.named.NamedType;
 import org.voidlang.compiler.node.type.named.NamedTypeGroup;
 import org.voidlang.compiler.node.type.parameter.LambdaParameter;
-import org.voidlang.compiler.node.value.Value;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
-import org.voidlang.compiler.node.value.Tuple;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -927,6 +924,10 @@ public class Parser {
         else if (peek().is(TokenType.IDENTIFIER))
             return nextQualifiedNameOrCall();
 
+        // handle new statement
+        else if (peek().is(TokenType.EXPRESSION, "new"))
+            return nextNewType(ignoreJoin);
+
         System.err.println(ConsoleFormat.RED + "Error (Value) " + peek());
         return new Error();
     }
@@ -964,6 +965,86 @@ public class Parser {
         }
 
         return nextValue(ignoreJoin);
+    }
+
+    private Value nextNewType(boolean ignoreJoin) {
+        // skip the "new" keyword
+        get(TokenType.EXPRESSION, "new");
+
+        // parse the name of the target type
+        QualifiedName name = nextQualifiedName();
+
+        // check if the "new" keyword has an argument list
+        List<Value> arguments = new ArrayList<>();
+        if (peek().is(TokenType.OPEN))
+            arguments = nextArgumentList();
+
+        // check if the "new" keyword has an initializator
+        Initializator initializator = null;
+        if (peek().is(TokenType.BEGIN))
+            initializator = nextInitializator();
+
+        Value node = new New(name, arguments, initializator);
+
+        // TODO handle normal and join operator
+
+        // check if the method call is used as a statement or isn't expecting to be passed in a nested context
+        // let result = new Foo("my input");
+        //                                 ^ the semicolon indicates, that the method call does not have any
+        //                                   expressions after. unlike: let res = foo() + bar
+        //                                   let test = new Foo(); <- method call value is terminated, not expecting anything afterwards
+        if (peek().is(TokenType.SEMICOLON))
+            get();
+
+        return node;
+    }
+
+    /**
+     * Parse the next structure initializator declaration.
+     * @return new structure initializator
+     */
+    private Initializator nextInitializator() {
+        // skip the '{' symbol
+        get(TokenType.BEGIN);
+
+        // parse the members of the initializator
+        Map<String, Node> members = new LinkedHashMap<>();
+        while (!peek().is(TokenType.END)) {
+            // parse the key of the member
+            String key = get(TokenType.IDENTIFIER).getValue();
+
+            // handle the separator ':' symbol of the key-value pair
+            get(TokenType.COLON);
+
+            // parse the value of the member
+            Node value;
+            // check if the value is also an initializer
+            if (peek().is(TokenType.BEGIN))
+                value = nextInitializator();
+            // handle regular initializator value
+            else
+                value = nextValue();
+
+            // register the initializator member
+            // TODO warn for duplicate members
+            members.put(key, value);
+
+            // handle auto-inserted semicolon
+            if (peek().is(TokenType.SEMICOLON, "auto"))
+                get();
+
+            // check if there are more members yet to be parsed
+            if (peek().is(TokenType.COMMA))
+                get();
+            // no more initializator members
+            else
+                break;
+        }
+
+        // skip the '}' symbol
+        get(TokenType.END);
+
+        return new Initializator(members);
     }
 
     /**
@@ -1559,7 +1640,7 @@ public class Parser {
      * Test if the given operator is applicable after a value.
      * @return true if the operator expects a value on its left
      */
-    private boolean sRightOperator(String target) {
+    private boolean isRightOperator(String target) {
         return switch (target) {
             case "++", "--" -> true;
             default -> false;

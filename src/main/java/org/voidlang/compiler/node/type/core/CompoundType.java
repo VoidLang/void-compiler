@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * Here {@code (bool, string)} is a {@link CompoundType} of two {@link ScalarType} elements: {@code bool} and {@code string}.
  */
 @Getter
-public class CompoundType extends Type {
+public class CompoundType implements Type {
     /**
      * The list of the held nested type entries.
      */

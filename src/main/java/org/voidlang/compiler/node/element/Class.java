@@ -6,6 +6,7 @@ import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.control.Element;
 import org.voidlang.compiler.node.type.generic.GenericTypeList;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRStruct;
@@ -13,17 +14,21 @@ import org.voidlang.llvm.element.IRType;
 import org.voidlang.llvm.element.IRValue;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Getter
 @NodeInfo(type = NodeType.CLASS)
-public class Class extends Node {
+public class Class extends Element {
     private final String name;
 
     private final GenericTypeList generics;
 
     private final List<Node> body;
+
+    private final Map<String, Field> fields = new LinkedHashMap<>();
 
     private IRStruct struct;
 
@@ -34,8 +39,19 @@ public class Class extends Node {
     @Override
     public void preProcess(Node parent) {
         this.parent = parent;
-        for (Node node : body)
+        int fieldIndex = 0;
+        for (Node node : body) {
             node.setParent(this);
+            if (!(node instanceof Field field))
+                continue;
+            field.setFieldIndex(fieldIndex++);
+            fields.put(field.getName(), field);
+        }
+    }
+
+    @Override
+    public Field resolveField(String name) {
+        return fields.get(name);
     }
 
     /**
@@ -81,7 +97,11 @@ public class Class extends Node {
      * @param context LLVM module context
      * @return type ir code wrapper
      */
+    @Override
     public IRType generateType(IRContext context) {
+        // do not generate the struct more than one time
+        if (struct != null)
+            return struct;
         return struct = IRStruct.define(context, name);
     }
 }

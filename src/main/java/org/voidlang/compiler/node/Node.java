@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
+import org.voidlang.compiler.node.control.Element;
 import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRValue;
@@ -21,7 +22,7 @@ import java.util.List;
 @Getter
 public abstract class Node {
     /**
-     * The node pretty print debuffer.
+     * The node pretty print debugger.
      */
     protected static final Prettier prettier = new Prettier();
 
@@ -102,7 +103,7 @@ public abstract class Node {
      */
     @Nullable
     public Type resolveType(String name) {
-        return parent.resolveType(name);
+        return parent != null ? parent.resolveType(name) : null;
     }
 
     /**

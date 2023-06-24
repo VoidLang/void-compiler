@@ -6,6 +6,7 @@ import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRBuilder;
@@ -67,12 +68,25 @@ public class LocalDeclareAssign extends Value implements PointerOwner, Loadable 
         IRContext context = builder.getContext();
 
         pointerType = getValue().getValueType().generateType(context);
-        pointer = builder.alloc(pointerType, name);
 
-        IRValue value = getValue().generate(generator);
-        builder.store(value, pointer);
+        // let the value allocate the value if it is an allocator
+        if (value instanceof Allocator allocator)
+            pointer = allocator.allocate(generator, name);
+        // allocate the value on the stack, and assign its value
+        else {
+            pointer = builder.alloc(pointerType, name);
 
-        return load(generator);
+            IRValue value = getValue().generate(generator);
+            builder.store(value, pointer);
+        }
+
+        // do not load the values from class struct pointers, as classes
+        // are meant to be handled by reference, and not by value
+        if (value.getValueType() instanceof Class)
+            return pointer;
+        // TODO maybe load the value from allocated pointer
+        //  for now, that should be done manually by a Node
+        return null;
     }
 
     @Override

@@ -44,6 +44,8 @@ public class Accessor extends Value {
     @Override
     public void postProcessUse(Generator generator) {
         value = resolveName(name.getDirect());
+        if (value == null)
+            throw new IllegalStateException("Unable to fetch New value: " + name.getDirect());
         // postProcessUse is disabled here, as it would create an infinite loop
     }
 

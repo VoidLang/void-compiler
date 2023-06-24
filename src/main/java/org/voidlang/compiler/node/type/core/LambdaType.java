@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * Here {@code |int a, bool b|} are the two named parameters of the lambda.
  */
 @Getter
-public class LambdaType extends Type {
+public class LambdaType implements Type {
     /**
      * the return type of the lambda type.
      */

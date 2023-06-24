@@ -20,42 +20,42 @@ import org.voidlang.llvm.element.IRType;
  * @see ScalarType
  * @see CompoundType
  */
-public abstract class Type {
+public interface Type {
     /**
      * The type wrapper for the "let" keyword.
      */
-    public static final Type LET = primitive("let");
+    Type LET = primitive("let");
 
     /**
      * The type wrapper for an 8-bit integer.
      */
-    public static final Type BYTE = primitive("byte");
+    Type BYTE = primitive("byte");
 
     /**
      * The type wrapper for a 16-bit integer.
      */
-    public static final Type SHORT = primitive("short");
+    Type SHORT = primitive("short");
 
     /**
      * The type wrapper for a 32-bit integer.
      */
-    public static final Type INT = primitive("int");
+    Type INT = primitive("int");
 
     /**
      * The type wrapper for a 64-bit integer.
      */
-    public static final Type LONG = primitive("long");
+    Type LONG = primitive("long");
 
     /**
      * The type wrapper for a 1-bit boolean.
      */
-    public static final Type BOOL = primitive("bool");
+    Type BOOL = primitive("bool");
     
     /**
      * Indicate, whether this entry is a {@link ScalarType}, so it does not have any nested members.
      * @return true if this type entry is a direct type
      */
-    public boolean isScalar() {
+    default boolean isScalar() {
         return this instanceof ScalarType;
     }
 
@@ -63,7 +63,7 @@ public abstract class Type {
      * Indicate, whether this entry is a {@link CompoundType}, so it has nested members only.
      * @return true if this type entry is a group of type entries
      */
-    public boolean isCompound() {
+    default boolean isCompound() {
         return this instanceof CompoundType;
     }
 
@@ -71,7 +71,7 @@ public abstract class Type {
      * Indicate, whether this entry is a {@link LambdaType}, so it has nested parameter types.
      * @return true if this type entry is a callable lambda function
      */
-    public boolean isLambda() {
+    default boolean isLambda() {
         return this instanceof LambdaType;
     }
 
@@ -80,7 +80,7 @@ public abstract class Type {
      * @param type primitive type name
      * @return primitive type wrapper
      */
-    public static Type primitive(String type) {
+    static Type primitive(String type) {
         return new ScalarType(
             QualifiedName.primitive(type),
             GenericArgumentList.implicit(),
@@ -93,5 +93,5 @@ public abstract class Type {
      * @param context LLVM module context
      * @return type ir code wrapper
      */
-    public abstract IRType generateType(IRContext context);
+    IRType generateType(IRContext context);
 }

@@ -47,8 +47,10 @@ public class ParserTest {
 
         // preprocess types
         for (Node e : nodes) {
-            if (e instanceof Class clazz)
+            if (e instanceof Class clazz) {
                 clazz.generateType(generator.getContext());
+                root.defineClass(clazz);
+            }
             else if (e instanceof Method method)
                 root.defineMethod(method);
         }

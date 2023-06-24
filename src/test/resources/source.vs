@@ -1,11 +1,8 @@
-int fib(int n) {
-    let x = n
-    if (x > 100) {
-        x = 100
-    }
-    return x
+class Entity {
+    int id
 }
 
 int main() {
-    return fib(23)
+    let x = new Entity()
+    return 100
 }

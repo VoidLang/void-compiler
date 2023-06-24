@@ -19,7 +19,7 @@ import org.voidlang.compiler.node.type.core.Type;
  * @see NamedLambdaType
  * @see Type
  */
-public abstract class NamedType extends Type {
+public abstract class NamedType implements Type {
     /**
      * Indicate, whether this entry is a {@link NamedScalarType}, so it does not have any nested members.
      * @return true if this type entry is a direct type
