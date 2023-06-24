@@ -40,6 +40,8 @@ public class Package extends Node {
             for (Method method : methodList)
                 method.preProcess(this);
         }
+        for (Class clazz : classes.values())
+            clazz.preProcess(this);
     }
 
     /**
@@ -52,6 +54,22 @@ public class Package extends Node {
             for (Method method : methodList)
                 method.postProcessType(generator);
         }
+        for (Class clazz : classes.values())
+            clazz.postProcessType(generator);
+    }
+
+    /**
+     * Initialize all class member declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessMember(Generator generator) {
+        for (List<Method> methodList : methods.values()) {
+            for (Method method : methodList)
+                method.postProcessMember(generator);
+        }
+        for (Class clazz : classes.values())
+            clazz.postProcessMember(generator);
     }
 
     /**
@@ -64,6 +82,8 @@ public class Package extends Node {
             for (Method method : methodList)
                 method.postProcessUse(generator);
         }
+        for (Class clazz : classes.values())
+            clazz.postProcessUse(generator);
     }
 
     @Override

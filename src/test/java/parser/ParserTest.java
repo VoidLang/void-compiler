@@ -59,6 +59,9 @@ public class ParserTest {
             e.postProcessType(generator);
 
         for (Node e : nodes)
+            e.postProcessMember(generator);
+
+        for (Node e : nodes)
             e.postProcessUse(generator);
 
         // generate bitcode

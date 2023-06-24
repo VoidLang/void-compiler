@@ -28,8 +28,6 @@ public class FieldAssign extends Value {
     public IRValue generate(Generator generator) {
         IRBuilder builder = generator.getBuilder();
 
-        System.err.println("FIELD ASS");
-
         // generate the pointer for the field
         IRValue pointer = accessor.generate(generator);
 
@@ -60,6 +58,16 @@ public class FieldAssign extends Value {
     public void postProcessType(Generator generator) {
         accessor.postProcessType(generator);
         value.postProcessType(generator);
+    }
+
+    /**
+     * Initialize all class member declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessMember(Generator generator) {
+        accessor.postProcessMember(generator);
+        value.postProcessMember(generator);
     }
 
     /**

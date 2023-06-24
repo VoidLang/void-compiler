@@ -39,6 +39,16 @@ public class Tuple extends Value {
     }
 
     /**
+     * Initialize all class member declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessMember(Generator generator) {
+        for (Node node : members)
+            node.postProcessMember(generator);
+    }
+
+    /**
      * Initialize all type uses for the overriding node.
      * @param generator LLVM code generator
      */

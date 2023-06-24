@@ -6,6 +6,7 @@ import org.voidlang.compiler.node.*;
 import org.voidlang.compiler.node.local.LazyPointerOwner;
 import org.voidlang.compiler.node.local.LocalDeclareAssign;
 import org.voidlang.compiler.node.local.PointerOwner;
+import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.name.Name;
 import org.voidlang.compiler.node.type.name.ScalarName;
@@ -19,6 +20,7 @@ import java.util.*;
 @Getter
 @NodeInfo(type = NodeType.METHOD)
 public class Method extends Node {
+
     private final Type returnType;
 
     private final String name;
@@ -27,6 +29,7 @@ public class Method extends Node {
 
     private final List<Node> body;
 
+    private Type resolvedType;
     private IRFunction function;
     private List<IRType> paramTypes;
     private Generator generator;
@@ -44,13 +47,13 @@ public class Method extends Node {
     }
 
     /**
-     * Initialize all type declarations for the overriding node.
+     * Initialize all class member declarations for the overriding node.
      * @param generator LLVM code generator
      */
     @Override
-    public void postProcessType(Generator generator) {
+    public void postProcessMember(Generator generator) {
         for (Node node : body)
-            node.postProcessType(generator);
+            node.postProcessMember(generator);
 
         // extract the context from the generator
         IRContext context = generator.getContext();
@@ -67,6 +70,16 @@ public class Method extends Node {
 
         // create the LLVM function for the target context
         function = IRFunction.create(module, name, functionType);
+    }
+
+    /**
+     * Initialize all type declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessType(Generator generator) {
+        for (Node node : body)
+            node.postProcessType(generator);
     }
 
     /**
@@ -172,6 +185,16 @@ public class Method extends Node {
         public void postProcessType(Generator generator) {
             for (Node node : body)
                 node.postProcessType(generator);
+        }
+
+        /**
+         * Initialize all class member declarations for the overriding node.
+         * @param generator LLVM code generator
+         */
+        @Override
+        public void postProcessMember(Generator generator) {
+            for (Node node : body)
+                node.postProcessMember(generator);
         }
 
         /**

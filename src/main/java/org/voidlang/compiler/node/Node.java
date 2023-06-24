@@ -5,7 +5,6 @@ import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
-import org.voidlang.compiler.node.control.Element;
 import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRValue;
@@ -96,6 +95,12 @@ public abstract class Node {
      * @param generator LLVM code generator
      */
     public abstract void postProcessType(Generator generator);
+
+    /**
+     * Initialize all class member declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    public abstract void postProcessMember(Generator generator);
 
     /**
      * Initialize all type uses for the overriding node.

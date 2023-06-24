@@ -6,14 +6,13 @@ import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.element.Class;
+import org.voidlang.compiler.node.element.Field;
 import org.voidlang.compiler.node.local.Allocator;
 import org.voidlang.compiler.node.local.PointerOwner;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.Type;
-import org.voidlang.llvm.element.IRBuilder;
-import org.voidlang.llvm.element.IRContext;
-import org.voidlang.llvm.element.IRType;
-import org.voidlang.llvm.element.IRValue;
+import org.voidlang.llvm.element.*;
 
 import java.util.List;
 
@@ -29,7 +28,7 @@ public class New extends Value implements PointerOwner, Allocator {
 
     private Type type;
 
-    private IRType pointerType;
+    private IRStruct pointerType;
     private IRValue pointer;
 
     /**
@@ -50,8 +49,28 @@ public class New extends Value implements PointerOwner, Allocator {
         IRContext context = generator.getContext();
         IRBuilder builder = generator.getBuilder();
 
-        pointerType = getType().generateType(context);
-        return pointer = builder.alloc(pointerType, name);
+        pointerType = (IRStruct) type.generateType(context);
+        pointer = builder.alloc(pointerType, name);
+
+        if (type instanceof Class clazz) {
+            for (Field field : clazz.getFields().values()) {
+                Type fieldType = field.getType();
+                Node fieldValue = field.getValue();
+
+                IRValue fieldPointer = builder.structMemberPointer(pointerType, pointer,
+                    field.getFieldIndex(), "init " + field.getName());
+
+                IRValue value;
+                if (fieldValue != null)
+                    value = fieldValue.generateAndLoad(generator);
+                else
+                    value = fieldType.defaultValue(generator);
+
+                builder.store(value, fieldPointer);
+            }
+        }
+
+        return pointer;
     }
 
     /**
@@ -61,6 +80,10 @@ public class New extends Value implements PointerOwner, Allocator {
     @Override
     public void preProcess(Node parent) {
         this.parent = parent;
+        for (Node node : arguments)
+            node.preProcess(this);
+        if (initializator != null)
+            initializator.preProcess(this);
     }
 
     /**
@@ -69,6 +92,22 @@ public class New extends Value implements PointerOwner, Allocator {
      */
     @Override
     public void postProcessType(Generator generator) {
+        for (Node node : arguments)
+            node.postProcessType(generator);
+        if (initializator != null)
+            initializator.postProcessType(generator);
+    }
+
+    /**
+     * Initialize all class member declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessMember(Generator generator) {
+        for (Node node : arguments)
+            node.postProcessMember(generator);
+        if (initializator != null)
+            initializator.postProcessMember(generator);
     }
 
     /**
@@ -77,6 +116,11 @@ public class New extends Value implements PointerOwner, Allocator {
      */
     @Override
     public void postProcessUse(Generator generator) {
+        for (Node node : arguments)
+            node.postProcessUse(generator);
+        if (initializator != null)
+            initializator.postProcessUse(generator);
+
         type = resolveType(name.getDirect());
         if (type == null)
             throw new IllegalStateException("Unable to fetch type for New: " + name.getDirect());

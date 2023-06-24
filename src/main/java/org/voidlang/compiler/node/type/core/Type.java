@@ -1,10 +1,12 @@
 package org.voidlang.compiler.node.type.core;
 
+import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.generic.GenericArgumentList;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
+import org.voidlang.llvm.element.IRValue;
 
 /**
  * Represents an entry which may be a {@link ScalarType} or a {@link CompoundType}.
@@ -94,4 +96,14 @@ public interface Type {
      * @return type ir code wrapper
      */
     IRType generateType(IRContext context);
+
+    default IRValue defaultValue(Generator generator) {
+        IRType irType = generateType(generator.getContext());
+        if (!(this instanceof ScalarType scalar))
+            return irType.constNull();
+        return switch (scalar.getName().getTypes().get(0).getType()) {
+            case BOOLEAN, BYTE, SHORT, INTEGER, LONG -> irType.constInt(0);
+            default -> irType.constNull();
+        };
+    }
 }

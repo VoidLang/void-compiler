@@ -57,6 +57,19 @@ public class MultiField extends Node {
     }
 
     /**
+     * Initialize all class member declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessMember(Generator generator) {
+        for (Node node : values.values()) {
+            if (node == null)
+                continue;
+            node.postProcessMember(generator);
+        }
+    }
+
+    /**
      * Initialize all type uses for the overriding node.
      * @param generator LLVM code generator
      */

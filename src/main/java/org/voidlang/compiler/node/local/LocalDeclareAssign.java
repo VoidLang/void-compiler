@@ -49,6 +49,16 @@ public class LocalDeclareAssign extends Value implements PointerOwner, Loadable 
     }
 
     /**
+     * Initialize all class member declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessMember(Generator generator) {
+        if (value != null)
+            value.postProcessMember(generator);
+    }
+
+    /**
      * Initialize all type uses for the overriding node.
      * @param generator LLVM code generator
      */

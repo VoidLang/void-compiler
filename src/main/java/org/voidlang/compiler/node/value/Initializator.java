@@ -31,6 +31,9 @@ public class Initializator extends Node {
      */
     @Override
     public void preProcess(Node parent) {
+        this.parent = parent;
+        for (Node value : members.values())
+            value.preProcess(this);
     }
 
     /**
@@ -39,6 +42,18 @@ public class Initializator extends Node {
      */
     @Override
     public void postProcessType(Generator generator) {
+        for (Node value : members.values())
+            value.postProcessType(generator);
+    }
+
+    /**
+     * Initialize all class member declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessMember(Generator generator) {
+        for (Node value : members.values())
+            value.postProcessMember(generator);
     }
 
     /**
@@ -47,5 +62,7 @@ public class Initializator extends Node {
      */
     @Override
     public void postProcessUse(Generator generator) {
+        for (Node value : members.values())
+            value.postProcessUse(generator);
     }
 }

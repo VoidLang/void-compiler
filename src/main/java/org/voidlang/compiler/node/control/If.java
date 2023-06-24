@@ -58,6 +58,21 @@ public class If extends Instruction {
     }
 
     /**
+     * Initialize all class member declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessMember(Generator generator) {
+        condition.postProcessMember(generator);
+        for (Node node : body)
+            node.postProcessMember(generator);
+        for (ElseIf elseIf : elseIfs)
+            elseIf.postProcessMember(generator);
+        if (elseCase != null)
+            elseCase.postProcessMember(generator);
+    }
+
+    /**
      * Initialize all type uses for the overriding node.
      * @param generator LLVM code generator
      */

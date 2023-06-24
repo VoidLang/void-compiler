@@ -2,11 +2,13 @@ package org.voidlang.compiler.node.element;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.control.Element;
+import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.generic.GenericTypeList;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRStruct;
@@ -42,10 +44,17 @@ public class Class extends Element {
         int fieldIndex = 0;
         for (Node node : body) {
             node.setParent(this);
-            if (!(node instanceof Field field))
-                continue;
-            field.setFieldIndex(fieldIndex++);
-            fields.put(field.getName(), field);
+            if (node instanceof Field field) {
+                field.setFieldIndex(fieldIndex++);
+                fields.put(field.getName(), field);
+            } else if (node instanceof MultiField multiField) {
+                Type type = multiField.getType();
+                for (Map.Entry<String, Node> entry : multiField.getValues().entrySet()) {
+                    Field field = new Field(type, entry.getKey(), entry.getValue());
+                    field.setFieldIndex(fieldIndex++);
+                    fields.put(field.getName(), field);
+                }
+            }
         }
     }
 
@@ -62,6 +71,16 @@ public class Class extends Element {
     public void postProcessType(Generator generator) {
         for (Node node : body)
             node.postProcessType(generator);
+    }
+
+    /**
+     * Initialize all class member declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessMember(Generator generator) {
+        for (Node node : body)
+            node.postProcessMember(generator);
     }
 
     /**
@@ -85,8 +104,12 @@ public class Class extends Element {
         for (Node node : body) {
             if (node instanceof Field field)
                 members.add(field.getType().generateType(context));
-            else if (node instanceof MultiField multiField)
-                members.add(multiField.getType().generateType(context));
+            else if (node instanceof MultiField multiField) {
+                IRType type = multiField.getType().generateType(context);
+                for (int i = 0; i < multiField.getValues().size(); i++)
+                    members.add(type);
+            }
+
         }
         struct.setMembers(members);
         return null;
