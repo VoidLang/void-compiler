@@ -25,30 +25,7 @@ public class If extends Instruction {
     private Else elseCase;
 
     /**
-     * Generate an LLVM instruction for this node
-     * @param generator LLVM instruction generation context
-     */
-    @Override
-    public IRValue generate(Generator generator) {
-        IRBuilder builder = generator.getBuilder();
-
-        IRBlock ifBlock = IRBlock.create(getContext().getFunction(), "if");
-        IRBlock exit = IRBlock.create(getContext().getFunction(), "exit");
-
-        IRValue condition = getCondition().generate(generator);
-        builder.jumpIf(condition, ifBlock, exit);
-
-        builder.positionAtEnd(ifBlock);
-        for (Node node : body)
-            node.generate(generator);
-
-        builder.positionAtEnd(exit);
-
-        return null;
-    }
-
-    /**
-     * Initialize all the child nodes for this node.
+     * Initialize all the child nodes for the overriding node.
      * @param parent parent node of the overriding node
      */
     @Override
@@ -63,5 +40,62 @@ public class If extends Instruction {
             elseIf.preProcess(parent);
         if (elseCase != null)
             elseCase.preProcess(parent);
+    }
+
+    /**
+     * Initialize all type declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessType(Generator generator) {
+        condition.postProcessType(generator);
+        for (Node node : body)
+            node.postProcessType(generator);
+        for (ElseIf elseIf : elseIfs)
+            elseIf.postProcessType(generator);
+        if (elseCase != null)
+            elseCase.postProcessType(generator);
+    }
+
+    /**
+     * Initialize all type uses for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessUse(Generator generator) {
+        condition.postProcessUse(generator);
+        for (Node node : body)
+            node.postProcessUse(generator);
+        for (ElseIf elseIf : elseIfs)
+            elseIf.postProcessUse(generator);
+        if (elseCase != null)
+            elseCase.postProcessUse(generator);
+    }
+
+    /**
+     * Generate an LLVM instruction for this node
+     * @param generator LLVM instruction generation context
+     */
+    @Override
+    public IRValue generate(Generator generator) {
+        IRBuilder builder = generator.getBuilder();
+
+        IRBlock ifBlock = IRBlock.create(getContext().getFunction(), "if");
+        IRBlock merge = IRBlock.create(getContext().getFunction(), "merge");
+
+        IRValue condition = getCondition().generate(generator);
+        builder.jumpIf(condition, ifBlock, merge);
+
+        builder.positionAtEnd(ifBlock);
+        for (Node node : body)
+            node.generate(generator);
+        // jump to the merge block if the last statement of the IF block
+        // is not a return statement TODO also check for GOTO
+        if (body.isEmpty() || !body.get(body.size() - 1).is(NodeType.RETURN))
+            builder.jump(merge);
+
+        builder.positionAtEnd(merge);
+
+        return null;
     }
 }

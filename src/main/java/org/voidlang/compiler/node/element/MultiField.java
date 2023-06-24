@@ -30,7 +30,7 @@ public class MultiField extends Node {
     }
 
     /**
-     * Initialize all the child nodes for this node.
+     * Initialize all the child nodes for the overriding node.
      * @param parent parent node of the overriding node
      */
     @Override
@@ -40,6 +40,32 @@ public class MultiField extends Node {
             if (node == null)
                 continue;
             node.preProcess(this);
+        }
+    }
+
+    /**
+     * Initialize all type declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessType(Generator generator) {
+        for (Node node : values.values()) {
+            if (node == null)
+                continue;
+            node.postProcessType(generator);
+        }
+    }
+
+    /**
+     * Initialize all type uses for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessUse(Generator generator) {
+        for (Node node : values.values()) {
+            if (node == null)
+                continue;
+            node.postProcessUse(generator);
         }
     }
 }

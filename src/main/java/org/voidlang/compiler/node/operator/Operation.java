@@ -48,7 +48,7 @@ public class Operation extends Value {
     private Value right;
 
     /**
-     * Initialize all the child nodes for this node.
+     * Initialize all the child nodes for the overriding node.
      * @param parent parent node of the overriding node
      */
     @Override
@@ -56,6 +56,26 @@ public class Operation extends Value {
         this.parent = parent;
         left.preProcess(this);
         right.preProcess(this);
+    }
+
+    /**
+     * Initialize all type declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessType(Generator generator) {
+        left.postProcessType(generator);
+        right.postProcessType(generator);
+    }
+
+    /**
+     * Initialize all type uses for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessUse(Generator generator) {
+        left.postProcessUse(generator);
+        right.postProcessUse(generator);
     }
 
     /**
@@ -80,6 +100,9 @@ public class Operation extends Value {
 
             case LESS_THAN -> builder.compareInt(Comparator.SIGNED_INTEGER_LESS_THAN, left, right);
             case LESS_OR_EQUAL -> builder.compareInt(Comparator.SIGNED_INTEGER_LESS_OR_EQUAL, left, right);
+
+            case AND -> builder.and(left, right);
+            case OR -> builder.or(left, right);
 
             default -> throw new IllegalStateException("Unable to generate complex operator for " + operator);
         };

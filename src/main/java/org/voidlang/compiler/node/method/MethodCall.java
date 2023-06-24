@@ -28,7 +28,7 @@ public class MethodCall extends Value {
     private Method method;
 
     /**
-     * Initialize all the child nodes for this node.
+     * Initialize all the child nodes for the overriding node.
      * @param parent parent node of the overriding node
      */
     @Override
@@ -38,13 +38,30 @@ public class MethodCall extends Value {
             node.preProcess(this);
     }
 
+    /**
+     * Initialize all type declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessType(Generator generator) {
+        for (Node node : arguments)
+            node.postProcessType(generator);
+    }
+
+    /**
+     * Initialize all type uses for the overriding node.
+     * @param generator LLVM code generator
+     */
     @Override
     public void postProcessUse(Generator generator) {
-        super.postProcessUse(generator);
+        for (Value node : arguments)
+            node.postProcessUse(generator);
+
         List<Type> argTypes = arguments
             .stream()
             .map(Value::getValueType)
             .toList();
+
         method = resolveMethod(name.getDirect(), argTypes);
     }
 

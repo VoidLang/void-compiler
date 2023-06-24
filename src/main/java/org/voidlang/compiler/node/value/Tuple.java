@@ -18,7 +18,7 @@ public class Tuple extends Value {
     private final List<Value> members;
 
     /**
-     * Initialize all the child nodes for this node.
+     * Initialize all the child nodes for the overriding node.
      * @param parent parent node of the overriding node
      */
     @Override
@@ -26,6 +26,26 @@ public class Tuple extends Value {
         this.parent = parent;
         for (Node node : members)
             node.preProcess(this);
+    }
+
+    /**
+     * Initialize all type declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessType(Generator generator) {
+        for (Node node : members)
+            node.postProcessType(generator);
+    }
+
+    /**
+     * Initialize all type uses for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessUse(Generator generator) {
+        for (Node node : members)
+            node.postProcessUse(generator);
     }
 
     /**

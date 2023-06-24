@@ -30,7 +30,7 @@ public class Package extends Node {
     }
 
     /**
-     * Initialize all the child nodes for this node.
+     * Initialize all the child nodes for the overriding node.
      * @param parent parent node of the overriding node
      */
     @Override
@@ -39,6 +39,30 @@ public class Package extends Node {
         for (List<Method> methodList : methods.values()) {
             for (Method method : methodList)
                 method.preProcess(this);
+        }
+    }
+
+    /**
+     * Initialize all type declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessType(Generator generator) {
+        for (List<Method> methodList : methods.values()) {
+            for (Method method : methodList)
+                method.postProcessType(generator);
+        }
+    }
+
+    /**
+     * Initialize all type uses for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessUse(Generator generator) {
+        for (List<Method> methodList : methods.values()) {
+            for (Method method : methodList)
+                method.postProcessUse(generator);
         }
     }
 

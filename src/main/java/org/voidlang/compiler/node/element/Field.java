@@ -25,16 +25,7 @@ public class Field extends Node {
     private final Node value;
 
     /**
-     * Generate an LLVM instruction for this node
-     * @param generator LLVM instruction generation context
-     */
-    @Override
-    public IRValue generate(Generator generator) {
-        return null;
-    }
-
-    /**
-     * Initialize all the child nodes for this node.
+     * Initialize all the child nodes for the overriding node.
      * @param parent parent node of the overriding node
      */
     @Override
@@ -42,5 +33,34 @@ public class Field extends Node {
         this.parent = parent;
         if (value != null)
             value.setParent(this);
+    }
+
+    /**
+     * Initialize all type declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessType(Generator generator) {
+        if (value != null)
+            value.postProcessType(generator);
+    }
+
+    /**
+     * Initialize all type uses for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessUse(Generator generator) {
+        if (value != null)
+            value.postProcessUse(generator);
+    }
+
+    /**
+     * Generate an LLVM instruction for this node
+     * @param generator LLVM instruction generation context
+     */
+    @Override
+    public IRValue generate(Generator generator) {
+        return null;
     }
 }

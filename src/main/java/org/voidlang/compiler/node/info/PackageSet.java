@@ -1,5 +1,6 @@
 package org.voidlang.compiler.node.info;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
@@ -11,6 +12,7 @@ import org.voidlang.llvm.element.IRValue;
  * Represents a package name declaration of a file.
  */
 @RequiredArgsConstructor
+@Getter
 @NodeInfo(type = NodeType.PACKAGE)
 public class PackageSet extends Node {
     /**
@@ -19,10 +21,28 @@ public class PackageSet extends Node {
     private final String name;
 
     /**
-     * Get the name of the package to be declared.
+     * Initialize all the child nodes for the overriding node.
+     * @param parent parent node of the overriding node
      */
-    public String getName() {
-        return name;
+    @Override
+    public void preProcess(Node parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * Initialize all type declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessType(Generator generator) {
+    }
+
+    /**
+     * Initialize all type uses for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessUse(Generator generator) {
     }
 
     /**
@@ -32,14 +52,5 @@ public class PackageSet extends Node {
     @Override
     public IRValue generate(Generator generator) {
         return null;
-    }
-
-    /**
-     * Initialize all the child nodes for this node.
-     * @param parent parent node of the overriding node
-     */
-    @Override
-    public void preProcess(Node parent) {
-        this.parent = parent;
     }
 }

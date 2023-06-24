@@ -9,14 +9,9 @@ import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRValue;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
 import org.voidlang.compiler.node.type.core.Type;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents an instruction node that is parsed from raw tokens.
@@ -25,6 +20,9 @@ import java.util.Map;
  */
 @Getter
 public abstract class Node {
+    /**
+     * The node pretty print debuffer.
+     */
     protected static final Prettier prettier = new Prettier();
 
     /**
@@ -32,6 +30,9 @@ public abstract class Node {
      */
     private final NodeType nodeType;
 
+    /**
+     * The parent node of the overriding node.
+     */
     @Setter
     protected Node parent;
 
@@ -76,66 +77,22 @@ public abstract class Node {
     public abstract IRValue generate(Generator generator);
 
     /**
-     * Initialize all the child nodes for this node.
+     * Initialize all the child nodes for the overriding node.
      * @param parent parent node of the overriding node
      */
     public abstract void preProcess(Node parent);
 
     /**
-     *
+     * Initialize all type declarations for the overriding node.
+     * @param generator LLVM code generator
      */
-    public void postProcessType(Generator generator) {
-        getChildren().forEach(node -> node.postProcessType(generator));
-    }
+    public abstract void postProcessType(Generator generator);
 
-    public void postProcessUse(Generator generator) {
-        getChildren().forEach(node -> node.postProcessUse(generator));
-    }
-
-    private List<Node> getChildren() {
-        List<Node> children = new ArrayList<>();
-        for (Field field : getClass().getDeclaredFields()) {
-            field.setAccessible(true);
-            if (field.getName().equals("parent"))
-                continue;
-            if (Modifier.isTransient(field.getModifiers()))
-                continue;
-            //if (!Modifier.isFinal(field.getModifiers()))
-            //    continue;
-            Object value;
-            try {
-                value = field.get(this);
-            } catch (IllegalAccessException e) {
-                System.err.println("Unable to initialize parent " + field + " for class " + getClass());
-                continue;
-            }
-            if (value instanceof Node node)
-                children.add(node);
-            else if (value instanceof List<?> list) {
-                ParameterizedType genericType = (ParameterizedType) field.getGenericType();
-                Class<?> listType = (Class<?>) genericType.getActualTypeArguments()[0];
-                if (!Node.class.isAssignableFrom(listType))
-                    continue;
-                children.addAll(list
-                    .stream()
-                    .map(e -> (Node) e)
-                    .toList());
-            }
-            else if (value instanceof Map<?,?> map) {
-                ParameterizedType genericType = (ParameterizedType) field.getGenericType();
-                Class<?> valueType = (Class<?>) genericType.getActualTypeArguments()[1];
-                if (!Node.class.isAssignableFrom(valueType))
-                    continue;
-                children.addAll(map
-                    .values()
-                    .stream()
-                    .map(e -> (Node) e)
-                    .toList());
-            }
-        }
-        // children.removeIf(n -> n.parent != null);
-        return children;
-    }
+    /**
+     * Initialize all type uses for the overriding node.
+     * @param generator LLVM code generator
+     */
+    public abstract void postProcessUse(Generator generator);
 
     /**
      * Resolve a type from this node context by its name. If the type is unresolved locally,

@@ -23,7 +23,7 @@ public class LocalAssign extends Value {
     private PointerOwner owner;
 
     /**
-     * Initialize all the child nodes for this node.
+     * Initialize all the child nodes for the overriding node.
      * @param parent parent node of the overriding node
      */
     @Override
@@ -33,10 +33,25 @@ public class LocalAssign extends Value {
             value.preProcess(this);
     }
 
+    /**
+     * Initialize all type declarations for the overriding node.
+     * @param generator LLVM code generator
+     */
     @Override
     public void postProcessType(Generator generator) {
-        super.postProcessType(generator);
+        if (value != null)
+            value.postProcessType(generator);
         owner = (PointerOwner) resolveName(name);
+    }
+
+    /**
+     * Initialize all type uses for the overriding node.
+     * @param generator LLVM code generator
+     */
+    @Override
+    public void postProcessUse(Generator generator) {
+        if (value != null)
+            value.postProcessUse(generator);
     }
 
     /**
