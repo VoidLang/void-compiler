@@ -1,8 +1,12 @@
 class Entity {
     int id
+    int health
 }
 
 int main() {
     let x = new Entity()
-    return 100
+    x.id = 10
+    x.health = 30
+
+    return x.health
 }

@@ -73,6 +73,22 @@ public class QualifiedName {
     }
 
     /**
+     * Indicate, whether this qualified name is a field accessor.
+     * @return true if this accessor accesses nested fields
+     */
+    public boolean isFieldAccess() {
+        return types.size() > 1;
+    }
+
+    /**
+     * Get the name of the accessing nested field from the accessor.
+     * @return accessed field name
+     */
+    public String getFieldName() {
+        return types.get(1).getValue();
+    }
+
+    /**
      * Get the string representation of the qualified name.
      * @return name debug information
      */

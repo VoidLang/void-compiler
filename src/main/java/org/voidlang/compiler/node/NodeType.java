@@ -38,6 +38,7 @@ public enum NodeType {
     GROUP,
     TEMPLATE,
     LAMBDA,
+    FIELD_ASSIGN,
     INDEX_FETCH,
     INDEX_ASSIGN,
     RETURN,

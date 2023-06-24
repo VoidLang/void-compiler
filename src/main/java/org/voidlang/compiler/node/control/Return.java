@@ -1,15 +1,18 @@
 package org.voidlang.compiler.node.control;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.local.Loadable;
 import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRValue;
 
 @RequiredArgsConstructor
+@Getter
 @NodeInfo(type = NodeType.RETURN)
 public class Return extends Node {
     @Nullable
@@ -22,8 +25,14 @@ public class Return extends Node {
     @Override
     public IRValue generate(Generator generator) {
         IRBuilder builder = generator.getBuilder();
-        if (value != null)
-            return builder.returnValue(value.generate(generator));
+        if (value != null) {
+            IRValue result;
+            if (value instanceof Loadable loadable)
+                result = loadable.load(generator);
+            else
+                result = value.generate(generator);
+            return builder.returnValue(result);
+        }
         else
             return builder.returnVoid();
     }

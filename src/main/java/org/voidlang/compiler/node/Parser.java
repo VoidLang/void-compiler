@@ -13,10 +13,7 @@ import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.node.element.MultiField;
 import org.voidlang.compiler.node.info.PackageImport;
 import org.voidlang.compiler.node.info.PackageSet;
-import org.voidlang.compiler.node.local.LocalAssign;
-import org.voidlang.compiler.node.local.LocalDeclare;
-import org.voidlang.compiler.node.local.LocalDeclareAssign;
-import org.voidlang.compiler.node.local.LocalDeclareDestructureTuple;
+import org.voidlang.compiler.node.local.*;
 import org.voidlang.compiler.node.method.MethodCall;
 import org.voidlang.compiler.node.operator.Accessor;
 import org.voidlang.compiler.node.operator.Operation;
@@ -1439,6 +1436,9 @@ public class Parser {
         if (peek().is(TokenType.OPERATOR)) {
             // parse the operator of the operation
             Operator operator = nextOperator();
+            // handle field assignation
+            if (operator == Operator.ASSIGN)
+                return new FieldAssign((Accessor) value, nextValue());
             if (!isComplexOperator(operator.getValue()))
                 throw new IllegalStateException("Expected complex operator, but got " + operator);
             return makeOperator(value, operator, nextValue());
