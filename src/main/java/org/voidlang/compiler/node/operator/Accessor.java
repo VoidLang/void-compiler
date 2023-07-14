@@ -68,6 +68,7 @@ public class Accessor extends Value implements Loadable {
     @Override
     public IRValue generate(Generator generator) {
         if (value instanceof Loadable loadable && !getName().isFieldAccess())
+            // TODO probably should use Loadable#load() here as well
             return value.generateAndLoad(generator);
 
         IRContext context = generator.getContext();
@@ -84,14 +85,13 @@ public class Accessor extends Value implements Loadable {
             return builder.structMemberPointer(rootType, instance, field.getFieldIndex(), field.getName());
         }
 
-
         return value.generate(generator);
     }
 
     @Override
     public IRValue generateAndLoad(Generator generator) {
         if (value instanceof Loadable loadable && !getName().isFieldAccess())
-            return value.generateAndLoad(generator);
+            return loadable.load(generator);
 
         IRContext context = generator.getContext();
         IRBuilder builder = generator.getBuilder();
@@ -111,6 +111,11 @@ public class Accessor extends Value implements Loadable {
         }
 
         return value.generate(generator);
+    }
+
+    @Override
+    public IRValue load(Generator generator) {
+        return generateAndLoad(generator);
     }
 
     /**

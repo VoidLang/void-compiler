@@ -210,7 +210,7 @@ public class Parser {
             String debug = generics.getGenerics().stream()
                 .map(GenericType::toString)
                 .collect(Collectors.joining(", "));
-            System.out.print("<" + String.join(", ", debug) + ">");
+            System.out.print("<" + String.join(", ", debug) + ConsoleFormat.BLUE + ">");
         }
 
         // TODO generic type implementation (where T implements MyType)

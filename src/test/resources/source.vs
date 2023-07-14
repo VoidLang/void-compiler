@@ -1,8 +1,8 @@
-class Entity {
-    int id
+int main() {
+    let foo = foo(100)
+    return foo * 2
 }
 
-int main() {
-    let foo = new Entity()
-    return foo.id
+int foo(int x) {
+    return x
 }

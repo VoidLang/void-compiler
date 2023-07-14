@@ -94,6 +94,7 @@ public class LocalDeclareAssign extends Value implements PointerOwner, Loadable 
         // are meant to be handled by reference, and not by value
         if (value.getValueType() instanceof Class)
             return pointer;
+
         // TODO maybe load the value from allocated pointer
         //  for now, that should be done manually by a Node
         return null;
