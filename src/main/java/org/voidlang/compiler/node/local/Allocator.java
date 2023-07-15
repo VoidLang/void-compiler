@@ -1,6 +1,7 @@
 package org.voidlang.compiler.node.local;
 
 import org.voidlang.compiler.node.Generator;
+import org.voidlang.llvm.element.IRType;
 import org.voidlang.llvm.element.IRValue;
 
 public interface Allocator {
@@ -9,4 +10,6 @@ public interface Allocator {
     default IRValue allocateAnonymous(Generator generator) {
         return allocate(generator, "");
     }
+
+    IRType getPointerType();
 }

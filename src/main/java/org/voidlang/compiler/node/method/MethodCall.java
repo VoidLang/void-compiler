@@ -92,6 +92,19 @@ public class MethodCall extends Value {
             .toList());
     }
 
+    @Override
+    public IRValue generateNamed(Generator generator, String name) {
+        // extract the context from the generator
+        IRContext context = generator.getContext();
+        IRModule module = generator.getModule();
+        IRBuilder builder = generator.getBuilder();
+
+        return builder.call(method.getFunction(), arguments
+            .stream()
+            .map(arg -> arg.generateAndLoad(generator))
+            .toList(), name);
+    }
+
     /**
      * Get the wrapped type of this value.
      * @return wrapped value type

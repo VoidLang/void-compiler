@@ -2,12 +2,12 @@ package org.voidlang.compiler.node.element;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.control.Element;
+import org.voidlang.compiler.node.local.PassedByReference;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.generic.GenericTypeList;
 import org.voidlang.llvm.element.IRContext;
@@ -23,7 +23,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Getter
 @NodeInfo(type = NodeType.CLASS)
-public class Class extends Element {
+public class Class extends Element implements PassedByReference {
     private final String name;
 
     private final GenericTypeList generics;
@@ -126,5 +126,15 @@ public class Class extends Element {
         if (struct != null)
             return struct;
         return struct = IRStruct.define(context, name);
+    }
+
+    @Override
+    public IRStruct getStructType() {
+        return struct;
+    }
+
+    @Override
+    public IRType getPointerType() {
+        return struct.toPointerType();
     }
 }

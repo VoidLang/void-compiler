@@ -7,7 +7,11 @@ import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.element.Class;
+import org.voidlang.compiler.node.method.MethodCall;
+import org.voidlang.compiler.node.type.QualifiedName;
+import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRContext;
@@ -26,6 +30,8 @@ public class LocalDeclareAssign extends Value implements PointerOwner, Loadable 
 
     private IRType pointerType;
     private IRValue pointer;
+
+    private Type resolvedType;
 
     /**
      * Initialize all the child nodes for the overriding node.
@@ -77,11 +83,15 @@ public class LocalDeclareAssign extends Value implements PointerOwner, Loadable 
         IRBuilder builder = generator.getBuilder();
         IRContext context = builder.getContext();
 
-        pointerType = getValue().getValueType().generateType(context);
+        pointerType = getType().generateType(context);
 
         // let the value allocate the value if it is an allocator
+        // this happens when using the "new" keyword
         if (value instanceof Allocator allocator)
             pointer = allocator.allocate(generator, name);
+        // let the method call allocate the value for method calls
+        else if (value instanceof MethodCall call && call.getMethod().getResolvedType() instanceof PassedByReference)
+            pointer = call.generateNamed(generator, name);
         // allocate the value on the stack, and assign its value
         else {
             pointer = builder.alloc(pointerType, name);
@@ -107,11 +117,28 @@ public class LocalDeclareAssign extends Value implements PointerOwner, Loadable 
 
     /**
      * Get the wrapped type of this value.
-     *
      * @return wrapped value type
      */
     @Override
     public Type getValueType() {
         return value.getValueType();
+    }
+
+    public Type getType() {
+        if (resolvedType != null)
+            return resolvedType;
+
+        resolvedType = getValueType();
+        if (resolvedType instanceof NamedScalarType scalar) {
+            QualifiedName name = ((ScalarType) scalar.getScalarType()).getName();
+            if (!name.isPrimitive())
+                resolvedType = resolveType(name.getDirect());
+        } else
+            resolvedType = type;
+
+        if (resolvedType == null)
+            throw new IllegalStateException("Unable to resolve local variable value type " + getValueType());
+
+        return resolvedType;
     }
 }

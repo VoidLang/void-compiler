@@ -1,8 +1,15 @@
-int main() {
-    let foo = foo(100)
-    return foo * 2
+class Car {
+    int speed, weight
 }
 
-int foo(int x) {
-    return x
+Car createCar() {
+    let car    = new Car()
+    car.speed  = 10
+    car.weight = 20
+    return car
+}
+
+int main() {
+    let car = createCar()
+    return car.speed + car.weight
 }

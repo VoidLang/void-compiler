@@ -77,6 +77,14 @@ public abstract class Node {
     public abstract IRValue generate(Generator generator);
 
     /**
+     * Generate an LLVM instruction for this node.
+     * @param generator LLVM instruction generation context
+     */
+    public IRValue generateNamed(Generator generator, String name) {
+        return generate(generator);
+    }
+
+    /**
      * Generate an LLVM instruction for this node
      * @param generator LLVM instruction generation context
      */

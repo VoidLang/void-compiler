@@ -6,6 +6,8 @@ import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.control.Element;
+import org.voidlang.compiler.node.method.MethodCall;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRBuilder;
@@ -75,8 +77,24 @@ public class LocalAssign extends Value {
         IRValue pointer = owner.getPointer();
         IRType pointerType = owner.getPointerType();
 
-        IRValue value = getValue().generate(generator);
-        builder.store(value, pointer);
+        /*
+        // let the value allocate the value if it is an allocator
+        // this happens when using the "new" keyword
+        if (value instanceof Allocator allocator) {
+            pointerType = allocator.getPointerType();
+            pointer = allocator.allocate(generator, name);
+        }
+        // let the method call allocate the value for method calls
+        else if (value instanceof MethodCall call && call.getMethod().getResolvedType() instanceof PassedByReference ref) {
+            pointerType = ((Element) ref).getPointerType();
+            pointer = call.generateNamed(generator, name);
+        }
+         */
+        // assign the value to the already allocated stack
+        // else {
+            IRValue value = getValue().generate(generator);
+            builder.store(value, pointer);
+        // }
 
         // TODO maybe load the value from allocated pointer
         //  for now, that should be done manually by a Node

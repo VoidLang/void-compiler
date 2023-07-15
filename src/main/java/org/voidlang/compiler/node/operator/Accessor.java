@@ -10,9 +10,12 @@ import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.control.Element;
 import org.voidlang.compiler.node.element.Field;
 import org.voidlang.compiler.node.local.Loadable;
+import org.voidlang.compiler.node.local.PassedByReference;
 import org.voidlang.compiler.node.local.PointerOwner;
 import org.voidlang.compiler.node.type.QualifiedName;
+import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.*;
 
@@ -77,8 +80,17 @@ public class Accessor extends Value implements Loadable {
         if (name.isFieldAccess()) {
             PointerOwner owner = (PointerOwner) value;
             IRValue instance = owner.getPointer();
+            String fieldName = name.getFieldName();
 
-            Element element = (Element) getValueType();
+            Type valueType = getValueType();
+            if (valueType instanceof NamedScalarType named) {
+                QualifiedName name = ((ScalarType) named.getScalarType()).getName();
+                valueType = resolveType(name.getDirect());
+            }
+
+            if (!(valueType instanceof Element element))
+                throw new IllegalStateException("Trying to access field '" + fieldName + "' of a non-element type " + valueType);
+
             IRStruct rootType = (IRStruct) element.generateType(context);
             Field field = element.resolveField(name.getFieldName());
 
@@ -90,8 +102,16 @@ public class Accessor extends Value implements Loadable {
 
     @Override
     public IRValue generateAndLoad(Generator generator) {
-        if (value instanceof Loadable loadable && !getName().isFieldAccess())
+        if (value instanceof PointerOwner owner && owner.getValueType() instanceof PassedByReference
+                && !getName().isFieldAccess()) {
+            System.out.println("gen ptr");
+            return owner.getPointer();
+        }
+
+        else if (value instanceof Loadable loadable && !getName().isFieldAccess()) {
+            System.out.println("load");
             return loadable.load(generator);
+        }
 
         IRContext context = generator.getContext();
         IRBuilder builder = generator.getBuilder();
@@ -99,10 +119,19 @@ public class Accessor extends Value implements Loadable {
         if (name.isFieldAccess()) {
             PointerOwner owner = (PointerOwner) value;
             IRValue instance = owner.getPointer();
+            String fieldName = name.getFieldName();
 
-            Element element = (Element) getValueType();
+            Type valueType = getValueType();
+            if (valueType instanceof NamedScalarType named) {
+                QualifiedName name = ((ScalarType) named.getScalarType()).getName();
+                valueType = resolveType(name.getDirect());
+            }
+
+            if (!(valueType instanceof Element element))
+                throw new IllegalStateException("Trying to access field '" + fieldName + "' of a non-element type " + valueType);
+
             IRStruct rootType = (IRStruct) element.generateType(context);
-            Field field = element.resolveField(name.getFieldName());
+            Field field = element.resolveField(fieldName);
 
             IRValue pointer = builder.structMemberPointer(rootType, instance, field.getFieldIndex(), field.getName());
             IRType fieldType = field.getType().generateType(context);

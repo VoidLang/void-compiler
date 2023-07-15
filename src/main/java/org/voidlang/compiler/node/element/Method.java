@@ -5,12 +5,15 @@ import lombok.RequiredArgsConstructor;
 import org.voidlang.compiler.node.*;
 import org.voidlang.compiler.node.local.LazyPointerOwner;
 import org.voidlang.compiler.node.local.LocalDeclareAssign;
+import org.voidlang.compiler.node.local.PassedByReference;
 import org.voidlang.compiler.node.local.PointerOwner;
+import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.name.Name;
 import org.voidlang.compiler.node.type.name.ScalarName;
 import org.voidlang.compiler.node.type.named.MethodParameter;
+import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.*;
 
@@ -60,7 +63,22 @@ public class Method extends Node {
         IRModule module = generator.getModule();
 
         // create the signature of the LLVM function
-        IRType returnType = getReturnType().generateType(context);
+        resolvedType = getReturnType();
+        if (resolvedType instanceof NamedScalarType scalar) {
+            QualifiedName name = ((ScalarType) scalar.getScalarType()).getName();
+            if (!name.isPrimitive())
+                resolvedType = resolveType(name.getDirect());
+        }
+
+        if (resolvedType == null)
+            throw new IllegalStateException("Unable to resolve method return type " + returnType);
+
+        IRType returnType = resolvedType.generateType(context);
+
+        // make sure to return a pointer for class types
+        if (resolvedType instanceof PassedByReference)
+            returnType = returnType.toPointerType();
+
         paramTypes = parameters
             .stream()
             .map(p -> p.getType().generateType(context))
