@@ -97,7 +97,7 @@ public class ScalarType implements Type {
             case "short" -> IRType.int16(context);
             case "int" -> IRType.int32(context);
             case "long" -> IRType.int64(context);
-            default -> null;
+            default -> throw new IllegalStateException("Unknown primitive type " + name.getPrimitive());
         };
     }
 }

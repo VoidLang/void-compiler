@@ -1,15 +1,10 @@
-class Car {
-    int speed, weight
-}
-
-Car createCar() {
-    let car    = new Car()
-    car.speed  = 10
-    car.weight = 20
-    return car
+class Entity {
+    int id
 }
 
 int main() {
-    let car = createCar()
-    return car.speed + car.weight
+    let entity = new Entity()
+
+    let id = entity.id
+    return id
 }

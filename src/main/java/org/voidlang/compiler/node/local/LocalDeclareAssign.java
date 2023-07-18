@@ -133,8 +133,7 @@ public class LocalDeclareAssign extends Value implements PointerOwner, Loadable 
             QualifiedName name = ((ScalarType) scalar.getScalarType()).getName();
             if (!name.isPrimitive())
                 resolvedType = resolveType(name.getDirect());
-        } else
-            resolvedType = type;
+        }
 
         if (resolvedType == null)
             throw new IllegalStateException("Unable to resolve local variable value type " + getValueType());

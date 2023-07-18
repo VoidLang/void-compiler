@@ -60,6 +60,5 @@ public class LambdaType implements Type {
      */
     @Override
     public IRType generateType(IRContext context) {
-        return null;
-    }
+        throw new IllegalStateException("Generating type for " + getClass().getSimpleName() + " is not implemented yet.");}
 }

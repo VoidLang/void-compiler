@@ -82,7 +82,7 @@ public class Accessor extends Value implements Loadable {
             IRValue instance = owner.getPointer();
             String fieldName = name.getFieldName();
 
-            Type valueType = getValueType();
+            Type valueType = value.getValueType();
             if (valueType instanceof NamedScalarType named) {
                 QualifiedName name = ((ScalarType) named.getScalarType()).getName();
                 valueType = resolveType(name.getDirect());
@@ -93,6 +93,9 @@ public class Accessor extends Value implements Loadable {
 
             IRStruct rootType = (IRStruct) element.generateType(context);
             Field field = element.resolveField(name.getFieldName());
+            if (field == null)
+                throw new IllegalStateException("No such field '" + fieldName + "' in type " + element);
+
 
             return builder.structMemberPointer(rootType, instance, field.getFieldIndex(), field.getName());
         }
@@ -121,7 +124,7 @@ public class Accessor extends Value implements Loadable {
             IRValue instance = owner.getPointer();
             String fieldName = name.getFieldName();
 
-            Type valueType = getValueType();
+            Type valueType = value.getValueType();
             if (valueType instanceof NamedScalarType named) {
                 QualifiedName name = ((ScalarType) named.getScalarType()).getName();
                 valueType = resolveType(name.getDirect());
@@ -132,6 +135,8 @@ public class Accessor extends Value implements Loadable {
 
             IRStruct rootType = (IRStruct) element.generateType(context);
             Field field = element.resolveField(fieldName);
+            if (field == null)
+                throw new IllegalStateException("No such field '" + fieldName + "' in type " + element);
 
             IRValue pointer = builder.structMemberPointer(rootType, instance, field.getFieldIndex(), field.getName());
             IRType fieldType = field.getType().generateType(context);
@@ -139,6 +144,7 @@ public class Accessor extends Value implements Loadable {
             return builder.load(fieldType, pointer, "");
         }
 
+        System.err.println("valueee " + value);
         return value.generate(generator);
     }
 
@@ -153,6 +159,28 @@ public class Accessor extends Value implements Loadable {
      */
     @Override
     public Type getValueType() {
+        if (name.isFieldAccess()) {
+            PointerOwner owner = (PointerOwner) value;
+            IRValue instance = owner.getPointer();
+            String fieldName = name.getFieldName();
+
+            Type valueType = value.getValueType();
+            if (valueType instanceof NamedScalarType named) {
+                QualifiedName name = ((ScalarType) named.getScalarType()).getName();
+                valueType = resolveType(name.getDirect());
+            }
+
+            if (!(valueType instanceof Element element))
+                throw new IllegalStateException("Trying to access field '" + fieldName + "' of a non-element type " + valueType);
+
+            Field field = element.resolveField(fieldName);
+            if (field == null)
+                throw new IllegalStateException("No such field '" + fieldName + "' in type " + element);
+
+            return field.getResolvedType();
+        }
+
+
         return value.getValueType();
     }
 }

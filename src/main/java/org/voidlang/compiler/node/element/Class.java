@@ -103,16 +103,22 @@ public class Class extends Element implements PassedByReference {
         List<IRType> members = new ArrayList<>();
         for (Node node : body) {
             if (node instanceof Field field)
-                members.add(field.getType().generateType(context));
+                members.add(generateType(context, field.getType()));
             else if (node instanceof MultiField multiField) {
-                IRType type = multiField.getType().generateType(context);
+                IRType type = generateType(context, multiField.getType());
                 for (int i = 0; i < multiField.getValues().size(); i++)
                     members.add(type);
             }
-
         }
         struct.setMembers(members);
         return null;
+    }
+
+    private IRType generateType(IRContext context, Type type) {
+        IRType irType = type.generateType(context);
+        if (type instanceof PassedByReference)
+            irType = irType.toPointerType();
+        return irType;
     }
 
     /**
@@ -136,5 +142,13 @@ public class Class extends Element implements PassedByReference {
     @Override
     public IRType getPointerType() {
         return struct.toPointerType();
+    }
+
+    @Override
+    public String toString() {
+        return "Class{"
+            + "name='" + name + '\''
+            + ", fields=" + fields
+            + '}';
     }
 }

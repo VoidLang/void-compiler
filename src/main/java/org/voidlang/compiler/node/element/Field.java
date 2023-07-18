@@ -9,7 +9,13 @@ import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.control.Element;
+import org.voidlang.compiler.node.local.PassedByReference;
+import org.voidlang.compiler.node.type.QualifiedName;
+import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.compiler.node.type.named.NamedScalarType;
+import org.voidlang.llvm.element.IRType;
 import org.voidlang.llvm.element.IRValue;
 
 @RequiredArgsConstructor
@@ -27,6 +33,8 @@ public class Field extends Node {
 
     @Setter
     private int fieldIndex;
+
+    private Type resolvedType;
 
     /**
      * Initialize all the child nodes for the overriding node.
@@ -67,6 +75,16 @@ public class Field extends Node {
     public void postProcessUse(Generator generator) {
         if (value != null)
             value.postProcessUse(generator);
+
+        resolvedType = type;
+        if (resolvedType instanceof NamedScalarType scalar) {
+            QualifiedName name = ((ScalarType) scalar.getScalarType()).getName();
+            if (!name.isPrimitive())
+                resolvedType = resolveType(name.getDirect());
+        }
+
+        if (resolvedType == null)
+            throw new IllegalStateException("Unable to resolve method return type " + type);
     }
 
     /**
@@ -76,5 +94,17 @@ public class Field extends Node {
     @Override
     public IRValue generate(Generator generator) {
         return null;
+    }
+
+    public Type getType() {
+        return resolvedType;
+    }
+
+    @Override
+    public String toString() {
+        return "Field{"
+            + "name='" + name + '\''
+            + ", resolvedType=" + resolvedType
+            + '}';
     }
 }
