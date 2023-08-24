@@ -96,7 +96,7 @@ public class Accessor extends Value implements Loadable {
             if (field == null)
                 throw new IllegalStateException("No such field '" + fieldName + "' in type " + element);
 
-            return builder.structMemberPointer(rootType, instance, field.getFieldIndex(), field.getName());
+            return builder.structMemberPointer(rootType, instance, field.getFieldIndex(), "struct (gen) " + field.getName());
         }
 
         return value.generate(generator);
@@ -105,15 +105,11 @@ public class Accessor extends Value implements Loadable {
     @Override
     public IRValue generateAndLoad(Generator generator) {
         if (value instanceof PointerOwner owner && owner.getValueType() instanceof PassedByReference
-                && !getName().isFieldAccess()) {
-            System.out.println("gen ptr");
+                && !getName().isFieldAccess())
             return owner.getPointer();
-        }
 
-        else if (value instanceof Loadable loadable && !getName().isFieldAccess()) {
-            System.out.println("load");
+        else if (value instanceof Loadable loadable && !getName().isFieldAccess())
             return loadable.load(generator);
-        }
 
         IRContext context = generator.getContext();
         IRBuilder builder = generator.getBuilder();
@@ -137,13 +133,12 @@ public class Accessor extends Value implements Loadable {
             if (field == null)
                 throw new IllegalStateException("No such field '" + fieldName + "' in type " + element);
 
-            IRValue pointer = builder.structMemberPointer(rootType, instance, field.getFieldIndex(), field.getName());
+            IRValue pointer = builder.structMemberPointer(rootType, instance, field.getFieldIndex(), "struct (load) " + field.getName());
             IRType fieldType = field.getType().generateType(context);
 
             return builder.load(fieldType, pointer, "field load " + fieldName);
         }
 
-        System.err.println("valueee " + value);
         return value.generate(generator);
     }
 
@@ -178,7 +173,6 @@ public class Accessor extends Value implements Loadable {
 
             return field.getResolvedType();
         }
-
 
         return value.getValueType();
     }
