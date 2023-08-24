@@ -8,7 +8,7 @@ public interface Allocator {
     IRValue allocate(Generator generator, String name);
 
     default IRValue allocateAnonymous(Generator generator) {
-        return allocate(generator, "");
+        return allocate(generator, "anonymous alloc");
     }
 
     IRType getPointerType();

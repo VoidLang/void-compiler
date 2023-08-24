@@ -41,7 +41,7 @@ public class New extends Value implements PointerOwner, Allocator {
         // e.g. if the constructor is called in a method call
         // greet(new Person("John"))
         //       ^^^^^^ here is an anonymous value of Person, which isn't meant to be mutated
-        return allocate(generator, "");
+        return allocate(generator, "anonymous new");
     }
 
     @Override
@@ -65,6 +65,7 @@ public class New extends Value implements PointerOwner, Allocator {
 
                 if (value == null)
                     continue;
+
                 IRValue fieldPointer = builder.structMemberPointer(pointerType, pointer,
                     field.getFieldIndex(), "init " + field.getName());
                 builder.store(value, fieldPointer);

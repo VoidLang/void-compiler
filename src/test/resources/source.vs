@@ -1,10 +1,19 @@
-class Entity {
-    int id
+class List {
+    Element first
+}
+
+class Element {
+    int value = 99
+    Element next
 }
 
 int main() {
-    let entity = new Entity()
+    let list = new List()
+    
+    let element = new Element()
+    element.value = 10
 
-    let id = entity.id
-    return id
+    list.first = element
+
+    return element.value
 }

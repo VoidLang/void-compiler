@@ -65,7 +65,7 @@ public class LocalDeclare extends Value {
 
         IRType type = getType().generateType(context);
 
-        return builder.alloc(type, name);
+        return builder.alloc(type, "declare " + name);
     }
 
     /**

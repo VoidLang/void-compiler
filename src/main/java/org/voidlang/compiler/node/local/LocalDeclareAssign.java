@@ -88,13 +88,15 @@ public class LocalDeclareAssign extends Value implements PointerOwner, Loadable 
         // let the value allocate the value if it is an allocator
         // this happens when using the "new" keyword
         if (value instanceof Allocator allocator)
-            pointer = allocator.allocate(generator, name);
+            pointer = allocator.allocate(generator, "declare assign (alloc) " + name);
+        // TODO do not reallocate if it was already allocated. the problem is that whenever
+        //  this value is accessed, it is does reallocate the value, instead it should pass the value only
         // let the method call allocate the value for method calls
         else if (value instanceof MethodCall call && call.getMethod().getResolvedType() instanceof PassedByReference)
-            pointer = call.generateNamed(generator, name);
+            pointer = call.generateNamed(generator, "declare assign (method) " + name);
         // allocate the value on the stack, and assign its value
         else {
-            pointer = builder.alloc(pointerType, name);
+            pointer = builder.alloc(pointerType, "declare assign (ptr) " + name);
 
             IRValue value = getValue().generate(generator);
             builder.store(value, pointer);

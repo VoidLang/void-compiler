@@ -96,7 +96,6 @@ public class Accessor extends Value implements Loadable {
             if (field == null)
                 throw new IllegalStateException("No such field '" + fieldName + "' in type " + element);
 
-
             return builder.structMemberPointer(rootType, instance, field.getFieldIndex(), field.getName());
         }
 
@@ -141,7 +140,7 @@ public class Accessor extends Value implements Loadable {
             IRValue pointer = builder.structMemberPointer(rootType, instance, field.getFieldIndex(), field.getName());
             IRType fieldType = field.getType().generateType(context);
 
-            return builder.load(fieldType, pointer, "");
+            return builder.load(fieldType, pointer, "field load " + fieldName);
         }
 
         System.err.println("valueee " + value);

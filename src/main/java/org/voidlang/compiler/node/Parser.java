@@ -765,7 +765,8 @@ public class Parser {
             Node expression = nextExpression();
             if (!expression.hasNext())
                 break;
-            body.add(expression);
+            if (!(expression instanceof Empty))
+                body.add(expression);
         }
 
         Prettier prettier = Node.prettier;
