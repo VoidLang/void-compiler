@@ -33,6 +33,8 @@ public class LocalDeclareAssign extends Value implements PointerOwner, Loadable 
 
     private Type resolvedType;
 
+    private boolean loaded;
+
     /**
      * Initialize all the child nodes for the overriding node.
      * @param parent parent node of the overriding node
@@ -83,14 +85,24 @@ public class LocalDeclareAssign extends Value implements PointerOwner, Loadable 
         IRBuilder builder = generator.getBuilder();
         IRContext context = builder.getContext();
 
+        // do not reallocate if it was already allocated. the problem is that whenever
+        //  this value is accessed, it is does reallocate the value, instead it should pass the value only
+        if (loaded) {
+            // do not load the values from class struct pointers, as classes
+            // are meant to be handled by reference, and not by value
+            if (value.getValueType() instanceof Class)
+                return pointer;
+            // local variable is meant to be passed by value, so load it from the pointer
+            return load(generator);
+        }
+
         pointerType = getType().generateType(context);
 
         // let the value allocate the value if it is an allocator
         // this happens when using the "new" keyword
         if (value instanceof Allocator allocator)
             pointer = allocator.allocate(generator, "declare assign (alloc) " + name);
-        // TODO do not reallocate if it was already allocated. the problem is that whenever
-        //  this value is accessed, it is does reallocate the value, instead it should pass the value only
+
         // let the method call allocate the value for method calls
         else if (value instanceof MethodCall call && call.getMethod().getResolvedType() instanceof PassedByReference)
             pointer = call.generateNamed(generator, "declare assign (method) " + name);
@@ -101,6 +113,8 @@ public class LocalDeclareAssign extends Value implements PointerOwner, Loadable 
             IRValue value = getValue().generate(generator);
             builder.store(value, pointer);
         }
+
+        loaded = true;
 
         // do not load the values from class struct pointers, as classes
         // are meant to be handled by reference, and not by value
