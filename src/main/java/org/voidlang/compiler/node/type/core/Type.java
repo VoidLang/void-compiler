@@ -4,6 +4,7 @@ import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.generic.GenericArgumentList;
+import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
 import org.voidlang.llvm.element.IRValue;
@@ -97,13 +98,19 @@ public interface Type {
      */
     IRType generateType(IRContext context);
 
+    /**
+     * Get the default value of this type.
+     * @param generator LLVM code generator
+     * @return the default value of this type
+     */
     default IRValue defaultValue(Generator generator) {
+        if (!(this instanceof NamedScalarType type))
+            return null;
         IRType irType = generateType(generator.getContext());
-        if (!(this instanceof ScalarType scalar))
-            return irType.constNull();
-        return switch (scalar.getName().getTypes().get(0).getType()) {
-            case BOOLEAN, BYTE, SHORT, INTEGER, LONG -> irType.constInt(0);
-            default -> irType.constNull();
+        ScalarType scalar = (ScalarType) type.getScalarType();
+        return switch (scalar.getName().getTypes().get(0).getValue()) {
+            case "bool", "byte", "short", "int", "long" -> irType.constInt(0);
+            default -> null;
         };
     }
 }
