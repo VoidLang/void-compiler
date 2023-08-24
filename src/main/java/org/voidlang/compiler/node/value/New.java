@@ -57,15 +57,16 @@ public class New extends Value implements PointerOwner, Allocator {
                 Type fieldType = field.getType();
                 Node fieldValue = field.getValue();
 
-                IRValue fieldPointer = builder.structMemberPointer(pointerType, pointer,
-                    field.getFieldIndex(), "init " + field.getName());
-
                 IRValue value;
                 if (fieldValue != null)
                     value = fieldValue.generateAndLoad(generator);
                 else
                     value = fieldType.defaultValue(generator);
 
+                if (value == null)
+                    continue;
+                IRValue fieldPointer = builder.structMemberPointer(pointerType, pointer,
+                    field.getFieldIndex(), "init " + field.getName());
                 builder.store(value, fieldPointer);
             }
         }
