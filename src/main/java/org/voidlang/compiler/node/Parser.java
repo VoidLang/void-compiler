@@ -251,7 +251,7 @@ public class Parser {
         // handle type body end
         get(TokenType.END);
 
-        System.out.println("}");
+        System.out.println(ConsoleFormat.LIGHT_GRAY + "}");
 
         // handle auto-inserted semicolon at the end or the body
         if (peek().is(TokenType.SEMICOLON, "auto"))
