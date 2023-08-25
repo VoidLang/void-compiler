@@ -7,13 +7,16 @@ class Element {
     Element next
 }
 
+int foo(List list) {
+    return 2 + 3
+}
+
+int add(int a, int b) {
+    return a + b
+}
+
 int main() {
     let list = new List()
-    
-    let element = new Element()
-    element.value = 10
 
-    list.first = element
-
-    return element.value
+    return foo(list)
 }

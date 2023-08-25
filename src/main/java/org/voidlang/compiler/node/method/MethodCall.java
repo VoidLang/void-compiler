@@ -6,10 +6,13 @@ import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.node.local.Loadable;
 import org.voidlang.compiler.node.type.QualifiedName;
+import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRContext;
@@ -17,6 +20,8 @@ import org.voidlang.llvm.element.IRModule;
 import org.voidlang.llvm.element.IRValue;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Getter
@@ -72,7 +77,20 @@ public class MethodCall extends Value {
             .map(Value::getValueType)
             .toList();
 
-        method = resolveMethod(name.getDirect(), argTypes);
+        String methodName = name.getDirect();
+        method = resolveMethod(methodName, argTypes);
+        if (method == null) {
+            String args = argTypes.stream()
+                .map(type -> {
+                    if (type instanceof Class clazz)
+                        return clazz.getName();
+                    else if (type instanceof ScalarType scalar)
+                        return scalar.getName().toString();
+                    return type.getClass().getSimpleName();
+                })
+                .collect(Collectors.joining(", "));
+            throw new IllegalStateException("Unable to resolve method " + methodName + "(" + args + ")");
+        }
     }
 
     /**
