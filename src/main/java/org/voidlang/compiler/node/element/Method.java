@@ -81,8 +81,12 @@ public class Method extends Node {
 
         paramTypes = parameters
             .stream()
-            .map(p -> p.getType().generateType(context))
-            .filter(Objects::nonNull)
+            .map(p -> {
+                IRType type = p.getType().generateType(context);
+                if (type == null)
+                    throw new IllegalStateException(p.getType() + " does not have a generator");
+                return type;
+            })
             .toList();
         IRFunctionType functionType = IRFunctionType.create(returnType, paramTypes);
 
@@ -133,14 +137,22 @@ public class Method extends Node {
     }
 
     public boolean checkTypes(List<Type> types) {
+        System.err.println("check param types");
+
         if (types.size() != parameters.size())
             return false;
+
         for (int i = 0; i < types.size(); i++) {
             Type checkType = types.get(i);
             Type paramType = parameters.get(i).getType();
+
+            System.err.println("check " + checkType + " " + checkType.getClass());
+            System.err.println("param " + paramType + " " + paramType.getClass());
+
             if (!checkType.equals(paramType))
                 return false;
         }
+
         return true;
     }
 

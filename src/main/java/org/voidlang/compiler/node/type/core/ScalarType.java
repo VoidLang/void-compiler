@@ -88,8 +88,9 @@ public class ScalarType implements Type {
      */
     @Override
     public IRType generateType(IRContext context) {
+        // TODO here probably shouldn't use void pointer, instead of pointer to type
         if (!name.isPrimitive())
-            return null;
+            return IRType.pointerType(IRType.voidType(context));
         return switch (name.getPrimitive()) {
             case "void" -> IRType.voidType(context);
             case "bool" -> IRType.int1(context);
