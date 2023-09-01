@@ -3,17 +3,21 @@ class List {
 }
 
 class Element {
-    int value = 99
+    int value = 200
     Element next
 }
 
-int main() {
+List createList() {
     let list = new List()
-    
+    return list
+}
+
+Element addElement(List list, int value) {
     let element = new Element()
-    element.value = 10
+    return element
+}
 
-    list.first = element
-
-    return element.value
+int main() {
+    let list = createList()
+    return 202
 }
