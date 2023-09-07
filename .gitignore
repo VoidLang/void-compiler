@@ -26,3 +26,4 @@ replay_pid*
 # IntelliJ files
 /target
 /.idea
+dependency-reduced-pom.xml

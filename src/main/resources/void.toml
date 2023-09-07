@@ -1,4 +1,19 @@
-[project]
-name = "Example"
+# the package-related configurations of this project
+[package]
+# the name of the package that will be used when publishing it
+name = "my-example"
+# the current build version of the package
 version = "1.0.1"
+# the contributors that are responsible for developing or maintaining the package
 author = ["AdvancedAntiSkid"]
+
+# the dependencies of this package that will be included in the executable
+[dependencies]
+std = "1.0.0"
+
+# in case of using a published package, if multiple versions of the same dependency 
+# are specified in the dependency tree, the latest one will be used
+
+[build]
+# the target platform to be built for
+target = "x86_64-unknown-linux-gnu"
