@@ -26,6 +26,7 @@ public enum NodeType {
     LOCAL_ASSIGN,
     VALUE,
     ACCESSOR,
+    IMMUTABLE_PARAMETER_INDEXER,
     PARAMETER_INDEXER,
     NEW,
     NAME,

@@ -5,7 +5,7 @@ class PassByReference {
 }
 
 void modifyReference(PassByReference reference) {
-    reference.value = 42
+    reference.value = reference.value - 337
     return
 }
 

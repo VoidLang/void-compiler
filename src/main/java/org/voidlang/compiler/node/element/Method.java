@@ -3,10 +3,7 @@ package org.voidlang.compiler.node.element;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.voidlang.compiler.node.*;
-import org.voidlang.compiler.node.local.LazyPointerOwner;
-import org.voidlang.compiler.node.local.LocalDeclareAssign;
-import org.voidlang.compiler.node.local.PassedByReference;
-import org.voidlang.compiler.node.local.PointerOwner;
+import org.voidlang.compiler.node.local.*;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
@@ -37,7 +34,8 @@ public class Method extends Node {
     private List<IRType> paramTypes;
     private Generator generator;
 
-    private final Map<String, ParameterIndexer> paramCache = new HashMap<>();
+    private final Map<String, ImmutableParameterIndexer> paramCache = new HashMap<>();
+    // private final Map<String, ParameterIndexer> paramCache = new HashMap<>();
 
     @Override
     public void preProcess(Node parent) {
@@ -176,7 +174,8 @@ public class Method extends Node {
                 if (!value.equals(name))
                     continue;
                 final int index = i;
-                return paramCache.computeIfAbsent(name, k -> new ParameterIndexer(index, parameter.getType()));
+                // return paramCache.computeIfAbsent(name, k -> new ParameterIndexer(index, parameter.getType()));
+                return paramCache.computeIfAbsent(name, k -> new ImmutableParameterIndexer(index, parameter.getType()));
             }
         }
         // resolve local variables
@@ -188,6 +187,95 @@ public class Method extends Node {
             }
         }
         return super.resolveName(name);
+    }
+
+    @RequiredArgsConstructor
+    @NodeInfo(type = NodeType.IMMUTABLE_PARAMETER_INDEXER)
+    private class ImmutableParameterIndexer extends Value implements PointerOwner {
+        private final int index;
+
+        private final Type type;
+
+        private IRValue pointer;
+        private IRType pointerType;
+
+        /**
+         * Generate an LLVM instruction for this node
+         * @param generator LLVM instruction generation context
+         */
+        @Override
+        public IRValue generate(Generator generator) {
+            return function.getParameter(index);
+        }
+
+        /**
+         * Initialize all the child nodes for the overriding node.
+         * @param parent parent node of the overriding node
+         */
+        @Override
+        public void preProcess(Node parent) {
+            this.parent = parent;
+            for (Node node : body)
+                node.preProcess(this);
+        }
+
+        /**
+         * Initialize all type declarations for the overriding node.
+         * @param generator LLVM code generator
+         */
+        @Override
+        public void postProcessType(Generator generator) {
+            for (Node node : body)
+                node.postProcessType(generator);
+        }
+
+        /**
+         * Initialize all class member declarations for the overriding node.
+         * @param generator LLVM code generator
+         */
+        @Override
+        public void postProcessMember(Generator generator) {
+            for (Node node : body)
+                node.postProcessMember(generator);
+        }
+
+        /**
+         * Initialize all type uses for the overriding node.
+         * @param generator LLVM code generator
+         */
+        @Override
+        public void postProcessUse(Generator generator) {
+            for (Node node : body)
+                node.postProcessUse(generator);
+        }
+
+        @Override
+        public IRValue getPointer() {
+            if (pointer == null) {
+                pointer = function.getParameter(index);
+                pointerType = type.generateType(generator.getContext());
+            }
+            return pointer;
+        }
+
+        @Override
+        public IRType getPointerType() {
+            return pointerType;
+        }
+
+        /**
+         * Get the wrapped type of this value.
+         * @return wrapped value type
+         */
+        @Override
+        public Type getValueType() {
+            return type;
+        }
+
+        @Override
+        public IRValue load(Generator generator) {
+            return generate(generator);
+        }
     }
 
     @RequiredArgsConstructor
