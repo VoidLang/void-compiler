@@ -11,5 +11,6 @@ void modifyReference(PassByReference reference) {
 
 int main() {
     let reference = new PassByReference()
+    modifyReference(reference)
     return reference.value
 }

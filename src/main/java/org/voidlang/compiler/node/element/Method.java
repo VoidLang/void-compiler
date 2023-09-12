@@ -146,6 +146,10 @@ public class Method extends Node {
             Type checkType = types.get(i);
             Type paramType = parameters.get(i).getType();
 
+            if (paramType instanceof ScalarType scalar && !scalar.getName().isPrimitive()) {
+                paramType = resolveType(scalar.getName().getDirect());
+            }
+
             System.err.println("check " + checkType + " " + checkType.getClass());
             System.err.println("param " + paramType + " " + paramType.getClass());
 
