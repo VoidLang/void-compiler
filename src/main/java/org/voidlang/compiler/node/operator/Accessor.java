@@ -86,10 +86,12 @@ public class Accessor extends Value implements Loadable {
             if (valueType instanceof NamedScalarType named) {
                 QualifiedName name = ((ScalarType) named.getScalarType()).getName();
                 valueType = resolveType(name.getDirect());
+            } else if (valueType instanceof ScalarType scalar) {
+                valueType = resolveType(scalar.getName().getDirect());
             }
 
             if (!(valueType instanceof Element element))
-                throw new IllegalStateException("Trying to access field '" + fieldName + "' of a non-element type " + valueType);
+                throw new IllegalStateException("Trying to access field '" + fieldName + "' of a non-element type " + valueType + " " + valueType.getClass().getSimpleName());
 
             IRStruct rootType = (IRStruct) element.generateType(context);
             Field field = element.resolveField(name.getFieldName());
@@ -123,6 +125,8 @@ public class Accessor extends Value implements Loadable {
             if (valueType instanceof NamedScalarType named) {
                 QualifiedName name = ((ScalarType) named.getScalarType()).getName();
                 valueType = resolveType(name.getDirect());
+            } else if (valueType instanceof ScalarType scalar) {
+                valueType = resolveType(scalar.getName().getDirect());
             }
 
             if (!(valueType instanceof Element element))

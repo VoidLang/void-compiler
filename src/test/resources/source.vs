@@ -1,23 +1,15 @@
-class List {
-    Element first
+package "PassByReferenceTest"
+
+class PassByReference {
+    int value = 1337
 }
 
-class Element {
-    int value = 200
-    Element next
-}
-
-List createList() {
-    let list = new List()
-    return list
-}
-
-Element addElement(List list, int value) {
-    let element = new Element()
-    return element
+void modifyReference(PassByReference reference) {
+    reference.value = 42
+    return
 }
 
 int main() {
-    let list = createList()
-    return 202
+    let reference = new PassByReference()
+    return reference.value
 }
