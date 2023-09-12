@@ -3,6 +3,7 @@ package org.voidlang.compiler.node.element;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.voidlang.compiler.node.*;
+import org.voidlang.compiler.node.control.Return;
 import org.voidlang.compiler.node.local.*;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
@@ -127,9 +128,14 @@ public class Method extends Node {
         IRBlock block = IRBlock.create(context, function, "entry");
         builder.positionAtEnd(block);
 
+        if (body.isEmpty() || body.get(body.size() - 1).getNodeType() != NodeType.RETURN)
+            body.add(new Return(null));
+
         // generate the LLVM instructions for the body of the function
         for (Node node : body)
             node.generate(generator);
+
+
 
         return function;
     }
@@ -144,6 +150,7 @@ public class Method extends Node {
             Type checkType = types.get(i);
             Type paramType = parameters.get(i).getType();
 
+            // TODO: resolve method param types on preprocess
             if (paramType instanceof ScalarType scalar && !scalar.getName().isPrimitive()) {
                 paramType = resolveType(scalar.getName().getDirect());
             }
