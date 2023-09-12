@@ -5,7 +5,7 @@ name = "my-example"
 # the current build version of the package
 version = "1.0.1"
 # the contributors that are responsible for developing or maintaining the package
-author = ["AdvancedAntiSkid"]
+authors = ["AdvancedAntiSkid"]
 
 # the dependencies of this package that will be included in the executable
 [dependencies]

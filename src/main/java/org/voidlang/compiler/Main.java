@@ -35,6 +35,6 @@ public class Main {
             new Generator(newOption.stringValue()).generate();
 
         else if (compileOption.isPresent())
-            new Compiler();
+            new Compiler(compileOption.stringValue()).compile();
     }
 }
