@@ -1,6 +1,9 @@
-void foo() {
+package "test"
+
+int add(int a, int b) {
+    return a + b
 }
 
 int main() {
-    return 32
+    return add(2, 3)
 }

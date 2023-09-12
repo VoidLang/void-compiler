@@ -98,21 +98,21 @@ public class Operation extends Value {
         IRValue left = getLeft().generateAndLoad(generator);
         IRValue right = getRight().generateAndLoad(generator);
         return switch (operator) {
-            case ADD -> builder.add(left, right);
-            case SUBTRACT -> builder.subtract(left, right);
-            case MULTIPLY -> builder.multiply(left, right);
+            case ADD -> builder.add(left, right, "add");
+            case SUBTRACT -> builder.subtract(left, right, "sub");
+            case MULTIPLY -> builder.multiply(left, right, "mul");
 
-            case EQUAL -> builder.compareInt(Comparator.INTEGER_EQUAL, left, right);
-            case NOT_EQUAL -> builder.compareInt(Comparator.INTEGER_NOT_EQUAL, left, right);
+            case EQUAL -> builder.compareInt(Comparator.INTEGER_EQUAL, left, right, "eq");
+            case NOT_EQUAL -> builder.compareInt(Comparator.INTEGER_NOT_EQUAL, left, right, "neq");
 
-            case GREATER_THAN -> builder.compareInt(Comparator.SIGNED_INTEGER_GREATER_THAN, left, right);
-            case GREATER_OR_EQUAL -> builder.compareInt(Comparator.SIGNED_INTEGER_GREATER_OR_EQUAL, left, right);
+            case GREATER_THAN -> builder.compareInt(Comparator.SIGNED_INTEGER_GREATER_THAN, left, right, "gt");
+            case GREATER_OR_EQUAL -> builder.compareInt(Comparator.SIGNED_INTEGER_GREATER_OR_EQUAL, left, right, "gte");
 
-            case LESS_THAN -> builder.compareInt(Comparator.SIGNED_INTEGER_LESS_THAN, left, right);
-            case LESS_OR_EQUAL -> builder.compareInt(Comparator.SIGNED_INTEGER_LESS_OR_EQUAL, left, right);
+            case LESS_THAN -> builder.compareInt(Comparator.SIGNED_INTEGER_LESS_THAN, left, right, "lt");
+            case LESS_OR_EQUAL -> builder.compareInt(Comparator.SIGNED_INTEGER_LESS_OR_EQUAL, left, right, "lte");
 
-            case AND -> builder.and(left, right);
-            case OR -> builder.or(left, right);
+            case AND -> builder.and(left, right, "and");
+            case OR -> builder.or(left, right, "or");
 
             default -> throw new IllegalStateException("Unable to generate complex operator for " + operator);
         };

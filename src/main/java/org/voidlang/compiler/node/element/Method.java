@@ -135,8 +135,6 @@ public class Method extends Node {
         for (Node node : body)
             node.generate(generator);
 
-
-
         return function;
     }
 
@@ -153,6 +151,8 @@ public class Method extends Node {
             // TODO: resolve method param types on preprocess
             if (paramType instanceof ScalarType scalar && !scalar.getName().isPrimitive()) {
                 paramType = resolveType(scalar.getName().getDirect());
+                if (paramType == null)
+                    throw new IllegalStateException("Unable to resolve method parameter type: " + scalar.getName());
             }
 
             System.err.println("check " + checkType + " " + checkType.getClass());
