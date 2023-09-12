@@ -44,6 +44,9 @@ public class LocalAssign extends Value {
         if (value != null)
             value.postProcessType(generator);
         owner = (PointerOwner) resolveName(name);
+
+        if (!(owner instanceof Mutable))
+            throw new IllegalStateException("Unable to assign to immutable variable `" + name + "`.");
     }
 
     /**

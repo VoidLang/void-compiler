@@ -899,7 +899,10 @@ public class Parser {
 
     private Value nextValue(boolean ignoreJoin) {
         if (peek().is(TokenType.TYPE, "let"))
-            return nextLocalDeclaration();
+            return nextImmutableLocalDeclaration();
+
+        else if (peek().is(TokenType.TYPE, "mut"))
+            return nextMutableLocalDeclaration();
 
         // handle variable assignation
         if (peek().is(TokenType.IDENTIFIER) && at(cursor + 1).is(TokenType.OPERATOR, "=")
@@ -1544,7 +1547,60 @@ public class Parser {
         return Operator.of(builder.toString());
     }
 
-    private Value nextLocalDeclaration() {
+    private Value nextMutableLocalDeclaration() {
+        // skip the 'let' keyword
+        get(TokenType.TYPE, "mut");
+        // parse the name of the local variable
+        Name name = nextName();
+        // check if the name is a tuple destructuring
+        if (name.isCompound()) {
+            // tuple destructuring requires an initialization, skip the '=' symbol
+            // let (a, b) = foo()
+            //            ^ the equals sign indicates that the assignation of the local variable has been started
+            get(TokenType.OPERATOR, "=");
+            // parse the value of the local variable
+            // let (code, msg) = requestSomething()
+            //                   ^^^^^^^^^^^^^^^^^^ the instructions after the equals sign is the value of the local variable
+            Node value = nextExpression();
+            // skip the semicolon after the declaration
+            // let (a, b, c) = fooBar();
+            //                         ^ the (auto-inserted) semicolon indicates, that the assigning variable declaration has been ended
+            if (peek().is(TokenType.SEMICOLON))
+                get();
+
+            return new LocalDeclareDestructureTuple((CompoundName) name, value);
+        }
+
+        // skip the semicolon after the declaration
+        // let variable;
+        //             ^ the (auto-inserted) semicolon indicates, that the declaration has been ended
+        if (peek().is(TokenType.SEMICOLON))
+            get();
+
+        // check if the local variable does not have an initialization declared
+        if (!peek().is(TokenType.OPERATOR, "="))
+            return new LocalDeclare(Type.MUT, ((ScalarName) name).getValue());
+
+        // handle the assignation of the local variable
+        // let number = 100
+        //            ^ the equals sign indicates that the assignation of the local variable has been started
+        get(TokenType.OPERATOR, "=");
+
+        // parse the value of the local variable
+        // let value = 100 + 50 - 25
+        //             ^^^^^^^^^^^^^ the instructions after the equals sign is the value of the local variable
+        Value value = nextValue();
+
+        // skip the semicolon after the declaration
+        // let variable = 100;
+        //                   ^ the (auto-inserted) semicolon indicates, that the assigning variable declaration has been ended
+        if (peek().is(TokenType.SEMICOLON))
+            get();
+
+        return new MutableLocalDeclareAssign(Type.MUT, ((ScalarName) name).getValue(), value);
+    }
+
+    private Value nextImmutableLocalDeclaration() {
         // skip the 'let' keyword
         get(TokenType.TYPE, "let");
         // parse the name of the local variable
@@ -1594,7 +1650,7 @@ public class Parser {
         if (peek().is(TokenType.SEMICOLON))
             get();
 
-        return new LocalDeclareAssign(Type.LET, ((ScalarName) name).getValue(), value);
+        return new ImmutableLocalDeclareAssign(Type.LET, ((ScalarName) name).getValue(), value);
     }
 
     /**
