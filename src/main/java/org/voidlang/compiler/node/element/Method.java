@@ -180,10 +180,14 @@ public class Method extends Node {
         }
         // resolve local variables
         for (Node node : body) {
-            if (node instanceof LocalDeclareAssign local) {
+            if (node instanceof ImmutableLocalDeclareAssign local) {
                 if (!local.getName().equals(name))
                     continue;
-                return (Value) node;
+                return local;
+            } else if (node instanceof MutableLocalDeclareAssign local) {
+                if (!local.getName().equals(name))
+                    continue;
+                return local;
             }
         }
         return super.resolveName(name);

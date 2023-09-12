@@ -30,6 +30,11 @@ public interface Type {
     Type LET = primitive("let");
 
     /**
+     * The type wrapper for the "mut" keyword.
+     */
+    Type MUT = primitive("mut");
+
+    /**
      * The type wrapper for an 8-bit integer.
      */
     Type BYTE = primitive("byte");
