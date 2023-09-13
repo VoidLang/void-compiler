@@ -107,7 +107,7 @@ public class MethodCall extends Value {
         return builder.call(method.getFunction(), arguments
             .stream()
             .map(arg -> arg.generateAndLoad(generator))
-            .toList());
+            .toList(), "call " + method.getName());
     }
 
     @Override
