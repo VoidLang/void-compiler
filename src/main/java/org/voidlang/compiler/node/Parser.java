@@ -401,6 +401,14 @@ public class Parser {
         return nextType(true);
     }
 
+    private boolean nextMutable() {
+        if (peek().is(TokenType.TYPE, "mut")) {
+            get();
+            return true;
+        }
+        return false;
+    }
+
     private Type nextType(boolean expectLambda) {
         // handle type group
         if (peek().is(TokenType.OPEN))
@@ -723,6 +731,8 @@ public class Parser {
         // parse the method parameters
         List<MethodParameter> parameters = new ArrayList<>();
         while (!peek().is(TokenType.CLOSE)) {
+            boolean mutable = nextMutable();
+
             // parse the next parameter type
             Type paramType = nextType();
 
@@ -730,7 +740,7 @@ public class Parser {
 
             Name paramName = nextName();
 
-            MethodParameter parameter = new MethodParameter(paramType, paramVar, paramName);
+            MethodParameter parameter = new MethodParameter(mutable, paramType, paramVar, paramName);
             parameters.add(parameter);
             System.out.print(parameter);
 

@@ -21,7 +21,6 @@ import java.util.*;
 @Getter
 @NodeInfo(type = NodeType.METHOD)
 public class Method extends Node {
-
     private final Type returnType;
 
     private final String name;
@@ -35,8 +34,7 @@ public class Method extends Node {
     private List<IRType> paramTypes;
     private Generator generator;
 
-    private final Map<String, ImmutableParameterIndexer> paramCache = new HashMap<>();
-    // private final Map<String, ParameterIndexer> paramCache = new HashMap<>();
+    private final Map<String, Value> paramCache = new HashMap<>();
 
     @Override
     public void preProcess(Node parent) {
@@ -181,8 +179,12 @@ public class Method extends Node {
                 if (!value.equals(name))
                     continue;
                 final int index = i;
-                // return paramCache.computeIfAbsent(name, k -> new ParameterIndexer(index, parameter.getType()));
-                return paramCache.computeIfAbsent(name, k -> new ImmutableParameterIndexer(index, parameter.getType()));
+                return paramCache.computeIfAbsent(name, k -> {
+                    if (parameter.isMutable())
+                        return new MutableParameterIndexer(index, parameter.getType());
+                    else
+                        return new ImmutableParameterIndexer(index, parameter.getType());
+                });
             }
         }
         // resolve local variables
@@ -200,6 +202,10 @@ public class Method extends Node {
         return super.resolveName(name);
     }
 
+    /**
+     * Immutable method parameters don't expect to be mutated. Therefore, loading the value of the method parameter
+     * will purely load the LLVM parameter. As this is not allocated manually, the value cannot be assigned.
+     */
     @RequiredArgsConstructor
     @NodeInfo(type = NodeType.IMMUTABLE_PARAMETER_INDEXER)
     private class ImmutableParameterIndexer extends Value implements PointerOwner {
@@ -289,15 +295,38 @@ public class Method extends Node {
         }
     }
 
+    /**
+     * Mutable method parameters expect the value to be mutated. Therefore, the type of the parameter is allocated
+     * on the stack. Accessing the method parameter loads the value from the allocated value on the stack.
+     * Assigning the method parameter stores the value that is allocated on the stack.
+     */
     @RequiredArgsConstructor
-    @NodeInfo(type = NodeType.PARAMETER_INDEXER)
-    private class ParameterIndexer extends Value implements LazyPointerOwner {
+    @NodeInfo(type = NodeType.MUTABLE_PARAMETER_INDEXER)
+    private class MutableParameterIndexer extends Value implements PointerOwner, Mutable {
         private final int index;
 
         private final Type type;
 
-        private IRType pointerType;
         private IRValue pointer;
+        private IRType pointerType;
+
+        private boolean allocated;
+
+        /**
+         * Generate an LLVM instruction for this node
+         * @param generator LLVM instruction generation context
+         */
+        @Override
+        public IRValue generate(Generator generator) {
+            IRBuilder builder = generator.getBuilder();
+
+            if (!allocated) {
+                getPointer();
+                allocated = true;
+            }
+
+            return builder.load(pointerType, pointer, "load param " + index);
+        }
 
         /**
          * Initialize all the child nodes for the overriding node.
@@ -340,31 +369,18 @@ public class Method extends Node {
                 node.postProcessUse(generator);
         }
 
-        /**
-         * Generate an LLVM instruction for this node
-         * @param generator LLVM instruction generation context
-         */
-        @Override
-        public IRValue generate(Generator generator) {
-            // use the allocated pointer instead if the modifier was mutated
-            if (pointer != null)
-                return generator.getBuilder().load(pointerType, pointer, String.valueOf(index));
-            return function.getParameter(index);
-        }
-
         @Override
         public IRValue getPointer() {
+            IRBuilder builder = generator.getBuilder();
             if (pointer == null) {
-                // lazy allocate the pointer on the stack, as by default
-                // we are not expecting the method parameters to be written to,
-                // but only to be read from. therefore if we want to edit the parameter
-                // we must lazily allocate it on the stack, and assign it the parameter value
+                // allocate the pointer on the stack, as we are expecting the method parameters to be written to,
+                // therefore if we want to edit the parameter
+                // we must allocate it on the stack, and assign it the parameter value
                 pointerType = type.generateType(generator.getContext());
-                IRBuilder builder = generator.getBuilder();
                 // lazy allocate a pointer of the modifiable parameter
-                pointer = builder.alloc(pointerType, String.valueOf(index));
+                pointer = builder.alloc(pointerType, "mut param " + index);
                 // store the original parameter value in the modifiable parameter
-                builder.store(generate(generator), pointer);
+                builder.store(function.getParameter(index), pointer);
             }
             return pointer;
         }
@@ -376,11 +392,17 @@ public class Method extends Node {
 
         /**
          * Get the wrapped type of this value.
+         *
          * @return wrapped value type
          */
         @Override
         public Type getValueType() {
             return type;
+        }
+
+        @Override
+        public IRValue load(Generator generator) {
+            return generate(generator);
         }
     }
 }

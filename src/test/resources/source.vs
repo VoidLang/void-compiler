@@ -1,9 +1,10 @@
-package "test"
+package "MutablePrimitiveParamTest"
 
-int add(int a, int b) {
-    return a + b
+int foo(mut int a) {
+    a = 10
+    return a
 }
 
 int main() {
-    return add(2, 3)
+    return foo(100)
 }

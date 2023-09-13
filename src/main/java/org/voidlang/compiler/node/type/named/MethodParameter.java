@@ -1,12 +1,13 @@
 package org.voidlang.compiler.node.type.named;
 
+import dev.inventex.octa.console.ConsoleFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.name.Name;
 
 /**
- * Represents a method parameter in the Abstract Syntax Tree. Method types are named types with a variadic specifier..
+ * Represents a method parameter in the Abstract Syntax Tree. Method types are named types with a variadic specifier.
  * <p>Example:</p>
  * <pre> {@code
  *     void onPlayerConnect(Player player)
@@ -17,6 +18,11 @@ import org.voidlang.compiler.node.type.name.Name;
 @AllArgsConstructor
 @Getter
 public class MethodParameter {
+    /**
+     * Indicate, whether the method parameter is mutable.
+     */
+    private final boolean mutable;
+
     /**
      * The type of the method parameter.
      */
@@ -38,7 +44,10 @@ public class MethodParameter {
      */
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder(type.toString());
+        StringBuilder builder = new StringBuilder();
+        if (mutable)
+            builder.append(ConsoleFormat.RED).append("mut ");
+        builder.append(type);
         if (variadic)
             builder.append("...");
         return builder
