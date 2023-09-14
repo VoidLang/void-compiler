@@ -6,9 +6,12 @@ import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.control.Element;
 import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.node.local.Loadable;
+import org.voidlang.compiler.node.local.PassedByReference;
+import org.voidlang.compiler.node.local.PointerOwner;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
@@ -31,6 +34,11 @@ public class MethodCall extends Value {
     private final List<Value> arguments;
 
     private Method method;
+
+    /**
+     * The target field of the method that is set, if the method call starts with an access.
+     */
+    private Value target;
 
     /**
      * Initialize all the child nodes for the overriding node.
@@ -77,8 +85,23 @@ public class MethodCall extends Value {
             .map(Value::getValueType)
             .toList();
 
-        String methodName = name.getDirect();
-        method = resolveMethod(methodName, argTypes);
+        if (name.isFieldAccess()) {
+            target = resolveName(name.getDirect());
+            if (target == null)
+                throw new IllegalStateException("Unable to resolve method access target: " + name.getDirect());
+
+            Type type = target.getValueType();
+
+            if (!(type instanceof Element element))
+                throw new IllegalStateException("Method access target '" + name.getDirect() + "' is not an element, but is " + type);
+
+            String methodName = name.getFieldName(); // TODO this is the method's name
+            method = element.resolveMethod(methodName, argTypes);
+        } else {
+            String methodName = name.getDirect();
+            method = resolveMethod(methodName, argTypes);
+        }
+
         if (method == null) {
             String args = argTypes.stream()
                 .map(type -> {
@@ -89,7 +112,7 @@ public class MethodCall extends Value {
                     return type.getClass().getSimpleName();
                 })
                 .collect(Collectors.joining(", "));
-            throw new IllegalStateException("Unable to resolve method " + methodName + "(" + args + ")");
+            throw new IllegalStateException("Unable to resolve method " + getName() + "(" + args + ")");
         }
     }
 
@@ -104,10 +127,26 @@ public class MethodCall extends Value {
         IRModule module = generator.getModule();
         IRBuilder builder = generator.getBuilder();
 
+        // TODO make sure the method is non-static
+        // prepare the method call for a non-static call and insert the instance for the 'this' parameter
+        if (target != null) {
+            Type targetType = target.getValueType();
+            if (targetType instanceof Class)
+                arguments.add(0, target);
+
+            // TODO support more kinds of targets
+        }
+
+        String callName = "call " + method.getName();
+        Type returnType = method.getReturnType();
+        // void call instructions cannot have a name according to LLVM rules
+        if (returnType instanceof ScalarType scalar && scalar.getName().isVoid())
+            callName = "";
+
         return builder.call(method.getFunction(), arguments
             .stream()
             .map(arg -> arg.generateAndLoad(generator))
-            .toList(), "call " + method.getName());
+            .toList(), "");
     }
 
     @Override
@@ -119,7 +158,17 @@ public class MethodCall extends Value {
 
         return builder.call(method.getFunction(), arguments
             .stream()
-            .map(arg -> arg.generateAndLoad(generator))
+            .map(arg -> {
+                /*
+                if (arg instanceof PointerOwner owner && owner.getValueType() instanceof PassedByReference
+                        && !getName().isFieldAccess())
+                    return owner.getPointer();
+
+                else if (arg instanceof Loadable loadable)
+                    return loadable.load(generator);
+                */
+                return arg.generateAndLoad(generator);
+            })
             .toList(), name);
     }
 

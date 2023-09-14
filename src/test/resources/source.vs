@@ -4,11 +4,14 @@ class Entity {
     int id = 100
 
     void tick() {
+        return
     }
 }
 
 int main() {
     let entity = new Entity()
 
-    return entity.id
+    entity.tick()
+
+    return 200
 }

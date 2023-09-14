@@ -15,10 +15,7 @@ import org.voidlang.llvm.element.IRStruct;
 import org.voidlang.llvm.element.IRType;
 import org.voidlang.llvm.element.IRValue;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Getter
@@ -31,6 +28,8 @@ public class Class extends Element implements PassedByReference {
     private final List<Node> body;
 
     private final Map<String, Field> fields = new LinkedHashMap<>();
+
+    private final Map<String, List<Method>> methods = new HashMap<>();
 
     private IRStruct struct;
 
@@ -54,6 +53,11 @@ public class Class extends Element implements PassedByReference {
                     field.setFieldIndex(fieldIndex++);
                     fields.put(field.getName(), field);
                 }
+            } else if (node instanceof Method method) {
+                System.err.println("reg method " + method.getName());
+                List<Method> methodList = methods.getOrDefault(method.getName(), new ArrayList<>());
+                methodList.add(method);
+                methods.put(method.getName(), methodList);
             }
         }
     }
@@ -61,6 +65,18 @@ public class Class extends Element implements PassedByReference {
     @Override
     public Field resolveField(String name) {
         return fields.get(name);
+    }
+
+    @Override
+    public Method resolveMethod(String name, List<Type> types) {
+        List<Method> methodList = methods.get(name);
+        if (methodList == null)
+            return null;
+        for (Method method : methodList) {
+            if (method.checkTypes(types))
+                return method;
+        }
+        return null;
     }
 
     /**
@@ -111,6 +127,11 @@ public class Class extends Element implements PassedByReference {
             }
         }
         struct.setMembers(members);
+        for (List<Method> methodList : methods.values()) {
+            for (Method method : methodList) {
+                method.generate(generator);
+            }
+        }
         return null;
     }
 

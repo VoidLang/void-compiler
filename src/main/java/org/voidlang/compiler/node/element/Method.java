@@ -18,25 +18,67 @@ import org.voidlang.llvm.element.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Represents a declared method in the application. A method can be directly put in a package,
+ * or it can be declared in a parent structure.
+ * <br>
+ * If a method is declared in a structure and is non-static, the instance of the structure is passed as 'this'
+ * for the first parameter.
+ */
 @RequiredArgsConstructor
 @Getter
 @NodeInfo(type = NodeType.METHOD)
 public class Method extends Node {
+    /**
+     * The type of the method node in the AST.
+     */
     private final Type returnType;
 
+    /**
+     * The declared name of the method.
+     */
     private final String name;
 
+    /**
+     * The declared raw parameter types of the method node in the AST.
+     */
     private final List<MethodParameter> parameters;
 
+    /**
+     * The declared body of the method node in the AST.
+     */
     private final List<Node> body;
 
+    /**
+     * The resolved return type of the method, that is given by the parent context.
+     */
     private Type resolvedType;
+
+    /**
+     * The generated LLVM method handle.
+     */
     private IRFunction function;
+
+    /**
+     * The list of the generated LLVM parameter type handles.
+     */
     private List<IRType> paramTypes;
+
+    /**
+     * The LLVM code emitter used for generating code.
+     */
     private Generator generator;
 
+    /**
+     * The final name that this method is registered as.
+     */
     private String finalName;
 
+    /**
+     * The map of the cached method resolvers of the method.
+     * A resolver may be either an `ImmutableParameterIndexer` or a `MutableParameterIndexer`,
+     * depending on whether a parameter has the `mut` modifier.
+     */
     private final Map<String, Value> paramCache = new HashMap<>();
 
     @Override
@@ -99,7 +141,7 @@ public class Method extends Node {
 
         finalName = name;
         if (parent instanceof Class clazz)
-            finalName = clazz.getName() + "::" + finalName;
+            finalName = clazz.getName() + "." + finalName;
 
         // create the LLVM function for the target context
         function = IRFunction.create(module, finalName, functionType);
@@ -151,7 +193,7 @@ public class Method extends Node {
     }
 
     public boolean checkTypes(List<Type> types) {
-        System.err.println("check param types");
+        System.err.println("check param types " + name + " " + types.size() + " " + parameters.size());
 
         if (types.size() != parameters.size())
             return false;

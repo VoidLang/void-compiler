@@ -57,6 +57,22 @@ public class QualifiedName {
     }
 
     /**
+     * Indicate, whether this fully qualified name is a "mut" keyword.
+     * @return true if this is a "mut" keyword
+     */
+    public boolean isMut() {
+        return types.size() == 1 && types.get(0).is(TokenType.TYPE, "mut");
+    }
+
+    /**
+     * Indicate, whether this fully qualified name is a "void" keyword.
+     * @return true if this is a "void" keyword
+     */
+    public boolean isVoid() {
+        return types.size() == 1 && types.get(0).is(TokenType.TYPE, "void");
+    }
+
+    /**
      * Indicate, whether this fully qualified name refers to directly an object.
      * @return true if this accessor does not access nested members
      */

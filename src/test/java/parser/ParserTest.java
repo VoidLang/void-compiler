@@ -91,7 +91,7 @@ public class ParserTest {
 
         BytePointer error = new BytePointer((Pointer) null);
         if (!module.verify(IRModule.VerifierFailureAction.PRINT_MESSAGE, error)) {
-            System.err.println("Error: " + error.getString());
+            // System.err.println("Error: " + error.getString());
             LLVMDisposeMessage(error);
             return;
         }

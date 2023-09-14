@@ -44,12 +44,14 @@ public enum Operator {
     LESS_THAN("<", 4, 0),
     LESS_OR_EQUAL("<=", 4, 0),
 
-    SLICE(":", 5, 0),
-    LAMBDA("::", 5, 0),
+    DOT(".", 5, 0),
 
-    ARROW("->", 6, 0),
+    SLICE(":", 6, 0),
+    LAMBDA("::", 6, 0),
 
-    ASSIGN("=", 7, 0),
+    ARROW("->", 7, 0),
+
+    ASSIGN("=", 8, 0),
 
     UNKNOWN("<unk>", -1, -1);
 
@@ -78,7 +80,10 @@ public enum Operator {
         return Arrays.stream(values())
             .filter(operator -> operator.value.equals(value))
             .findFirst()
-            .orElse(UNKNOWN);
+            .orElseGet(() -> {
+                System.err.println("Unknown operator: '" + value + "'");
+                return UNKNOWN;
+            });
     }
 
     @Override
