@@ -230,35 +230,45 @@ public class Method extends Node {
 
     @Override
     public Value resolveName(String name) {
+        // test if this is a class method, therefore 'this' is passed as the first argument
+        boolean instanceMethod = parent instanceof Class;
+
         // resolve method parameters
         for (int i = 0; i < parameters.size(); i++) {
             MethodParameter parameter = parameters.get(i);
             Name paramName = parameter.getName();
-            if (paramName.isScalar()) {
-                String value = ((ScalarName) paramName).getValue();
-                if (!value.equals(name))
-                    continue;
-                final int index = i;
-                return paramCache.computeIfAbsent(name, k -> {
-                    if (parameter.isMutable())
-                        return new MutableParameterIndexer(index, parameter.getType());
-                    else
-                        return new ImmutableParameterIndexer(index, parameter.getType());
-                });
-            }
+
+            // TODO support compound names
+            if (!paramName.isScalar())
+                continue;
+
+            // skip the parameter if it does not have the name to be resolved
+            String value = ((ScalarName) paramName).getValue();
+            if (!value.equals(name))
+                continue;
+
+            // increment the field accessing by one, as the first parameter is the instance of 'this', therefore
+            // all the remaining parameters are shifter to the right by one
+            final int index = i + (instanceMethod ? 1 : 0);
+
+            // get a parameter accessor from the cache or create one if missing
+            return paramCache.computeIfAbsent(name, k -> {
+                if (parameter.isMutable())
+                    return new MutableParameterIndexer(index, parameter.getType());
+                else
+                    return new ImmutableParameterIndexer(index, parameter.getType());
+            });
         }
-        // resolve local variables
+
+        // resolve local variables in the method body
         for (Node node : body) {
-            if (node instanceof ImmutableLocalDeclareAssign local) {
-                if (!local.getName().equals(name))
-                    continue;
+            if (node instanceof ImmutableLocalDeclareAssign local && local.getName().equals(name))
                 return local;
-            } else if (node instanceof MutableLocalDeclareAssign local) {
-                if (!local.getName().equals(name))
-                    continue;
+            else if (node instanceof MutableLocalDeclareAssign local && local.getName().equals(name))
                 return local;
-            }
         }
+
+        // let the parent nodes recursively resolve the name
         return super.resolveName(name);
     }
 

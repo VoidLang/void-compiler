@@ -42,7 +42,7 @@ public class Class extends Element implements PassedByReference {
         this.parent = parent;
         int fieldIndex = 0;
         for (Node node : body) {
-            node.setParent(this);
+            node.preProcess(this);
             if (node instanceof Field field) {
                 field.setFieldIndex(fieldIndex++);
                 fields.put(field.getName(), field);
@@ -87,6 +87,12 @@ public class Class extends Element implements PassedByReference {
     public void postProcessType(Generator generator) {
         for (Node node : body)
             node.postProcessType(generator);
+
+        methods
+            .values()
+            .stream()
+            .flatMap(List::stream)
+            .forEach(method -> method.postProcessType(generator));
     }
 
     /**
@@ -97,6 +103,12 @@ public class Class extends Element implements PassedByReference {
     public void postProcessMember(Generator generator) {
         for (Node node : body)
             node.postProcessMember(generator);
+
+        methods
+            .values()
+            .stream()
+            .flatMap(List::stream)
+            .forEach(method -> method.postProcessMember(generator));
     }
 
     /**
@@ -107,6 +119,12 @@ public class Class extends Element implements PassedByReference {
     public void postProcessUse(Generator generator) {
         for (Node node : body)
             node.postProcessUse(generator);
+
+        methods
+            .values()
+            .stream()
+            .flatMap(List::stream)
+            .forEach(method -> method.postProcessUse(generator));
     }
 
     /**
