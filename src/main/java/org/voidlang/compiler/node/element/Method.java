@@ -34,6 +34,8 @@ public class Method extends Node {
     private List<IRType> paramTypes;
     private Generator generator;
 
+    private String finalName;
+
     private final Map<String, Value> paramCache = new HashMap<>();
 
     @Override
@@ -87,8 +89,12 @@ public class Method extends Node {
             .toList();
         IRFunctionType functionType = IRFunctionType.create(returnType, paramTypes);
 
+        finalName = name;
+        if (parent instanceof Class clazz)
+            finalName = clazz.getName() + "::" + finalName;
+
         // create the LLVM function for the target context
-        function = IRFunction.create(module, name, functionType);
+        function = IRFunction.create(module, finalName, functionType);
     }
 
     /**

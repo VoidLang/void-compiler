@@ -147,6 +147,50 @@ public class Accessor extends Value implements Loadable {
     }
 
     @Override
+    public IRValue generateNamed(Generator generator, String localName) {
+        if (value instanceof PointerOwner owner && owner.getValueType() instanceof PassedByReference
+                && !getName().isFieldAccess())
+            return owner.getPointer();
+
+        else if (value instanceof Loadable loadable && !getName().isFieldAccess())
+            return loadable.load(generator);
+
+        IRContext context = generator.getContext();
+        IRBuilder builder = generator.getBuilder();
+
+        if (getName().isFieldAccess()) {
+            PointerOwner owner = (PointerOwner) value;
+            IRValue instance = owner.getPointer();
+            String fieldName = getName().getFieldName();
+
+            Type valueType = value.getValueType();
+            if (valueType instanceof NamedScalarType named) {
+                QualifiedName qualifiedName = ((ScalarType) named.getScalarType()).getName();
+                valueType = resolveType(qualifiedName.getDirect());
+            } else if (valueType instanceof ScalarType scalar) {
+                valueType = resolveType(scalar.getName().getDirect());
+            }
+
+            if (!(valueType instanceof Element element))
+                throw new IllegalStateException("Trying to access field '" + fieldName + "' of a non-element type " + valueType);
+
+            IRStruct rootType = (IRStruct) element.generateType(context);
+            Field field = element.resolveField(fieldName);
+            if (field == null)
+                throw new IllegalStateException("No such field '" + fieldName + "' in type " + element);
+
+            IRValue pointer = builder.structMemberPointer(rootType, instance, field.getFieldIndex(), "struct (load) " + field.getName());
+            IRType fieldType = field.getType().generateType(context);
+
+            return builder.load(fieldType, pointer, localName);
+
+            // return builder.structMemberPointer(rootType, instance, field.getFieldIndex(), localName);
+        }
+
+        return value.generate(generator);
+    }
+
+    @Override
     public IRValue load(Generator generator) {
         return generateAndLoad(generator);
     }

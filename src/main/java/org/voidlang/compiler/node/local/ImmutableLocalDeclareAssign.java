@@ -8,6 +8,7 @@ import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.method.MethodCall;
+import org.voidlang.compiler.node.operator.Accessor;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
@@ -106,8 +107,14 @@ public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, 
         // let the method call allocate the value for method calls
         else if (value instanceof MethodCall call && call.getMethod().getResolvedType() instanceof PassedByReference)
             pointer = call.generateNamed(generator, "let (call) " + name);
-            // allocate the value on the stack, and assign its value
+
+        // else if (value instanceof Accessor accessor)
+        //     pointer = accessor.generateNamed(generator, name);
+
+        // allocate the value on the stack, and assign its value
         else {
+            // System.err.println(name + " -> " + value + " @ " + value.getValueType());
+
             pointer = builder.alloc(pointerType, "let (ptr) " + name);
 
             IRValue value = getValue().generate(generator);

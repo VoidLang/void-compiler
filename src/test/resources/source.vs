@@ -1,7 +1,14 @@
-package "LocalVariableTest"
+package "ClassMethodTest"
+
+class Entity {
+    int id = 100
+
+    void tick() {
+    }
+}
 
 int main() {
-    let x = 100
+    let entity = new Entity()
 
-    return 30
+    return entity.id
 }
