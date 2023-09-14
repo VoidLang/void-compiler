@@ -75,6 +75,11 @@ public class Method extends Node {
     private String finalName;
 
     /**
+     * Indicate, whether the LLVM representation of the method has been defined.
+     */
+    private boolean defined;
+
+    /**
      * The map of the cached method resolvers of the method.
      * A resolver may be either an `ImmutableParameterIndexer` or a `MutableParameterIndexer`,
      * depending on whether a parameter has the `mut` modifier.
@@ -97,6 +102,11 @@ public class Method extends Node {
      */
     @Override
     public void postProcessMember(Generator generator) {
+        // do not recreate the LLVM representation of the method
+        // TODO find out why Method#postProcessMember is called twice
+        if (defined)
+            return;
+
         for (Node node : body)
             node.postProcessMember(generator);
 
@@ -145,6 +155,9 @@ public class Method extends Node {
 
         // create the LLVM function for the target context
         function = IRFunction.create(module, finalName, functionType);
+
+        // handle successful method creation
+        defined = true;
     }
 
     /**
@@ -232,6 +245,16 @@ public class Method extends Node {
     public Value resolveName(String name) {
         // test if this is a class method, therefore 'this' is passed as the first argument
         boolean instanceMethod = parent instanceof Class;
+
+        // resolve the 'this' keyword for instance methods
+        if (name.equals("this")) {
+            // make sure we don't use 'this' in a static context
+            if (!instanceMethod)
+                throw new IllegalStateException("Trying to access 'this' from a static method.");
+
+            // create a 'this' parameter accessor or get it from the cache
+            return paramCache.computeIfAbsent("this", k -> new ImmutableParameterIndexer(0, (Class) parent));
+        }
 
         // resolve method parameters
         for (int i = 0; i < parameters.size(); i++) {
