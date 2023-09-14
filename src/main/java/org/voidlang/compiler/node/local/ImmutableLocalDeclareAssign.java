@@ -33,7 +33,7 @@ public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, 
 
     private Type resolvedType;
 
-    private boolean loaded;
+    private boolean allocated;
 
     /**
      * Initialize all the child nodes for the overriding node.
@@ -87,7 +87,7 @@ public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, 
 
         // do not reallocate if it was already allocated. the problem is that whenever
         //  this value is accessed, it is does reallocate the value, instead it should pass the value only
-        if (loaded) {
+        if (allocated) {
             // do not load the values from class struct pointers, as classes
             // are meant to be handled by reference, and not by value
             if (value.getValueType() instanceof Class)
@@ -101,20 +101,20 @@ public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, 
         // let the value allocate the value if it is an allocator
         // this happens when using the "new" keyword
         if (value instanceof Allocator allocator)
-            pointer = allocator.allocate(generator, "declare assign (alloc) " + name);
+            pointer = allocator.allocate(generator, "let (alloc) " + name);
 
-            // let the method call allocate the value for method calls
+        // let the method call allocate the value for method calls
         else if (value instanceof MethodCall call && call.getMethod().getResolvedType() instanceof PassedByReference)
-            pointer = call.generateNamed(generator, "declare assign (method) " + name);
+            pointer = call.generateNamed(generator, "let (call) " + name);
             // allocate the value on the stack, and assign its value
         else {
-            pointer = builder.alloc(pointerType, "declare assign (ptr) " + name);
+            pointer = builder.alloc(pointerType, "let (ptr) " + name);
 
             IRValue value = getValue().generate(generator);
             builder.store(value, pointer);
         }
 
-        loaded = true;
+        allocated = true;
 
         // do not load the values from class struct pointers, as classes
         // are meant to be handled by reference, and not by value
