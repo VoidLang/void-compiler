@@ -16,6 +16,7 @@ import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Getter
@@ -78,6 +79,7 @@ public class Method extends Node {
         if (resolvedType instanceof PassedByReference)
             returnType = returnType.toPointerType();
 
+        // generate IR types for the method parameters
         paramTypes = parameters
             .stream()
             .map(p -> {
@@ -86,7 +88,13 @@ public class Method extends Node {
                     throw new IllegalStateException(p.getType() + " does not have a generator");
                 return type;
             })
-            .toList();
+            .collect(Collectors.toCollection(ArrayList::new));
+
+        // TODO ignore static
+        // add the parent element as 'this' for the first argument
+        if (parent instanceof Class clazz)
+            paramTypes.add(0, IRType.pointerType(clazz.generateType(context)));
+
         IRFunctionType functionType = IRFunctionType.create(returnType, paramTypes);
 
         finalName = name;
