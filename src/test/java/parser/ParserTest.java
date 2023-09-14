@@ -100,7 +100,7 @@ public class ParserTest {
         System.out.println(ConsoleFormat.DEFAULT);
         System.out.println(module.print());
 
-        LLVMWriteBitcodeToFile(module.getHandle(), "D:\\.dev\\GitHub\\VoidCompiler\\src\\test\\resources\\output.bc");
+        // LLVMWriteBitcodeToFile(module.getHandle(), "D:\\.dev\\GitHub\\VoidCompiler\\src\\test\\resources\\output.bc");
 
         ExecutionEngine engine = ExecutionEngine.create();
         MMCJITCompilerOptions options = MMCJITCompilerOptions.create();
