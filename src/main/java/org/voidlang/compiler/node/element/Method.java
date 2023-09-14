@@ -212,6 +212,10 @@ public class Method extends Node {
             System.err.println("check " + checkType + " " + checkType.getClass());
             System.err.println("param " + paramType + " " + paramType.getClass());
 
+            // TODO should resolve type on postProcessUse
+            if (paramType instanceof ScalarType scalar && !scalar.getName().isPrimitive())
+                paramType = resolveType(scalar.getName().getDirect());
+
             if (!checkType.equals(paramType))
                 return false;
         }

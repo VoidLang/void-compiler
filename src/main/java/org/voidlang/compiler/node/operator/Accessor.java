@@ -91,7 +91,8 @@ public class Accessor extends Value implements Loadable {
             }
 
             if (!(valueType instanceof Element element))
-                throw new IllegalStateException("Trying to access field '" + fieldName + "' of a non-element type " + valueType + " " + valueType.getClass().getSimpleName());
+                throw new IllegalStateException("Trying to access field '" + fieldName + "' of a non-element type "
+                    + valueType + ": " + valueType.getClass().getSimpleName());
 
             IRStruct rootType = (IRStruct) element.generateType(context);
             Field field = element.resolveField(name.getFieldName());
