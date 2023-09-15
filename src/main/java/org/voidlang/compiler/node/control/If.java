@@ -109,6 +109,7 @@ public class If extends Instruction {
         if (body.isEmpty() || !body.get(body.size() - 1).is(NodeType.RETURN))
             builder.jump(merge);
 
+        // let all remaining instructions to be assigned for the merge block
         builder.positionAtEnd(merge);
 
         return null;

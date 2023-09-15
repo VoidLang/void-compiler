@@ -1,17 +1,10 @@
-package "ClassMethodTest"
-
-class Entity {
-    int id = 100
-
-    void tick() {
-        this.id = 200
-    }
-}
+package "WhileLoopTest"
 
 int main() {
-    let entity = new Entity()
+    mut i = 0
 
-    entity.tick()
+    while (i < 1000) 
+        i = i + 1
 
-    return entity.id
+    return i
 }
