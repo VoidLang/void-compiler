@@ -19,6 +19,7 @@ import org.voidlang.compiler.node.operator.Accessor;
 import org.voidlang.compiler.node.operator.Operation;
 import org.voidlang.compiler.node.operator.Operator;
 import org.voidlang.compiler.node.element.Class;
+import org.voidlang.compiler.node.operator.SideOperation;
 import org.voidlang.compiler.node.value.*;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.array.Dimension;
@@ -951,6 +952,15 @@ public class Parser {
         // handle new statement
         else if (peek().is(TokenType.EXPRESSION, "new"))
             return nextNewType(ignoreJoin);
+
+        // handle single-node operation
+        if (peek().is(TokenType.OPERATOR)) {
+            // TODO test oper
+            return new SideOperation(nextOperator(), nextValue());
+        }
+
+
+        // TODO handle not
 
         System.err.println(ConsoleFormat.RED + "Error (Value) " + peek());
         return new Error();

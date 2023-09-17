@@ -61,6 +61,15 @@ public class Token {
     }
 
     /**
+     * Indicate, whether the token's value equals to the specified value.
+     * @param value the value to test
+     * @return true if this token has the value
+     */
+    public boolean val(String value) {
+        return this.value.equals(value);
+    }
+
+    /**
      * Indicate, whether this token is not a finish token.
      * @return true if there are more tokens to be parsed
      */

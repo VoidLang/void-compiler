@@ -17,6 +17,9 @@ public enum Operator {
     AND("&&", 0, 0),
     OR("||", 0, 0),
 
+    NEGATE("-", 0, 0),
+    NOT("!", 0, 0),
+
     ADD("+", 1, 0),
     ADD_EQUAL("+=", 1, 0),
     INCREMENT("++", 1, 0),
