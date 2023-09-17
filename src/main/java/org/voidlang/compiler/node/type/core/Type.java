@@ -5,6 +5,7 @@ import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.generic.GenericArgumentList;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
+import org.voidlang.compiler.node.type.pointer.Pointer;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
 import org.voidlang.llvm.element.IRValue;
@@ -92,7 +93,8 @@ public interface Type {
         return new ScalarType(
             QualifiedName.primitive(type),
             GenericArgumentList.implicit(),
-            Array.noArray()
+            Array.noArray(),
+            Pointer.none()
         );
     }
 

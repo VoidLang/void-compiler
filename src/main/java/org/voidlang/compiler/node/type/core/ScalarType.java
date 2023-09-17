@@ -1,10 +1,13 @@
 package org.voidlang.compiler.node.type.core;
 
 import lombok.Getter;
+import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.generic.GenericArgumentList;
+import org.voidlang.compiler.node.type.pointer.Pointer;
+import org.voidlang.compiler.node.type.pointer.PointerType;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
 
@@ -37,11 +40,18 @@ public class ScalarType implements Type {
     @NotNull
     private final Array array;
 
+    /**
+     * The pointer type of the type.
+     */
+    @NonNull
+    private final Pointer pointer;
+
     public ScalarType(@NotNull QualifiedName name, @NotNull GenericArgumentList generics,
-                      @NotNull Array array) {
+                      @NotNull Array array, @NotNull Pointer pointer) {
         this.name = name;
         this.generics = generics;
         this.array = array;
+        this.pointer = pointer;
     }
 
     /**
@@ -58,7 +68,7 @@ public class ScalarType implements Type {
      */
     @Override
     public String toString() {
-        return String.valueOf(name) + generics + array;
+        return String.valueOf(name) + generics + array + pointer;
     }
 
     @Override
@@ -70,7 +80,8 @@ public class ScalarType implements Type {
 
         if (!name.equals(type.name)) return false;
         if (!generics.equals(type.generics)) return false;
-        return array.equals(type.array);
+        if (!array.equals(type.array)) return false;
+        return pointer.equals(type.pointer);
     }
 
     @Override
@@ -78,6 +89,7 @@ public class ScalarType implements Type {
         int result = name.hashCode();
         result = 31 * result + generics.hashCode();
         result = 31 * result + array.hashCode();
+        result = 31 * result + pointer.hashCode();
         return result;
     }
 
@@ -91,7 +103,8 @@ public class ScalarType implements Type {
         // TODO here probably shouldn't use void pointer, instead of pointer to type
         if (!name.isPrimitive())
             return IRType.pointerType(IRType.voidType(context));
-        return switch (name.getPrimitive()) {
+        // convert the raw types to LLVM type representations
+        IRType type = switch (name.getPrimitive()) {
             case "void" -> IRType.voidType(context);
             case "bool" -> IRType.int1(context);
             case "byte", "ubyte" -> IRType.int8(context);
@@ -102,5 +115,14 @@ public class ScalarType implements Type {
             case "double", "udouble" -> IRType.doubleType(context);
             default -> throw new IllegalStateException("Unknown primitive type " + name.getPrimitive());
         };
+        // apply pointer types to the generated type
+        PointerType pointerType = pointer.getType();
+        if (pointerType == PointerType.REFERENCE)
+            type = type.toPointerType();
+        else if (pointerType == PointerType.POINTER) {
+            for (int i = 0; i < pointer.getDimensions(); i++)
+                type = type.toPointerType();
+        }
+        return type;
     }
 }

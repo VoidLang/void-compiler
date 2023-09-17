@@ -20,6 +20,8 @@ import org.voidlang.compiler.node.operator.Operation;
 import org.voidlang.compiler.node.operator.Operator;
 import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.operator.SideOperation;
+import org.voidlang.compiler.node.type.pointer.Pointer;
+import org.voidlang.compiler.node.type.pointer.PointerType;
 import org.voidlang.compiler.node.value.*;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.array.Dimension;
@@ -464,8 +466,11 @@ public class Parser {
         // parse the array dimensions of the type
         Array array = nextArray();
 
+        // parse the pointer type of the type
+        Pointer pointer = nextPointer();
+
         // create the type wrapper
-        ScalarType type = new ScalarType(name, generics, array);
+        ScalarType type = new ScalarType(name, generics, array, pointer);
 
         // check if a lambda parameter list declaration is after the type
         // do not handle '|' if we are currently parsing a lambda
@@ -688,6 +693,35 @@ public class Parser {
             dimensions.add(new Dimension(size, !size.is(TokenType.NONE)));
         }
         return new Array(dimensions);
+    }
+
+    /**
+     * Parse the next pointer type declaration.
+     * @return next pointer type
+     */
+    private Pointer nextPointer() {
+        // check if no pointer type is declared
+        if (!peek().is(TokenType.OPERATOR))
+            return new Pointer(PointerType.NONE, 0);
+
+        // check reference types
+        else if (peek().val("&")) {
+            get();
+            return new Pointer(PointerType.REFERENCE, 0);
+        }
+
+        // parse pointer dimensions
+        int dimensions = 0;
+        while (peek().val("*")) {
+            get();
+            dimensions++;
+        }
+
+        // check if the operators weren't pointer operators
+        if (dimensions == 0)
+            return new Pointer(PointerType.NONE, 0);
+
+        return new Pointer(PointerType.POINTER, dimensions);
     }
 
     /**
