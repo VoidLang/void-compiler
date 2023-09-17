@@ -94,10 +94,12 @@ public class ScalarType implements Type {
         return switch (name.getPrimitive()) {
             case "void" -> IRType.voidType(context);
             case "bool" -> IRType.int1(context);
-            case "byte" -> IRType.int8(context);
-            case "short" -> IRType.int16(context);
-            case "int" -> IRType.int32(context);
-            case "long" -> IRType.int64(context);
+            case "byte", "ubyte" -> IRType.int8(context);
+            case "short", "ushort" -> IRType.int16(context);
+            case "int", "uint" -> IRType.int32(context);
+            case "long", "ulong" -> IRType.int64(context);
+            case "float", "ufloat" -> IRType.floatType(context);
+            case "double", "udouble" -> IRType.doubleType(context);
             default -> throw new IllegalStateException("Unknown primitive type " + name.getPrimitive());
         };
     }
