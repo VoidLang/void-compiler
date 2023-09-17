@@ -116,7 +116,8 @@ public interface Type {
         IRType irType = generateType(generator.getContext());
         ScalarType scalar = (ScalarType) type.getScalarType();
         return switch (scalar.getName().getTypes().get(0).getValue()) {
-            case "bool", "byte", "short", "int", "long" -> irType.constInt(0);
+            case "bool", "byte", "ubyte", "short", "ushort", "int", "uint", "long", "ulong",
+                    "float", "ufloat", "double", "udouble" -> irType.constInt(0);
             default -> null;
         };
     }
