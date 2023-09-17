@@ -990,11 +990,11 @@ public class Parser {
         // handle single-node operation
         if (peek().is(TokenType.OPERATOR)) {
             // TODO test oper
-            return new SideOperation(nextOperator(), nextValue());
+            Operator operator = nextOperator();
+            if (!isSideOperator(operator.getValue()))
+                throw new IllegalStateException("Expected side operator, but received " + operator);
+            return new SideOperation(operator, nextValue());
         }
-
-
-        // TODO handle not
 
         System.err.println(ConsoleFormat.RED + "Error (Value) " + peek());
         return new Error();
@@ -1060,7 +1060,7 @@ public class Parser {
         // let result = new Foo("my input");
         //                                 ^ the semicolon indicates, that the method call does not have any
         //                                   expressions after. unlike: let res = foo() + bar
-        //                                   let test = new Foo(); <- method call value is terminated, not expecting anything afterwards
+        //                                   let test = new Foo(); <- method call value is terminated, not expecting anything afterward
         if (peek().is(TokenType.SEMICOLON))
             get();
 
@@ -1732,6 +1732,18 @@ public class Parser {
             case "+", "+=", "-", "-=", "*", "*=", "/", "/=", "&", "&=", "|", "|=", "&&", "||", "::",
                  "<", "<=", ">", ">=", "==", "!=", ">>", ">>>", "<<", "??", "?", ":", ".", "^", "%"
                     -> true;
+            default -> false;
+        };
+    }
+
+    /**
+     * Indicate, whether the given operator is applicable for a single-node use.
+     * @param operator target operator
+     * @return true if the operator expects one value
+     */
+    private boolean isSideOperator(String operator) {
+        return switch (operator) {
+            case "-", "!" -> true;
             default -> false;
         };
     }
