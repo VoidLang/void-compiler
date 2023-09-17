@@ -2,6 +2,7 @@ package org.voidlang.compiler.node.element;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.voidlang.compiler.node.*;
 import org.voidlang.compiler.node.control.Return;
 import org.voidlang.compiler.node.local.*;
@@ -78,6 +79,12 @@ public class Method extends Node {
      * Indicate, whether the LLVM representation of the method has been defined.
      */
     private boolean defined;
+
+    /**
+     * Indicate, whether this method has been declared without an explicit body.
+     */
+    @Setter
+    private boolean bodyLess;
 
     /**
      * The map of the cached method resolvers of the method.
@@ -190,6 +197,9 @@ public class Method extends Node {
         IRContext context = generator.getContext();
         IRBuilder builder = generator.getBuilder();
         this.generator = generator;
+
+        if (bodyLess)
+            return function;
 
         // create an entry block for the function
         IRBlock block = IRBlock.create(context, function, "entry");

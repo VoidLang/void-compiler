@@ -758,7 +758,20 @@ public class Parser {
 
         System.out.println(ConsoleFormat.CYAN + ") " + ConsoleFormat.DARK_GRAY + "{");
 
-        // skip the auto-inserted semicolon before the method body
+        Token peek = peek();
+        if (peek.is(TokenType.SEMICOLON)) {
+            // skip the auto-inserted semicolon before the method body
+            get();
+
+            // handle methods without an explicit body
+            // TODO make sure these methods have an extern modifier
+            if (!peek().is(TokenType.BEGIN)) {
+                Method method = new Method(type, name, parameters, new ArrayList<>());
+                method.setBodyLess(true);
+                return method;
+            }
+        }
+
         if (peek().is(TokenType.SEMICOLON, "auto"))
             get();
 

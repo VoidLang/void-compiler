@@ -1,10 +1,8 @@
-package "WhileLoopTest"
+package "LibraryTest"
+
+extern int GetStdHandle(int kind)
 
 int main() {
-    mut i = 0
-
-    while (i < 1000) 
-        i = i + 1
-
-    return i
+    let val = -11
+    return GetStdHandle(val)
 }
