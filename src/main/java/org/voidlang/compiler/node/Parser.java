@@ -1369,7 +1369,7 @@ public class Parser {
 
         // warp the value around a group node, therefore the operation tree transformer
         // will correctly parse precedence
-        Group group = new Group((Value) value);
+        Group group = new Group(value);
 
         // handle operation after a node group
         // (2 + 3) + 7
@@ -1377,7 +1377,9 @@ public class Parser {
         if (peek().is(TokenType.OPERATOR)) {
             // parse the operator of the operation
             Operator operator = nextOperator();
-            if (!isComplexOperator(operator.getValue()))
+            if (operator == Operator.QUESTION)
+                return nextSelection(group);
+            else if (!isComplexOperator(operator.getValue()))
                 throw new IllegalStateException("Expected complex operator, but got " + operator);
             return makeOperator(group, operator, nextValue());
         }
@@ -1430,14 +1432,14 @@ public class Parser {
         return new LocalAssign(name, value);
     }
 
-    private Value nextConditional(Value condition) {
+    private Value nextSelection(Value condition) {
         Value ifCase = nextValue();
 
-        get(TokenType.OPERATOR, ":");
+        get(TokenType.COLON);
 
         Value elseCase = nextValue();
 
-        return new Conditional(condition, ifCase, elseCase);
+        return new Selection(condition, ifCase, elseCase);
     }
 
     /**
@@ -1463,6 +1465,12 @@ public class Parser {
         if (peek().is(TokenType.SEMICOLON))
             return literal;
 
+        // terminate the literal if an 'else' case of a one-liner 'if' statement is expected
+        // let foo = x < 10 ? 1 + 2 : 12 / 6
+        //                         ^ terminate the parsing of '1 + 2', as the else case is expected
+        if (peek().is(TokenType.COLON))
+            return literal;
+
         // handle operation between two expressions
         // let var = 100 +
         //               ^ the operator after a literal indicates, that there are more expressions to be parsed
@@ -1470,7 +1478,9 @@ public class Parser {
         if (peek().is(TokenType.OPERATOR)) {
             // parse the operator of the operation
             Operator operator = nextOperator();
-            if (!isComplexOperator(operator.getValue()))
+            if (operator == Operator.QUESTION)
+                return nextSelection(literal);
+            else if (!isComplexOperator(operator.getValue()))
                 throw new IllegalStateException("Expected complex operator, but got " + operator);
             return makeOperator(literal, operator, nextValue());
         }
@@ -1533,6 +1543,12 @@ public class Parser {
         if (peek().is(TokenType.SEMICOLON))
             return value;
 
+        // terminate the literal if an 'else' case of a one-liner 'if' statement is expected
+        // let foo = x < 10 ? 1 + 2 : 12 / 6
+        //                         ^ terminate the parsing of '1 + 2', as the else case is expected
+        if (peek().is(TokenType.COLON))
+            return value;
+
         // handle operation between two expressions
         // let var = foo +
         //               ^ the operator after an identifier indicates, that there are more expressions to be parsed
@@ -1568,6 +1584,12 @@ public class Parser {
         // let myVar = ref foo;
         //                    ^ the (auto-inserted) semicolon indicates, initialized with a single value
         if (peek().is(TokenType.SEMICOLON))
+            return value;
+
+        // terminate the literal if an 'else' case of a one-liner 'if' statement is expected
+        // let foo = x < 10 ? 1 + 2 : 12 / 6
+        //                         ^ terminate the parsing of '1 + 2', as the else case is expected
+        if (peek().is(TokenType.COLON))
             return value;
 
         // handle operation between two expressions
@@ -1612,6 +1634,12 @@ public class Parser {
         if (peek().is(TokenType.SEMICOLON))
             return value;
 
+        // terminate the literal if an 'else' case of a one-liner 'if' statement is expected
+        // let foo = x < 10 ? 1 + 2 : 12 / 6
+        //                         ^ terminate the parsing of '1 + 2', as the else case is expected
+        if (peek().is(TokenType.COLON))
+            return value;
+
         // handle operation between two expressions
         // let var = foo +
         //               ^ the operator after an identifier indicates, that there are more expressions to be parsed
@@ -1622,7 +1650,9 @@ public class Parser {
             // handle field assignation
             if (operator == Operator.ASSIGN)
                 return new FieldAssign((Accessor) value, nextValue());
-            if (!isComplexOperator(operator.getValue()))
+            else if (operator == Operator.QUESTION)
+                return nextSelection(value);
+            else if (!isComplexOperator(operator.getValue()))
                 throw new IllegalStateException("Expected complex operator, but got " + operator);
             return makeOperator(value, operator, nextValue());
         }
@@ -1714,7 +1744,7 @@ public class Parser {
         // loop until the token is an operator
         StringBuilder builder = new StringBuilder();
         while (peek().is(TokenType.OPERATOR)) {
-            String value = get().getValue();
+            String value = peek().getValue();
             if (shouldOperatorTerminate(builder.toString(), value))
                 return Operator.of(builder.toString());
             builder.append(value);
@@ -1722,6 +1752,7 @@ public class Parser {
             // check if the current operator has been ended
             if (shouldOperatorTerminate(operator))
                 return Operator.of(operator);
+            get();
         }
         // handle colons as operators as well
         while (peek().is(TokenType.COLON))

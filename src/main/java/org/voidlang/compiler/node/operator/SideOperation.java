@@ -46,8 +46,8 @@ public class SideOperation extends Value {
         IRBuilder builder = generator.getBuilder();
         IRValue operand = getOperand().generateAndLoad(generator);
         return switch (operator) {
-            case NEGATE -> builder.negate(operand);
-            case NOT -> builder.not(operand);
+            case NEGATE -> builder.negate(operand, "neg");
+            case NOT -> builder.not(operand, "not");
             default -> throw new IllegalStateException("Unable to generate complex operator for " + operator);
         };
     }

@@ -127,4 +127,9 @@ public class Operation extends Value {
         // TODO assert two types equals, if not try to convert
         return left.getValueType();
     }
+
+    @Override
+    public String toString() {
+        return left + " " + operator.getValue() + " " + right;
+    }
 }

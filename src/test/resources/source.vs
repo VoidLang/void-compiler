@@ -1,10 +1,9 @@
-package "ConditionalTest"
+package "SelectionTest"
 
-int abs(int x) {
-    let f= x < 0
-    return x
+int abs(int i) {
+    return (i < 0) ? -i : i
 }
 
 int main() {
-    return abs(-12)
+    return abs(-1337)
 }

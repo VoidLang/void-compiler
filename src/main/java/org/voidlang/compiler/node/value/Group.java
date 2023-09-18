@@ -66,6 +66,11 @@ public class Group extends Value {
      */
     @Override
     public Type getValueType() {
-        return null;
+        return value.getValueType();
+    }
+
+    @Override
+    public String toString() {
+        return value.toString();
     }
 }

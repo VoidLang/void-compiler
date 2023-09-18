@@ -4,12 +4,16 @@ import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
+import org.voidlang.compiler.node.NodeInfo;
+import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.value.Value;
+import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRValue;
 
 @RequiredArgsConstructor
-public class Conditional extends Value {
+@NodeInfo(type = NodeType.SELECTION)
+public class Selection extends Value {
     @NotNull
     private final Value condition;
 
@@ -26,7 +30,12 @@ public class Conditional extends Value {
      */
     @Override
     public IRValue generate(Generator generator) {
-        return null;
+        IRBuilder builder = generator.getBuilder();
+        return builder.select(
+            condition.generateAndLoad(generator),
+            ifValue.generateAndLoad(generator),
+            elseValue.generateAndLoad(generator)
+        );
     }
 
     /**

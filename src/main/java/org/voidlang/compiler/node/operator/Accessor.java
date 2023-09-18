@@ -227,4 +227,9 @@ public class Accessor extends Value implements Loadable {
 
         return value.getValueType();
     }
+
+    @Override
+    public String toString() {
+        return name.toString();
+    }
 }

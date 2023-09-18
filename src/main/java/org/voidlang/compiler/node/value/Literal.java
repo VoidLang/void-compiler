@@ -87,4 +87,9 @@ public class Literal extends Value {
             default -> throw new IllegalStateException("Unable to get value type for literal " + type);
         };
     }
+
+    @Override
+    public String toString() {
+        return value.getValue();
+    }
 }
