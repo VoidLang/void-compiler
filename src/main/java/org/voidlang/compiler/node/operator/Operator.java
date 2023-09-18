@@ -19,6 +19,7 @@ public enum Operator {
 
     NEGATE("-", 0, 0),
     NOT("!", 0, 0),
+    QUESTION("?", 0, 0),
 
     ADD("+", 1, 0),
     ADD_EQUAL("+=", 1, 0),

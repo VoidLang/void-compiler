@@ -1,12 +1,10 @@
-package "ReferenceTest"
+package "ConditionalTest"
 
-int modify(ref int x) {
-    let y = deref x
-    return y * 2
+int abs(int x) {
+    let f= x < 0
+    return x
 }
 
 int main() {
-    let foo = 100
-
-    return modify(ref foo)
+    return abs(-12)
 }

@@ -1430,6 +1430,16 @@ public class Parser {
         return new LocalAssign(name, value);
     }
 
+    private Value nextConditional(Value condition) {
+        Value ifCase = nextValue();
+
+        get(TokenType.OPERATOR, ":");
+
+        Value elseCase = nextValue();
+
+        return new Conditional(condition, ifCase, elseCase);
+    }
+
     /**
      * Parse the next literal value declaration.
      * @return new literal
@@ -1704,7 +1714,10 @@ public class Parser {
         // loop until the token is an operator
         StringBuilder builder = new StringBuilder();
         while (peek().is(TokenType.OPERATOR)) {
-            builder.append(get().getValue());
+            String value = get().getValue();
+            if (shouldOperatorTerminate(builder.toString(), value))
+                return Operator.of(builder.toString());
+            builder.append(value);
             String operator = builder.toString();
             // check if the current operator has been ended
             if (shouldOperatorTerminate(operator))
@@ -1715,8 +1728,6 @@ public class Parser {
             builder.append(get().getValue());
         return Operator.of(builder.toString());
     }
-
-
 
     private Value nextReferenceLocalDeclaration() {
         throw new IllegalStateException("Not supported yet");
@@ -1863,11 +1874,17 @@ public class Parser {
      */
     private boolean shouldOperatorTerminate(String operator) {
         return switch (operator) {
-            case "&&", "||" -> true;
+            case "&&", "||", "??", "?.", "++", "--", "==", "!=" -> true;
             default -> false;
         };
     }
 
+    private boolean shouldOperatorTerminate(String prev, String next) {
+        return switch (prev) {
+            case "?" -> !next.equals(".") && !next.equals("?");
+            default -> false;
+        };
+    }
 
     /**
      * Test if the given operator is applicable before a value.
