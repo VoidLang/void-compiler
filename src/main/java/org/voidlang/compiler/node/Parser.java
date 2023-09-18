@@ -20,6 +20,7 @@ import org.voidlang.compiler.node.operator.Operation;
 import org.voidlang.compiler.node.operator.Operator;
 import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.operator.SideOperation;
+import org.voidlang.compiler.node.type.pointer.DereferencingAccessor;
 import org.voidlang.compiler.node.type.pointer.ReferencedAccessor;
 import org.voidlang.compiler.node.type.pointer.Referencing;
 import org.voidlang.compiler.node.value.*;
@@ -1002,6 +1003,10 @@ public class Parser {
         else if (peek().is(TokenType.TYPE, "ref"))
             return nextReferencedQualifiedNameOrCall();
 
+        // handle pointer dereferencing
+        else if (peek().is(TokenType.TYPE, "deref"))
+            return nextDereferencedQualifiedNameOrCall();
+
         // handle qualified name or method call
         else if (peek().is(TokenType.IDENTIFIER))
             return nextQualifiedNameOrCall();
@@ -1492,6 +1497,42 @@ public class Parser {
         return new Error();
     }
 
+    private Value nextDereferencedQualifiedNameOrCall() {
+        get(TokenType.TYPE, "deref");
+
+        // parse the qualified name
+        QualifiedName name = nextQualifiedName();
+
+        Value value = new DereferencingAccessor(name);
+
+        // handle method call
+        // println("Hello, World!")
+        //        ^ the open parenthesis token after an identifier indicates, that a method call is expected
+        if (peek().is(TokenType.OPEN))
+            throw new IllegalStateException("Dereferenced method call is not supported yet.");
+
+        // handle group closing
+        // print(ref foo)
+        //              ^ we don't need to handle this closing tag here, just finish qualified name parsing
+        if (peek().is(TokenType.CLOSE, TokenType.COMMA, TokenType.STOP, TokenType.END))
+            return value;
+
+        // handle single value expression, in which case the local variable is initialized with a single value
+        // let myVar = ref foo;
+        //                    ^ the (auto-inserted) semicolon indicates, initialized with a single value
+        if (peek().is(TokenType.SEMICOLON))
+            return value;
+
+        // handle operation between two expressions
+        // let var = foo +
+        //               ^ the operator after an identifier indicates, that there are more expressions to be parsed
+        //                 the two operands are grouped together by an Operation node
+        if (peek().is(TokenType.OPERATOR))
+            throw new IllegalStateException("Dereferenced operation is not supported yet.");
+
+        System.out.println(ConsoleFormat.RED + "Error (Dereferenced Qualified Name / Call) " + peek());
+        return new Error();
+    }
 
     private Value nextReferencedQualifiedNameOrCall() {
         get(TokenType.TYPE, "ref");

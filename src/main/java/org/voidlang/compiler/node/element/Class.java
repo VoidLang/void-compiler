@@ -199,7 +199,6 @@ public class Class extends Element implements PassedByReference {
     public String toString() {
         return "Class{"
             + "name='" + name + '\''
-           // + ", fields=" + fields
             + '}';
     }
 }

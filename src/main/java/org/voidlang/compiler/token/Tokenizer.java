@@ -621,7 +621,7 @@ public class Tokenizer {
      */
     private boolean isType(String token) {
         return switch (token) {
-            case "let", "mut", "ref", "byte", "ubyte", "short", "ushort", "int", "uint", "double", "udouble",
+            case "let", "mut", "ref", "deref", "byte", "ubyte", "short", "ushort", "int", "uint", "double", "udouble",
                 "float", "ufloat", "long", "ulong", "void", "bool", "char", "string" -> true;
             default -> false;
         };

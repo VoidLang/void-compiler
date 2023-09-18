@@ -1,11 +1,12 @@
-package "PointerTest"
+package "ReferenceTest"
 
-void bar(ref int x) {
-    x = 200
+int modify(ref int x) {
+    let y = deref x
+    return y * 2
 }
 
 int main() {
     let foo = 100
-    bar(ref foo)
-    return foo
+
+    return modify(ref foo)
 }
