@@ -3,13 +3,11 @@ package org.voidlang.compiler.node.type.named;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
-import org.voidlang.llvm.element.IRBuilder;
+import org.voidlang.compiler.node.type.pointer.Referencing;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
-import org.voidlang.llvm.element.IRValue;
 
 /**
  * Represents a type that optionally has a unique name given.
@@ -26,6 +24,9 @@ import org.voidlang.llvm.element.IRValue;
 @AllArgsConstructor
 @Getter
 public class NamedScalarType extends NamedType {
+    @NotNull
+    private final Referencing referencing;
+
     /**
      * The type of the named type.
      */

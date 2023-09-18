@@ -3,6 +3,7 @@ package org.voidlang.compiler.node.operator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
@@ -23,6 +24,7 @@ import org.voidlang.llvm.element.*;
 @Getter
 @NodeInfo(type = NodeType.ACCESSOR)
 public class Accessor extends Value implements Loadable {
+    @NotNull
     private final QualifiedName name;
 
     private Value value;

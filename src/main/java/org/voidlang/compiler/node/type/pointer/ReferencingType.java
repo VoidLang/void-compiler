@@ -1,6 +1,7 @@
 package org.voidlang.compiler.node.type.pointer;
-public enum PointerType {
+public enum ReferencingType {
     REFERENCE,
-    POINTER,
+    DEREFERENCE,
+    MUTABLE,
     NONE
 }

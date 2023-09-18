@@ -6,8 +6,8 @@ import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.generic.GenericArgumentList;
-import org.voidlang.compiler.node.type.pointer.Pointer;
-import org.voidlang.compiler.node.type.pointer.PointerType;
+import org.voidlang.compiler.node.type.pointer.Referencing;
+import org.voidlang.compiler.node.type.pointer.ReferencingType;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
 
@@ -22,6 +22,12 @@ import org.voidlang.llvm.element.IRType;
  */
 @Getter
 public class ScalarType implements Type {
+    /**
+     * The referencing type of the type.
+     */
+    @NonNull
+    private final Referencing referencing;
+
     /**
      * The fully qualified name of the type.
      */
@@ -40,18 +46,12 @@ public class ScalarType implements Type {
     @NotNull
     private final Array array;
 
-    /**
-     * The pointer type of the type.
-     */
-    @NonNull
-    private final Pointer pointer;
-
-    public ScalarType(@NotNull QualifiedName name, @NotNull GenericArgumentList generics,
-                      @NotNull Array array, @NotNull Pointer pointer) {
+    public ScalarType(@NotNull Referencing referencing, @NotNull QualifiedName name,
+                      @NotNull GenericArgumentList generics, @NotNull Array array) {
+        this.referencing = referencing;
         this.name = name;
         this.generics = generics;
         this.array = array;
-        this.pointer = pointer;
     }
 
     /**
@@ -68,7 +68,7 @@ public class ScalarType implements Type {
      */
     @Override
     public String toString() {
-        return String.valueOf(name) + generics + array + pointer;
+        return referencing.toString() + name + generics + array;
     }
 
     @Override
@@ -78,10 +78,10 @@ public class ScalarType implements Type {
 
         ScalarType type = (ScalarType) o;
 
+        if (!referencing.equals(type.referencing)) return false;
         if (!name.equals(type.name)) return false;
         if (!generics.equals(type.generics)) return false;
-        if (!array.equals(type.array)) return false;
-        return pointer.equals(type.pointer);
+        return array.equals(type.array);
     }
 
     @Override
@@ -89,7 +89,7 @@ public class ScalarType implements Type {
         int result = name.hashCode();
         result = 31 * result + generics.hashCode();
         result = 31 * result + array.hashCode();
-        result = 31 * result + pointer.hashCode();
+        result = 31 * result + referencing.hashCode();
         return result;
     }
 
@@ -116,11 +116,8 @@ public class ScalarType implements Type {
             default -> throw new IllegalStateException("Unknown primitive type " + name.getPrimitive());
         };
         // apply pointer types to the generated type
-        PointerType pointerType = pointer.getType();
-        if (pointerType == PointerType.REFERENCE)
-            type = type.toPointerType();
-        else if (pointerType == PointerType.POINTER) {
-            for (int i = 0; i < pointer.getDimensions(); i++)
+        if (referencing.getType() == ReferencingType.REFERENCE) {
+            for (int i = 0; i < referencing.getDimensions(); i++)
                 type = type.toPointerType();
         }
         return type;

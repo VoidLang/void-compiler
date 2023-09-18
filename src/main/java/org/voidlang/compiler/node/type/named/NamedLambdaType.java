@@ -3,6 +3,7 @@ package org.voidlang.compiler.node.type.named;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
+import org.voidlang.compiler.node.type.pointer.Referencing;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
 
@@ -19,6 +20,9 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 public class NamedLambdaType extends NamedType {
+    @NotNull
+    private final Referencing referencing;
+
     /**
      * the return type of the lambda type.
      */

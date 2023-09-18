@@ -3,6 +3,7 @@ package org.voidlang.compiler.node.type.named;
 import lombok.Getter;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.CompoundType;
+import org.voidlang.compiler.node.type.pointer.Referencing;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
 
@@ -19,12 +20,15 @@ import java.util.stream.Collectors;
  */
 @Getter
 public class NamedTypeGroup extends NamedType {
+    private final Referencing referencing;
+
     /**
      * The list of the held nested named type entries.
      */
     private final List<NamedType> members;
 
-    public NamedTypeGroup(List<NamedType> members) {
+    public NamedTypeGroup(Referencing referencing, List<NamedType> members) {
+        this.referencing = referencing;
         this.members = members;
     }
 

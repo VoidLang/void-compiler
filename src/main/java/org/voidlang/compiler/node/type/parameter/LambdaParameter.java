@@ -2,10 +2,12 @@ package org.voidlang.compiler.node.type.parameter;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.name.Name;
+import org.voidlang.compiler.node.type.pointer.Referencing;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
 
@@ -21,6 +23,9 @@ import org.voidlang.llvm.element.IRType;
 @AllArgsConstructor
 @Getter
 public class LambdaParameter implements Type {
+    @NonNull
+    private final Referencing referencing;
+
     /**
      * The type of the lambda parameter.
      */

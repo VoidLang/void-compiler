@@ -10,6 +10,7 @@ import org.voidlang.compiler.node.control.Element;
 import org.voidlang.compiler.node.local.PassedByReference;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.generic.GenericTypeList;
+import org.voidlang.compiler.node.type.pointer.Referencing;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRStruct;
 import org.voidlang.llvm.element.IRType;
@@ -158,6 +159,17 @@ public class Class extends Element implements PassedByReference {
         if (type instanceof PassedByReference)
             irType = irType.toPointerType();
         return irType;
+    }
+
+    /**
+     * Indicate, how the type should be referenced as.
+     *
+     * @return type referencing
+     */
+    @Override
+    public Referencing getReferencing() {
+        // TODO change this to 1D ref
+        return Referencing.none();
     }
 
     /**

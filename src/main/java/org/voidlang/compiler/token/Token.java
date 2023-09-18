@@ -62,11 +62,15 @@ public class Token {
 
     /**
      * Indicate, whether the token's value equals to the specified value.
-     * @param value the value to test
+     * @param values the values to test
      * @return true if this token has the value
      */
-    public boolean val(String value) {
-        return this.value.equals(value);
+    public boolean val(String... values) {
+        for (String value : values) {
+            if (this.value.equals(value))
+                return true;
+        }
+        return false;
     }
 
     /**

@@ -1,8 +1,8 @@
 package org.voidlang.compiler.node.type.named;
 
-import dev.inventex.octa.console.ConsoleFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.name.Name;
 
@@ -19,13 +19,9 @@ import org.voidlang.compiler.node.type.name.Name;
 @Getter
 public class MethodParameter {
     /**
-     * Indicate, whether the method parameter is mutable.
-     */
-    private final boolean mutable;
-
-    /**
      * The type of the method parameter.
      */
+    @NonNull
     private final Type type;
 
     /**
@@ -45,8 +41,6 @@ public class MethodParameter {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        if (mutable)
-            builder.append(ConsoleFormat.RED).append("mut ");
         builder.append(type);
         if (variadic)
             builder.append("...");

@@ -2,6 +2,8 @@ package org.voidlang.compiler.node.type.core;
 
 import dev.inventex.octa.console.ConsoleFormat;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
+import org.voidlang.compiler.node.type.pointer.Referencing;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
 
@@ -18,12 +20,16 @@ import java.util.stream.Collectors;
  */
 @Getter
 public class CompoundType implements Type {
+    @NotNull
+    private final Referencing referencing;
+
     /**
      * The list of the held nested type entries.
      */
     private final List<Type> members;
 
-    public CompoundType(List<Type> members) {
+    public CompoundType(@NotNull Referencing referencing, List<Type> members) {
+        this.referencing = referencing;
         this.members = members;
     }
 

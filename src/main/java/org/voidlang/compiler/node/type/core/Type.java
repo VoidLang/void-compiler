@@ -5,7 +5,7 @@ import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.generic.GenericArgumentList;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
-import org.voidlang.compiler.node.type.pointer.Pointer;
+import org.voidlang.compiler.node.type.pointer.Referencing;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
 import org.voidlang.llvm.element.IRValue;
@@ -85,16 +85,22 @@ public interface Type {
     }
 
     /**
+     * Indicate, how the type should be referenced as.
+     * @return type referencing
+     */
+    Referencing getReferencing();
+
+    /**
      * Create a new type wrapper for the specified primitive type.
      * @param type primitive type name
      * @return primitive type wrapper
      */
     static Type primitive(String type) {
         return new ScalarType(
+            Referencing.none(),
             QualifiedName.primitive(type),
             GenericArgumentList.implicit(),
-            Array.noArray(),
-            Pointer.none()
+            Array.noArray()
         );
     }
 

@@ -285,11 +285,10 @@ public class Method extends Node {
             final int index = i + (instanceMethod ? 1 : 0);
 
             // get a parameter accessor from the cache or create one if missing
-            return paramCache.computeIfAbsent(name, k -> {
-                if (parameter.isMutable())
-                    return new MutableParameterIndexer(index, parameter.getType());
-                else
-                    return new ImmutableParameterIndexer(index, parameter.getType());
+            return paramCache.computeIfAbsent(name, k -> switch (parameter.getType().getReferencing().getType()) {
+                case REFERENCE -> new ReferenceParameterIndexer(index, parameter.getType());
+                case MUTABLE -> new MutableParameterIndexer(index, parameter.getType());
+                case DEREFERENCE, NONE -> new ImmutableParameterIndexer(index, parameter.getType());
             });
         }
 
@@ -385,6 +384,95 @@ public class Method extends Node {
 
         /**
          * Get the wrapped type of this value.
+         * @return wrapped value type
+         */
+        @Override
+        public Type getValueType() {
+            return type;
+        }
+
+        @Override
+        public IRValue load(Generator generator) {
+            return generate(generator);
+        }
+    }
+
+
+    @RequiredArgsConstructor
+    @NodeInfo(type = NodeType.REFERENCE_PARAMETER_INDEXER)
+    private class ReferenceParameterIndexer extends Value implements PointerOwner, Mutable {
+        private final int index;
+
+        private final Type type;
+
+        private IRValue pointer;
+        private IRType pointerType;
+
+        private boolean allocated;
+
+        /**
+         * Generate an LLVM instruction for this node
+         * @param generator LLVM instruction generation context
+         */
+        @Override
+        public IRValue generate(Generator generator) {
+            return function.getParameter(index);
+        }
+
+        /**
+         * Initialize all the child nodes for the overriding node.
+         * @param parent parent node of the overriding node
+         */
+        @Override
+        public void preProcess(Node parent) {
+            this.parent = parent;
+            for (Node node : body)
+                node.preProcess(this);
+        }
+
+        /**
+         * Initialize all type declarations for the overriding node.
+         * @param generator LLVM code generator
+         */
+        @Override
+        public void postProcessType(Generator generator) {
+            for (Node node : body)
+                node.postProcessType(generator);
+        }
+
+        /**
+         * Initialize all class member declarations for the overriding node.
+         * @param generator LLVM code generator
+         */
+        @Override
+        public void postProcessMember(Generator generator) {
+            for (Node node : body)
+                node.postProcessMember(generator);
+        }
+
+        /**
+         * Initialize all type uses for the overriding node.
+         * @param generator LLVM code generator
+         */
+        @Override
+        public void postProcessUse(Generator generator) {
+            for (Node node : body)
+                node.postProcessUse(generator);
+        }
+
+        @Override
+        public IRValue getPointer() {
+            return generate(generator);
+        }
+
+        @Override
+        public IRType getPointerType() {
+            return type.generateType(generator.getContext());
+        }
+
+        /**
+         * Get the wrapped type of this value.
+         *
          * @return wrapped value type
          */
         @Override

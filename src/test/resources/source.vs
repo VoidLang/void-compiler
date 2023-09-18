@@ -1,8 +1,11 @@
-package "LibraryTest"
+package "PointerTest"
 
-extern int GetStdHandle(int kind)
+void bar(ref int x) {
+    x = 200
+}
 
 int main() {
-    let val = -11
-    return GetStdHandle(val)
+    let foo = 100
+    bar(ref foo)
+    return foo
 }

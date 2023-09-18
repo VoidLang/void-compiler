@@ -20,8 +20,8 @@ import org.voidlang.compiler.node.operator.Operation;
 import org.voidlang.compiler.node.operator.Operator;
 import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.operator.SideOperation;
-import org.voidlang.compiler.node.type.pointer.Pointer;
-import org.voidlang.compiler.node.type.pointer.PointerType;
+import org.voidlang.compiler.node.type.pointer.ReferencedAccessor;
+import org.voidlang.compiler.node.type.pointer.Referencing;
 import org.voidlang.compiler.node.value.*;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.array.Dimension;
@@ -347,7 +347,8 @@ public class Parser {
         // skip the ')' symbol
         get(TokenType.CLOSE);
 
-        return new NamedTypeGroup(members);
+        // TODO parse referencing
+        return new NamedTypeGroup(Referencing.none(), members);
     }
 
     private Type nextLambdaType(Type returnType) {
@@ -364,7 +365,8 @@ public class Parser {
             // check if the lambda parameter does not have a type specified
             if (peek().is(TokenType.COMMA) || peek().is(TokenType.OPERATOR, "|")) {
                 // register an unnamed lambda parameter
-                parameters.add(new LambdaParameter(type, variadic, null, false));
+                // TODO parse referencing
+                parameters.add(new LambdaParameter(Referencing.none(), type, variadic, null, false));
                 // skip the ',' symbol
                 if (peek().is(TokenType.COMMA))
                     get();
@@ -375,7 +377,8 @@ public class Parser {
             // parse the name of the lambda parameter type
             Name name = nextName();
             // register a named lambda parameter
-            parameters.add(new LambdaParameter(type, variadic, name, true));
+            // TODO parse referencing
+            parameters.add(new LambdaParameter(Referencing.none(), type, variadic, name, true));
 
             // check if there are more parameters to be parsed
             if (peek().is(TokenType.COMMA))
@@ -386,7 +389,8 @@ public class Parser {
         }
         // skip the '|' symbol
         get(TokenType.OPERATOR, "|");
-        return new LambdaType(returnType, parameters);
+        // TODO parse referencing
+        return new LambdaType(Referencing.none(), returnType, parameters);
     }
 
     private NamedScalarType nextNamedScalarType(boolean expectName, boolean expectLambda) {
@@ -397,7 +401,8 @@ public class Parser {
         if (expectName && peek().is(TokenType.IDENTIFIER))
             name = get().getValue();
         // handle unnamed scalar type
-        return new NamedScalarType(type, name, !name.isEmpty());
+        // TODO parse referencing
+        return new NamedScalarType(Referencing.none(), type, name, !name.isEmpty());
     }
 
     private Type nextType() {
@@ -440,13 +445,23 @@ public class Parser {
         // skip the ')' symbol
         get(TokenType.CLOSE);
 
-        return new CompoundType(members);
+        // TODO parse referencing
+        return new CompoundType(Referencing.none(), members);
     }
 
     private Type nextScalarType(boolean expectLambda) {
         // check for lambda type declaration without an explicit return type
         if (peek().is(TokenType.OPERATOR, "|"))
             return nextLambdaType(Type.primitive("void"));
+
+        // parse the referencing of the type
+        // mut int x
+        // ^^^ 'mut' indicates, that 'x' can be mutated
+        // ref int y
+        // ^^^ 'ref' indicates, that 'y' should be taken as a pointer
+        // ref* int z
+        //    ^ '*' indicates, that 'z' should be taken as a pointer to a pointer
+        Referencing referencing = nextReferencing();
 
         // parse the fully qualified name of the type
         // User.Type getUserType()
@@ -466,11 +481,8 @@ public class Parser {
         // parse the array dimensions of the type
         Array array = nextArray();
 
-        // parse the pointer type of the type
-        Pointer pointer = nextPointer();
-
         // create the type wrapper
-        ScalarType type = new ScalarType(name, generics, array, pointer);
+        ScalarType type = new ScalarType(referencing, name, generics, array);
 
         // check if a lambda parameter list declaration is after the type
         // do not handle '|' if we are currently parsing a lambda
@@ -696,32 +708,36 @@ public class Parser {
     }
 
     /**
-     * Parse the next pointer type declaration.
-     * @return next pointer type
+     * Parse the next referencing of a type.
+     * @return next type referencing
      */
-    private Pointer nextPointer() {
-        // check if no pointer type is declared
-        if (!peek().is(TokenType.OPERATOR))
-            return new Pointer(PointerType.NONE, 0);
-
-        // check reference types
-        else if (peek().val("&")) {
+    private Referencing nextReferencing() {
+        // handle mutable type referencing
+        if (peek().is(TokenType.TYPE, "mut")) {
             get();
-            return new Pointer(PointerType.REFERENCE, 0);
+            return Referencing.mutable();
         }
 
-        // parse pointer dimensions
-        int dimensions = 0;
-        while (peek().val("*")) {
+        // handle pointer referencing or dereferencing
+        else if (peek().is(TokenType.TYPE)) {
+            Token token = peek();
+            if (!token.val("ref", "deref"))
+                return Referencing.none();
             get();
-            dimensions++;
+
+            int dimensions = 1;
+            while (peek().is(TokenType.OPERATOR, "*")) {
+                get();
+                dimensions++;
+            }
+
+            return token.val("ref")
+                ? Referencing.reference(dimensions)
+                : Referencing.dereference(dimensions);
         }
 
-        // check if the operators weren't pointer operators
-        if (dimensions == 0)
-            return new Pointer(PointerType.NONE, 0);
-
-        return new Pointer(PointerType.POINTER, dimensions);
+        // handle default referencing
+        return Referencing.none();
     }
 
     /**
@@ -766,8 +782,6 @@ public class Parser {
         // parse the method parameters
         List<MethodParameter> parameters = new ArrayList<>();
         while (!peek().is(TokenType.CLOSE)) {
-            boolean mutable = nextMutable();
-
             // parse the next parameter type
             Type paramType = nextType();
 
@@ -775,7 +789,8 @@ public class Parser {
 
             Name paramName = nextName();
 
-            MethodParameter parameter = new MethodParameter(mutable, paramType, paramVar, paramName);
+            MethodParameter parameter = new MethodParameter(paramType, paramVar, paramName);
+
             parameters.add(parameter);
             System.out.print(parameter);
 
@@ -962,6 +977,10 @@ public class Parser {
         else if (peek().is(TokenType.TYPE, "mut"))
             return nextMutableLocalDeclaration();
 
+        // else if (peek().is(TokenType.TYPE, "ref")) {
+        //     return nextReferenceLocalDeclaration();
+        // }
+
         // handle variable assignation
         if (peek().is(TokenType.IDENTIFIER) && at(cursor + 1).is(TokenType.OPERATOR, "=")
                 && !at(cursor + 2).is(TokenType.OPERATOR, "="))
@@ -978,6 +997,10 @@ public class Parser {
         //            ^^^^^^^^^^ the literal token indicates, that a value is expected
         else if (peek().isLiteral())
             return nextLiteral();
+
+        // handle value referencing
+        else if (peek().is(TokenType.TYPE, "ref"))
+            return nextReferencedQualifiedNameOrCall();
 
         // handle qualified name or method call
         else if (peek().is(TokenType.IDENTIFIER))
@@ -1469,6 +1492,44 @@ public class Parser {
         return new Error();
     }
 
+
+    private Value nextReferencedQualifiedNameOrCall() {
+        get(TokenType.TYPE, "ref");
+
+        // parse the qualified name
+        QualifiedName name = nextQualifiedName();
+
+        Value value = new ReferencedAccessor(name);
+
+        // handle method call
+        // println("Hello, World!")
+        //        ^ the open parenthesis token after an identifier indicates, that a method call is expected
+        if (peek().is(TokenType.OPEN))
+            throw new IllegalStateException("Referenced method call is not supported yet.");
+
+        // handle group closing
+        // print(ref foo)
+        //              ^ we don't need to handle this closing tag here, just finish qualified name parsing
+        if (peek().is(TokenType.CLOSE, TokenType.COMMA, TokenType.STOP, TokenType.END))
+            return value;
+
+        // handle single value expression, in which case the local variable is initialized with a single value
+        // let myVar = ref foo;
+        //                    ^ the (auto-inserted) semicolon indicates, initialized with a single value
+        if (peek().is(TokenType.SEMICOLON))
+            return value;
+
+        // handle operation between two expressions
+        // let var = foo +
+        //               ^ the operator after an identifier indicates, that there are more expressions to be parsed
+        //                 the two operands are grouped together by an Operation node
+        if (peek().is(TokenType.OPERATOR))
+            throw new IllegalStateException("Referenced operation is not supported yet.");
+
+        System.out.println(ConsoleFormat.RED + "Error (Referenced Qualified Name / Call) " + peek());
+        return new Error();
+    }
+
     /**
      * Parse the next qualified name or method call declaration.
      * @return new qualified name or method call
@@ -1612,6 +1673,12 @@ public class Parser {
         while (peek().is(TokenType.COLON))
             builder.append(get().getValue());
         return Operator.of(builder.toString());
+    }
+
+
+
+    private Value nextReferenceLocalDeclaration() {
+        throw new IllegalStateException("Not supported yet");
     }
 
     private Value nextMutableLocalDeclaration() {

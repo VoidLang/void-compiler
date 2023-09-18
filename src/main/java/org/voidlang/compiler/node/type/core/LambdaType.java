@@ -3,6 +3,7 @@ package org.voidlang.compiler.node.type.core;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.type.parameter.LambdaParameter;
+import org.voidlang.compiler.node.type.pointer.Referencing;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
 
@@ -19,6 +20,9 @@ import java.util.stream.Collectors;
  */
 @Getter
 public class LambdaType implements Type {
+    @NotNull
+    private final Referencing referencing;
+
     /**
      * the return type of the lambda type.
      */
@@ -31,7 +35,8 @@ public class LambdaType implements Type {
     @NotNull
     private final List<LambdaParameter> parameters;
 
-    public LambdaType(@NotNull Type type, @NotNull List<LambdaParameter> parameters) {
+    public LambdaType(@NotNull Referencing referencing, @NotNull Type type, @NotNull List<LambdaParameter> parameters) {
+        this.referencing = referencing;
         this.type = type;
         this.parameters = parameters;
     }
