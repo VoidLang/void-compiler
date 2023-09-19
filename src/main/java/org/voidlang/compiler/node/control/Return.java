@@ -27,8 +27,10 @@ public class Return extends Node {
         IRBuilder builder = generator.getBuilder();
         if (value != null)
             return builder.returnValue(value.generateAndLoad(generator));
-        else
+        else {
+            System.out.println("RETURN VOID");
             return builder.returnVoid();
+        }
     }
 
     /**
@@ -69,5 +71,10 @@ public class Return extends Node {
     public void postProcessUse(Generator generator) {
         if (value != null)
             value.postProcessUse(generator);
+    }
+
+    @Override
+    public String toString() {
+        return "return " + value;
     }
 }

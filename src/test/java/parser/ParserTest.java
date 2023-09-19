@@ -89,16 +89,16 @@ public class ParserTest {
     private static void debugBitcode(Generator generator, Method main) {
         IRModule module = generator.getModule();
 
+        System.out.println(ConsoleFormat.RED + "           " + ConsoleFormat.BOLD + "LLVM BITCODE");
+        System.out.println(ConsoleFormat.DEFAULT);
+        System.out.println(module.print());
+
         BytePointer error = new BytePointer((Pointer) null);
-        if (!module.verify(IRModule.VerifierFailureAction.PRINT_MESSAGE, error)) {
+        if (!module.verify(IRModule.VerifierFailureAction.ABORT_PROCESS, error)) {
             // System.err.println("Error: " + error.getString());
             LLVMDisposeMessage(error);
             return;
         }
-
-        System.out.println(ConsoleFormat.RED + "           " + ConsoleFormat.BOLD + "LLVM BITCODE");
-        System.out.println(ConsoleFormat.DEFAULT);
-        System.out.println(module.print());
 
         // LLVMWriteBitcodeToFile(module.getHandle(), "D:\\.dev\\GitHub\\VoidCompiler\\src\\test\\resources\\output.bc");
 

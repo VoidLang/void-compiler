@@ -1,7 +1,11 @@
 package "SelectionTest"
 
-int abs(int i) {
-    return (i < 0) ? -i : i
+int abs(int x) {
+    if (x < 0) {
+        return -x
+    } else {
+        return x
+    }
 }
 
 int main() {

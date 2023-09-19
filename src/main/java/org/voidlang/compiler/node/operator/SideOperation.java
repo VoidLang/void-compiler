@@ -98,4 +98,9 @@ public class SideOperation extends Value {
     public Type getValueType() {
         return operand.getValueType();
     }
+
+    @Override
+    public String toString() {
+        return operator.getValue() + operand;
+    }
 }
