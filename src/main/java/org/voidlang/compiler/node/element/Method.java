@@ -205,8 +205,11 @@ public class Method extends Node {
         IRBlock block = IRBlock.create(context, function, "entry");
         builder.positionAtEnd(block);
 
-        if (body.isEmpty() || body.get(body.size() - 1).getNodeType() != NodeType.RETURN)
-            body.add(new Return(null));
+        // TODO improve automatic void return insertion: only return void if the method type is void,
+        //  also check recursively child nodes, if they terminate the method. eg: if both cases of
+        //  an if-else pairs return a value, then the method should not insert a return here
+        // if (body.isEmpty() || body.get(body.size() - 1).getNodeType() != NodeType.RETURN)
+        //     body.add(new Return(null));
 
         // generate the LLVM instructions for the body of the function
         for (Node node : body)
