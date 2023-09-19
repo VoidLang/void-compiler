@@ -129,41 +129,31 @@ public class If extends Instruction {
         List<Node> elseBody = elseCase.getBody();
         boolean elseReturns = !elseBody.isEmpty() && elseBody.get(elseBody.size() - 1).is(NodeType.RETURN);
 
-        System.out.println("ret type " + getContext().getResolvedType().getClass().getSimpleName());
-        System.out.println("return need " + returnNeeded + ", ifret " + ifReturns + ", elseret " + elseReturns);
-
         // create a merge block to jump to from either of the cases, if either of them does not return
         // that means the method has more instructions to execute afterward
         IRBlock merge = null;
-        if (returnNeeded && (!ifReturns || !elseReturns)) {
-            System.out.println("create merge");
+        if (returnNeeded && (!ifReturns || !elseReturns)) // TODO should it merge even for void methods?
             merge = IRBlock.create(getContext().getFunction(), "merge");
-        }
 
         IRValue condition = getCondition().generate(generator);
         builder.jumpIf(condition, ifBlock, elseBlock);
 
         builder.positionAtEnd(ifBlock);
-        for (Node node : body) {
-            System.out.println("BODY " + node);
+        for (Node node : body)
             node.generate(generator);
-        }
+
         if (!ifReturns)
             builder.jump(merge);
 
         builder.positionAtEnd(elseBlock);
-        for (Node node : elseBody) {
-            System.out.println("ELSE " + node);
+        for (Node node : elseBody)
             node.generate(generator);
-        }
         if (!elseReturns)
             builder.jump(merge);
 
         // let all remaining instructions to be assigned for the merge block
         if (merge != null)
             builder.positionAtEnd(merge);
-
-        //builder.returnValue(IRType.int32(generator.getContext()).constInt(111));
 
         return null;
     }
