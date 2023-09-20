@@ -59,6 +59,16 @@ public interface Type {
      * The type wrapper for a 1-bit boolean.
      */
     Type BOOL = primitive("bool");
+
+    /**
+     * The type wrapper for a const char* string.
+     */
+    Type STR = new ScalarType(
+        Referencing.reference(1),
+        QualifiedName.primitive("byte"),
+        GenericArgumentList.implicit(),
+        Array.noArray()
+    );
     
     /**
      * Indicate, whether this entry is a {@link ScalarType}, so it does not have any nested members.

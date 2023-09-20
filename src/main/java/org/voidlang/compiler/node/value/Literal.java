@@ -9,15 +9,17 @@ import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
-import org.voidlang.llvm.element.IRContext;
-import org.voidlang.llvm.element.IRType;
-import org.voidlang.llvm.element.IRValue;
+import org.voidlang.llvm.element.*;
 
 @RequiredArgsConstructor
 @Getter
 @NodeInfo(type = NodeType.VALUE)
 public class Literal extends Value {
     private final Token value;
+
+    private boolean initialized;
+
+    private static int stringCount;
 
     /**
      * Initialize all the child nodes for the overriding node.
@@ -62,14 +64,33 @@ public class Literal extends Value {
         String value = getValue().getValue();
 
         IRContext context = generator.getContext();
+        IRModule module = generator.getModule();
 
         return switch (type) {
             case INTEGER -> IRType.int32(context).constInt(Integer.parseInt(value));
             case BOOLEAN -> IRType.int1(context).constInt("true".equals(value) ? 1 : 0);
+            case STRING -> {
+                if (!initialized) {
+                    IRString string = new IRString(generator.getContext(), value, false);
+                    IRGlobal global = module.addGlobal(string.getType(), "text");
+                    global.setInitializer(string);
+                    initialized = true;
+                }
+                yield module.getGlobal("text");
+            }
             default -> throw new IllegalStateException("Unable to generate literal value for type " + type);
         };
     }
 
+    @Override
+    public IRValue generateAndLoad(Generator generator) {
+        IRModule module = generator.getModule();
+
+        if (initialized)
+            return module.getGlobal("text");
+
+        return super.generateAndLoad(generator);
+    }
 
     /**
      * Get the wrapped type of this value.
@@ -84,6 +105,7 @@ public class Literal extends Value {
             case INTEGER -> Type.INT;
             case LONG -> Type.LONG;
             case BOOLEAN -> Type.BOOL;
+            case STRING -> Type.STR;
             default -> throw new IllegalStateException("Unable to get value type for literal " + type);
         };
     }

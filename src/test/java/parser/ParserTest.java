@@ -16,15 +16,17 @@ import org.voidlang.compiler.token.Transformer;
 import org.voidlang.llvm.element.*;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.bytedeco.llvm.global.LLVM.*;
 
 public class ParserTest {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         List<Token> tokens = tokenizeSource();
         debugTokens(tokens);
 
@@ -86,7 +88,7 @@ public class ParserTest {
         return new Generator(context, module, builder);
     }
 
-    private static void debugBitcode(Generator generator, Method main) {
+    private static void debugBitcode(Generator generator, Method main) throws Exception {
         IRModule module = generator.getModule();
 
         System.out.println(ConsoleFormat.RED + "           " + ConsoleFormat.BOLD + "LLVM BITCODE");
@@ -99,8 +101,6 @@ public class ParserTest {
             LLVMDisposeMessage(error);
             return;
         }
-
-        // LLVMWriteBitcodeToFile(module.getHandle(), "D:\\.dev\\GitHub\\VoidCompiler\\src\\test\\resources\\output.bc");
 
         ExecutionEngine engine = ExecutionEngine.create();
         MMCJITCompilerOptions options = MMCJITCompilerOptions.create();
@@ -115,6 +115,28 @@ public class ParserTest {
 
         System.out.println("Result: " + result.toInt());
         System.out.println("Execution took " + (end - start) + "ms");
+
+        File debugDir = new File(System.getProperty("user.dir"), "debug");
+        debugDir.mkdir();
+
+        File bitcodeFile = new File(debugDir, "bitcode.bc");
+        module.writeBitcodeToFile(bitcodeFile);
+
+        File dumpFile = new File(debugDir, "dump.ll");
+        module.printIRToFile(dumpFile);
+
+        File objectFile = new File(debugDir, "test.obj");
+        File runFile = new File(debugDir, "run.exe");
+
+        ProcessBuilder compileBuilder = new ProcessBuilder("clang", "-c", "-o",
+            objectFile.getAbsolutePath(), bitcodeFile.getAbsolutePath());
+        Process compileProcess = compileBuilder.start();
+        int compileStatus = compileProcess.waitFor();
+
+        ProcessBuilder linkBuilder = new ProcessBuilder("clang", "-o", runFile.getAbsolutePath(),
+            objectFile.getAbsolutePath(), "-luser32", "-lgdi32", "-lkernel32");
+        Process linkProcess = linkBuilder.start();
+        int linkStatus = linkProcess.waitFor();
     }
 
     private static List<Token> tokenizeSource() {

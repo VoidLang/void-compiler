@@ -27,10 +27,8 @@ public class Return extends Node {
         IRBuilder builder = generator.getBuilder();
         if (value != null)
             return builder.returnValue(value.generateAndLoad(generator));
-        else {
-            System.out.println("RETURN VOID");
+        else
             return builder.returnVoid();
-        }
     }
 
     /**

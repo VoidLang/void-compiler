@@ -228,6 +228,11 @@ public class Method extends Node {
             Type checkType = types.get(i);
             Type paramType = parameters.get(i).getType();
 
+            if (checkType instanceof NamedScalarType named
+                    && named.getScalarType() instanceof ScalarType scalar
+                    && scalar.getName().isPrimitive())
+                checkType = scalar;
+
             // TODO: resolve method param types on preprocess
             if (paramType instanceof ScalarType scalar && !scalar.getName().isPrimitive()) {
                 paramType = resolveType(scalar.getName().getDirect());

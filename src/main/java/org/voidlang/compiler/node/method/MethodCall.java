@@ -109,6 +109,8 @@ public class MethodCall extends Value {
                         return clazz.getName();
                     else if (type instanceof ScalarType scalar)
                         return scalar.getName().toString();
+                    else if (type instanceof NamedScalarType named)
+                        return ((ScalarType) named.getScalarType()).getName().toString();
                     return type.getClass().getSimpleName();
                 })
                 .collect(Collectors.joining(", "));
