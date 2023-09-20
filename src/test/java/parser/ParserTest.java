@@ -15,11 +15,7 @@ import org.voidlang.compiler.token.Tokenizer;
 import org.voidlang.compiler.token.Transformer;
 import org.voidlang.llvm.element.*;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Paths;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -116,6 +112,10 @@ public class ParserTest {
         System.out.println("Result: " + result.toInt());
         System.out.println("Execution took " + (end - start) + "ms");
 
+        compileAndLinkModule(module);
+    }
+
+    private static void compileAndLinkModule(IRModule module) throws Exception {
         File debugDir = new File(System.getProperty("user.dir"), "debug");
         debugDir.mkdir();
 
@@ -137,6 +137,38 @@ public class ParserTest {
             objectFile.getAbsolutePath(), "-luser32", "-lgdi32", "-lkernel32");
         Process linkProcess = linkBuilder.start();
         int linkStatus = linkProcess.waitFor();
+
+        runAndDebugExecutable(runFile, dumpFile);
+    }
+
+    private static void runAndDebugExecutable(File exeFile, File fos) throws Exception {
+        // ProcessBuilder builder = new ProcessBuilder("cmd.exe".split("\\s+")); //exeFile.getAbsolutePath());
+        // ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/C", exeFile.getAbsolutePath()); //exeFile.getAbsolutePath());
+        ProcessBuilder builder = new ProcessBuilder(exeFile.getAbsolutePath());
+        Process process = builder.start();
+
+            // Get the process's stdout stream
+            InputStream stdout = process.getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stdout));
+
+            // Read and print each line from stdout
+            String line;
+            while (true) {
+                try {
+                    if ((line = reader.readLine()) == null) break;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.println(line);
+            }
+
+        // BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+        // writer.write(exeFile.getAbsolutePath());
+
+        int status = process.waitFor();
+        System.out.println("Debug exited: " + status);
+
+       // System.err.println(exeFile.getAbsolutePath());
     }
 
     private static List<Token> tokenizeSource() {
