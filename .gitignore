@@ -27,3 +27,9 @@ replay_pid*
 /target
 /.idea
 dependency-reduced-pom.xml
+
+# LLVM files
+*.bc
+*.ll
+*.exe
+*.obj
