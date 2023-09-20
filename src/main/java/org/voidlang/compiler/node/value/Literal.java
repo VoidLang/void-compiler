@@ -71,7 +71,7 @@ public class Literal extends Value {
             case BOOLEAN -> IRType.int1(context).constInt("true".equals(value) ? 1 : 0);
             case STRING -> {
                 if (!initialized) {
-                    IRString string = new IRString(generator.getContext(), value, false);
+                    IRString string = new IRString(generator.getContext(), value, true);
                     IRGlobal global = module.addGlobal(string.getType(), "text");
                     global.setInitializer(string);
                     initialized = true;
