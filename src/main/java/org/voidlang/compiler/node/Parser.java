@@ -1016,8 +1016,8 @@ public class Parser {
             return nextNewType(ignoreJoin);
 
         // handle single-node operation
+
         if (peek().is(TokenType.OPERATOR)) {
-            // TODO test oper
             Operator operator = nextOperator();
             if (!isSideOperator(operator.getValue()))
                 throw new IllegalStateException("Expected side operator, but received " + operator);
@@ -1745,18 +1745,25 @@ public class Parser {
         StringBuilder builder = new StringBuilder();
         while (peek().is(TokenType.OPERATOR)) {
             String value = peek().getValue();
-            if (shouldOperatorTerminate(builder.toString(), value))
+            if (shouldOperatorTerminate(builder.toString(), value)) {
+                get();
+                System.err.println("terminated " + builder.toString() + " " + value);
                 return Operator.of(builder.toString());
+            }
             builder.append(value);
             String operator = builder.toString();
             // check if the current operator has been ended
-            if (shouldOperatorTerminate(operator))
+            if (shouldOperatorTerminate(operator)) {
+                get();
+                System.err.println("TERMED " + operator);
                 return Operator.of(operator);
+            }
             get();
         }
         // handle colons as operators as well
         while (peek().is(TokenType.COLON))
             builder.append(get().getValue());
+        System.err.println("TeRmEd " + builder + " -> " + peek() + " " + at(cursor - 1));
         return Operator.of(builder.toString());
     }
 
@@ -1911,10 +1918,15 @@ public class Parser {
     }
 
     private boolean shouldOperatorTerminate(String prev, String next) {
-        return switch (prev) {
+        boolean termed = switch (prev) {
             case "?" -> !next.equals(".") && !next.equals("?");
+            case "=" -> !next.equals("=");
+            case "!" -> !next.equals("!");
+            case "&" -> !next.equals("&");
             default -> false;
         };
+        System.err.println("test '" + prev + "' '" + next + "' -> " + termed);
+        return termed;
     }
 
     /**

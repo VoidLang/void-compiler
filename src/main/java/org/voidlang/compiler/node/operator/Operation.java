@@ -99,7 +99,7 @@ public class Operation extends Value {
         IRValue right = getRight().generateAndLoad(generator);
         return switch (operator) {
             case ADD -> builder.add(left, right, "add");
-            case SUBTRACT -> builder.subtract(left, right, "sub");
+            case SUBTRACT, NEGATE -> builder.subtract(left, right, "sub");
             case MULTIPLY -> builder.multiply(left, right, "mul");
 
             case EQUAL -> builder.compareInt(Comparator.INTEGER_EQUAL, left, right, "eq");
