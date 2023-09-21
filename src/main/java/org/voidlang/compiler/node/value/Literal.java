@@ -18,6 +18,7 @@ public class Literal extends Value {
     private final Token value;
 
     private boolean initialized;
+    private String stringName;
 
     private static int stringCount;
 
@@ -72,11 +73,12 @@ public class Literal extends Value {
             case STRING -> {
                 if (!initialized) {
                     IRString string = new IRString(generator.getContext(), value, true);
-                    IRGlobal global = module.addGlobal(string.getType(), "text");
+                    stringName = "text." + stringCount++;
+                    IRGlobal global = module.addGlobal(string.getType(), stringName);
                     global.setInitializer(string);
                     initialized = true;
                 }
-                yield module.getGlobal("text");
+                yield module.getGlobal(stringName);
             }
             default -> throw new IllegalStateException("Unable to generate literal value for type " + type);
         };
@@ -87,7 +89,7 @@ public class Literal extends Value {
         IRModule module = generator.getModule();
 
         if (initialized)
-            return module.getGlobal("text");
+            return module.getGlobal(stringName);
 
         return super.generateAndLoad(generator);
     }

@@ -1,4 +1,4 @@
-package "SelectionTest"
+package "DynamicLengthStringPrintTest"
 
 extern int GetStdHandle(int kind)
 
@@ -6,22 +6,35 @@ extern int WriteConsoleA(int handle, ref byte buffer, int length, ref int writte
 
 extern int strlen(ref byte buffer)
 
-void println(ref byte buffer) {
+void printSizedBuffer(ref byte buffer, int length) {
     let handle = GetStdHandle(-11)
     let written = 0
-    let len = strlen(buffer)
-    WriteConsoleA(handle, buffer, len, ref written, 0)
+    WriteConsoleA(handle, buffer, length, ref written, 0)
     return
 }
 
-int fib(int n) {
-    if (n == 0 || n == 1)
-        return n
-    return fib(n - 1) + fib(n - 2)
+void print(ref byte buffer) {
+    let len = strlen(buffer)
+    printSizedBuffer(buffer, len)
+    return
+}
+
+void println(ref byte buffer) {
+    print(buffer)
+    printSizedBuffer("\r\n", 2)
+    return
+}
+
+void println() {
+    printSizedBuffer("\r\n", 2)
+    return
 }
 
 int main() {
-    fib(20)
-    println("Hello, World You Fool!")
-    return 100
+    print("No new line.")
+    println("New line inserted.")
+    println()
+    println()
+    println("Two lines inserted.")
+    return 0
 }
