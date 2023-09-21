@@ -31,10 +31,18 @@ void println() {
 }
 
 int main() {
-    print("No new line.")
-    println("New line inserted.")
-    println()
-    println()
-    println("Two lines inserted.")
-    return 0
+    println("start")
+
+    let i = 0
+    while (i < 10) {
+        if (i % 2 == 0) {
+            println("even")
+        } else {
+            println("odd")
+        }
+        i = i + 1
+    }
+
+    println("end")
+    return i
 }

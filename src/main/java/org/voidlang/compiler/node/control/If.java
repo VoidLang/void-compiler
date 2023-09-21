@@ -35,8 +35,13 @@ public class If extends Instruction {
     public void preProcess(Node parent) {
         this.parent = parent;
         condition.preProcess(this);
-        for (Node node : body)
+        if (condition instanceof Instruction cond)
+            cond.setContext(getContext());
+        for (Node node : body) {
             node.preProcess(this);
+            if (node instanceof Instruction instruction)
+                instruction.setContext(getContext());
+        }
         // else cases should inherit the parent of IF as a parent,
         // as they are at the same scope level as the IF statement
         for (ElseIf elseIf : elseIfs)

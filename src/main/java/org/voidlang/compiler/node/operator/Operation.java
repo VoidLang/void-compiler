@@ -111,6 +111,8 @@ public class Operation extends Value {
             case LESS_THAN -> builder.compareInt(Comparator.SIGNED_INTEGER_LESS_THAN, left, right, "lt");
             case LESS_OR_EQUAL -> builder.compareInt(Comparator.SIGNED_INTEGER_LESS_OR_EQUAL, left, right, "lte");
 
+            case REMAINDER -> builder.signedRemainder(left, right, "srem");
+
             case AND -> builder.and(left, right, "and");
             case OR -> builder.or(left, right, "or");
 

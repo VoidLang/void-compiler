@@ -67,6 +67,8 @@ public class Literal extends Value {
         IRContext context = generator.getContext();
         IRModule module = generator.getModule();
 
+        String.valueOf(10);
+
         return switch (type) {
             case INTEGER -> IRType.int32(context).constInt(Integer.parseInt(value));
             case BOOLEAN -> IRType.int1(context).constInt("true".equals(value) ? 1 : 0);

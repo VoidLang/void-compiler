@@ -25,8 +25,13 @@ public class While extends Instruction {
     public void preProcess(Node parent) {
         this.parent = parent;
         condition.preProcess(this);
-        for (Node node : body)
+        if (condition instanceof Instruction instr)
+            instr.setContext(getContext());
+        for (Node node : body) {
             node.preProcess(this);
+            if (node instanceof Instruction instruction)
+                instruction.setContext(getContext());
+        }
     }
 
     /**
