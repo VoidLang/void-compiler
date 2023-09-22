@@ -14,6 +14,7 @@ import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.value.Value;
+import org.voidlang.compiler.util.PrettierIgnore;
 import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
@@ -34,6 +35,7 @@ public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, 
 
     private Type resolvedType;
 
+    @PrettierIgnore
     private boolean allocated;
 
     /**

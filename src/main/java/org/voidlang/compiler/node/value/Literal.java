@@ -9,6 +9,7 @@ import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
+import org.voidlang.compiler.util.PrettierIgnore;
 import org.voidlang.llvm.element.*;
 
 @RequiredArgsConstructor
@@ -17,9 +18,11 @@ import org.voidlang.llvm.element.*;
 public class Literal extends Value {
     private final Token value;
 
+    @PrettierIgnore
     private boolean initialized;
     private String stringName;
 
+    @PrettierIgnore
     private static int stringCount;
 
     /**
@@ -66,8 +69,6 @@ public class Literal extends Value {
 
         IRContext context = generator.getContext();
         IRModule module = generator.getModule();
-
-        String.valueOf(10);
 
         return switch (type) {
             case INTEGER -> IRType.int32(context).constInt(Integer.parseInt(value));

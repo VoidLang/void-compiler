@@ -4,8 +4,10 @@ import com.google.common.base.Strings;
 import dev.inventex.octa.console.ConsoleFormat;
 import org.voidlang.compiler.node.common.Empty;
 import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.compiler.util.PrettierIgnore;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,6 +27,10 @@ public class Prettier {
         Field[] fields = node.getClass().getDeclaredFields();
         for (Field field : fields) {
             field.setAccessible(true);
+            if (Modifier.isStatic(field.getModifiers()))
+                continue;
+            if (field.isAnnotationPresent(PrettierIgnore.class))
+                continue;
             Object value = null;
             try {
                 value = field.get(node);
