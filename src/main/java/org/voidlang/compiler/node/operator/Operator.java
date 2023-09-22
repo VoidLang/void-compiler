@@ -81,7 +81,6 @@ public enum Operator {
      * @return operator wrapper
      */
     public static Operator of(String value) {
-        System.err.println("OPERATOR MK " + value);
         return Arrays.stream(values())
             .filter(operator -> operator.value.equals(value))
             .findFirst()

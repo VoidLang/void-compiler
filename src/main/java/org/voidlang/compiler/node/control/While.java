@@ -24,13 +24,13 @@ public class While extends Instruction {
     @Override
     public void preProcess(Node parent) {
         this.parent = parent;
-        condition.preProcess(this);
         if (condition instanceof Instruction instr)
             instr.setContext(getContext());
+        condition.preProcess(this);
         for (Node node : body) {
-            node.preProcess(this);
             if (node instanceof Instruction instruction)
                 instruction.setContext(getContext());
+            node.preProcess(this);
         }
     }
 

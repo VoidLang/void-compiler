@@ -97,9 +97,9 @@ public class Method extends Node {
     public void preProcess(Node parent) {
         this.parent = parent;
         for (Node node : body) {
-            node.preProcess(this);
             if (node instanceof Instruction instruction)
                 instruction.setContext(this);
+            node.preProcess(this);
         }
     }
 
@@ -219,7 +219,7 @@ public class Method extends Node {
     }
 
     public boolean checkTypes(List<Type> types) {
-        System.err.println("check param types " + name + " " + types.size() + " " + parameters.size());
+        // System.err.println("check param types " + name + " " + types.size() + " " + parameters.size());
 
         if (types.size() != parameters.size())
             return false;
@@ -240,8 +240,8 @@ public class Method extends Node {
                     throw new IllegalStateException("Unable to resolve method parameter type: " + scalar.getName());
             }
 
-            System.err.println("check " + checkType + " " + checkType.getClass());
-            System.err.println("param " + paramType + " " + paramType.getClass());
+            // System.err.println("check " + checkType + " " + checkType.getClass());
+            // System.err.println("param " + paramType + " " + paramType.getClass());
 
             // TODO should resolve type on postProcessUse
             if (paramType instanceof ScalarType scalar && !scalar.getName().isPrimitive())
@@ -253,11 +253,6 @@ public class Method extends Node {
 
         return true;
     }
-
-    public IRFunction getFunction() {
-        return function;
-    }
-
 
     @Override
     public Value resolveName(String name) {

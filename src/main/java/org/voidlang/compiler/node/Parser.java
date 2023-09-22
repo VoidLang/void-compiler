@@ -1925,7 +1925,6 @@ public class Parser {
             case "&" -> !next.equals("&");
             default -> false;
         };
-        System.err.println("test '" + prev + "' '" + next + "' -> " + termed);
         return termed;
     }
 

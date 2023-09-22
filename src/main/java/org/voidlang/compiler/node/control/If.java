@@ -34,13 +34,13 @@ public class If extends Instruction {
     @Override
     public void preProcess(Node parent) {
         this.parent = parent;
-        condition.preProcess(this);
         if (condition instanceof Instruction cond)
             cond.setContext(getContext());
+        condition.preProcess(this);
         for (Node node : body) {
-            node.preProcess(this);
             if (node instanceof Instruction instruction)
                 instruction.setContext(getContext());
+            node.preProcess(this);
         }
         // else cases should inherit the parent of IF as a parent,
         // as they are at the same scope level as the IF statement
