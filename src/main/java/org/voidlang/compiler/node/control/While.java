@@ -2,7 +2,11 @@ package org.voidlang.compiler.node.control;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.*;
+import org.voidlang.compiler.node.local.ImmutableLocalDeclareAssign;
+import org.voidlang.compiler.node.local.MutableLocalDeclareAssign;
+import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRBlock;
 import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRValue;
@@ -65,6 +69,26 @@ public class While extends Instruction {
         condition.postProcessUse(generator);
         for (Node node : body)
             node.postProcessUse(generator);
+    }
+
+    /**
+     * Resolve a node from this node context by its name. If the name is unresolved locally,
+     * the parent element tries to resolve it.
+     * @param name target node name
+     * @return resolved node or null if it was not found
+     */
+    @Override
+    public @Nullable Value resolveName(String name) {
+        // resolve local variables in the method body
+        for (Node node : body) {
+            if (node instanceof ImmutableLocalDeclareAssign local && local.getName().equals(name))
+                return local;
+            else if (node instanceof MutableLocalDeclareAssign local && local.getName().equals(name))
+                return local;
+        }
+
+        // let the parent nodes recursively resolve the name
+        return super.resolveName(name);
     }
 
     /**

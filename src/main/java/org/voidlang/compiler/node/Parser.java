@@ -1747,7 +1747,6 @@ public class Parser {
             String value = peek().getValue();
             if (shouldOperatorTerminate(builder.toString(), value)) {
                 get();
-                System.err.println("terminated " + builder.toString() + " " + value);
                 return Operator.of(builder.toString());
             }
             builder.append(value);
@@ -1755,7 +1754,6 @@ public class Parser {
             // check if the current operator has been ended
             if (shouldOperatorTerminate(operator)) {
                 get();
-                System.err.println("TERMED " + operator);
                 return Operator.of(operator);
             }
             get();
@@ -1763,7 +1761,6 @@ public class Parser {
         // handle colons as operators as well
         while (peek().is(TokenType.COLON))
             builder.append(get().getValue());
-        System.err.println("TeRmEd " + builder + " -> " + peek() + " " + at(cursor - 1));
         return Operator.of(builder.toString());
     }
 

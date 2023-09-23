@@ -93,6 +93,10 @@ public class Method extends Node {
      */
     private final Map<String, Value> paramCache = new HashMap<>();
 
+    /**
+     * Initialize all the child nodes for the overriding node.
+     * @param parent parent node of the overriding node
+     */
     @Override
     public void preProcess(Node parent) {
         this.parent = parent;
@@ -254,6 +258,12 @@ public class Method extends Node {
         return true;
     }
 
+    /**
+     * Resolve a node from this node context by its name. If the name is unresolved locally,
+     * the parent element tries to resolve it.
+     * @param name target node name
+     * @return resolved node or null if it was not found
+     */
     @Override
     public Value resolveName(String name) {
         // test if this is a class method, therefore 'this' is passed as the first argument
