@@ -31,18 +31,9 @@ void println() {
 }
 
 int main() {
-    println("start")
-
-    let i = 0
-    while (i < 10) {
-        if (i % 2 == 0) {
-            println("even")
-        } else {
-            println("odd")
-        }
-        i = i + 1
+    mut x = 0
+    while (x < 10) {
+        x = x + 1
     }
-
-    println("end")
-    return i
+    return x
 }
