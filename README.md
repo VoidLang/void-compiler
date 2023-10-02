@@ -7,6 +7,7 @@ You will need to clone the following 3 maven projects:
 - This project
 - https://github.com/inventex-development/octacore
 - https://github.com/VoidHttp/OptionParser
+
 Make sure to build locally these three projects. I will eventually upload them to a public maven repository, so you wouldn't have to download them manually.
 
 ## Documentation
