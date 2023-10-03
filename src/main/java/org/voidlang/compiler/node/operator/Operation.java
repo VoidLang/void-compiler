@@ -98,26 +98,89 @@ public class Operation extends Value {
         IRValue left = getLeft().generateAndLoad(generator);
         IRValue right = getRight().generateAndLoad(generator);
         return switch (operator) {
-            case ADD -> builder.add(left, right, "add");
-            case SUBTRACT, NEGATE -> builder.subtract(left, right, "sub");
-            case MULTIPLY -> builder.multiply(left, right, "mul");
+            case ADD -> {
+                if (isFloatingPoint())
+                    yield builder.addFloat(left, right, "fadd");
+                else
+                    yield builder.add(left, right, "add");
+            }
 
-            case EQUAL -> builder.compareInt(Comparator.INTEGER_EQUAL, left, right, "eq");
-            case NOT_EQUAL -> builder.compareInt(Comparator.INTEGER_NOT_EQUAL, left, right, "neq");
+            case SUBTRACT, NEGATE -> {
+                if (isFloatingPoint())
+                    yield builder.subtractFloat(left, right, "fsub");
+                else
+                    yield builder.subtract(left, right, "sub");
+            }
 
-            case GREATER_THAN -> builder.compareInt(Comparator.SIGNED_INTEGER_GREATER_THAN, left, right, "gt");
-            case GREATER_OR_EQUAL -> builder.compareInt(Comparator.SIGNED_INTEGER_GREATER_OR_EQUAL, left, right, "gte");
+            case MULTIPLY -> {
+                if (isFloatingPoint())
+                    yield builder.multiplyFloat(left, right, "fmul");
+                else
+                    yield builder.multiply(left, right, "mul");
+            }
 
-            case LESS_THAN -> builder.compareInt(Comparator.SIGNED_INTEGER_LESS_THAN, left, right, "lt");
-            case LESS_OR_EQUAL -> builder.compareInt(Comparator.SIGNED_INTEGER_LESS_OR_EQUAL, left, right, "lte");
+            case EQUAL ->  {
+                if (isFloatingPoint())
+                    yield builder.compareFloat(Comparator.FLOAT_EQUAL_AND_NOT_NAN, left, right, "feq");
+                else
+                    yield builder.compareInt(Comparator.INTEGER_EQUAL, left, right, "eq");
+            }
 
-            case REMAINDER -> builder.signedRemainder(left, right, "srem");
+            case NOT_EQUAL -> {
+                if (isFloatingPoint())
+                    yield builder.compareFloat(Comparator.FLOAT_NOT_EQUAL_AND_NOT_NAN, left, right, "fneq");
+                else
+                    yield builder.compareInt(Comparator.INTEGER_NOT_EQUAL, left, right, "neq");
+            }
+
+            case GREATER_THAN -> {
+                if (isFloatingPoint())
+                    yield builder.compareFloat(Comparator.FLOAT_GREATER_THAN_AND_NOT_NAN, left, right, "fgt");
+                else
+                    yield builder.compareInt(Comparator.SIGNED_INTEGER_GREATER_THAN, left, right, "gt");
+            }
+
+            case GREATER_OR_EQUAL -> {
+                if (isFloatingPoint())
+                    yield builder.compareFloat(Comparator.FLOAT_GREAT_OR_EQUAL_AND_NOT_NAN, left, right, "fge");
+                else
+                    yield builder.compareInt(Comparator.SIGNED_INTEGER_GREATER_OR_EQUAL, left, right, "gte");
+            }
+
+            case LESS_THAN -> {
+                if (isFloatingPoint())
+                    yield builder.compareFloat(Comparator.FLOAT_LESS_THAN_AND_NOT_NAN, left, right, "flt");
+                else
+                    yield builder.compareInt(Comparator.SIGNED_INTEGER_LESS_THAN, left, right, "lt");
+            }
+
+            case LESS_OR_EQUAL -> {
+                if (isFloatingPoint())
+                    yield builder.compareFloat(Comparator.FLOAT_LESS_OR_EQUAL_AND_NOT_NAN, left, right, "fle");
+                else
+                    yield builder.compareInt(Comparator.SIGNED_INTEGER_LESS_OR_EQUAL, left, right, "lte");
+            }
+
+            case REMAINDER -> {
+                if (isFloatingPoint())
+                    yield builder.remainderFloat(left, right, "frem");
+                else
+                    yield builder.signedRemainder(left, right, "rem");
+            }
 
             case AND -> builder.and(left, right, "and");
             case OR -> builder.or(left, right, "or");
 
-            default -> throw new IllegalStateException("Unable to generate complex operator for " + operator);
+            default -> throw new IllegalStateException(
+                "Unable to generate complex operator for " + operator + " of types LHS: "
+                + getLeft().getValueType() + " RHS: " + getRight().getValueType());
         };
+    }
+
+    private boolean isFloatingPoint() {
+        boolean leftFloating = left.getValueType() == Type.FLOAT || left.getValueType() == Type.DOUBLE;
+        boolean rightFloating = right.getValueType() == Type.FLOAT || right.getValueType() == Type.DOUBLE;
+        return leftFloating || rightFloating;
     }
 
     /**
