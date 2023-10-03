@@ -36,24 +36,44 @@ public interface Type {
     Type MUT = primitive("mut");
 
     /**
-     * The type wrapper for an 8-bit integer.
+     * The type wrapper for a signed 8-bit integer.
      */
     Type BYTE = primitive("byte");
 
     /**
-     * The type wrapper for a 16-bit integer.
+     * The type wrapper for an unsigned 8-bit integer.
+     */
+    Type UBYTE = primitive("ubyte");
+
+    /**
+     * The type wrapper for a signed 16-bit integer.
      */
     Type SHORT = primitive("short");
 
     /**
-     * The type wrapper for a 32-bit integer.
+     * The type wrapper for an unsigned 16-bit integer.
+     */
+    Type USHORT = primitive("ushort");
+
+    /**
+     * The type wrapper for a signed 32-bit integer.
      */
     Type INT = primitive("int");
 
     /**
-     * The type wrapper for a 64-bit integer.
+     * The type wrapper for an unsigned 32-bit integer.
+     */
+    Type UINT = primitive("uint");
+
+    /**
+     * The type wrapper for a signed 64-bit integer.
      */
     Type LONG = primitive("long");
+
+    /**
+     * The type wrapper for an unsigned 64-bit integer.
+     */
+    Type ULONG = primitive("ulong");
 
     /**
      * The type wrapper for a 1-bit boolean.

@@ -1,10 +1,5 @@
-package "FloatingPointLiteralTest"
-
-float add(float a, float b) {
-    return a + b
-}
+package "NumberTypeCasting"
 
 int main() {
-    let sum = add(1.5F, 2.5F)
-    return 100
+    return (3.3 as int) + 1
 }

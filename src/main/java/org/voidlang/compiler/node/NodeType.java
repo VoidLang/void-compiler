@@ -37,6 +37,7 @@ public enum NodeType {
     NAME,
     COMPOUND_NAME,
     INITIALIZATOR,
+    CASTING,
     OPERATION,
     JOIN_OPERATION,
     SIDE_OPERATION,

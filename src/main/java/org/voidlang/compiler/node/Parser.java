@@ -15,11 +15,8 @@ import org.voidlang.compiler.node.info.PackageImport;
 import org.voidlang.compiler.node.info.PackageSet;
 import org.voidlang.compiler.node.local.*;
 import org.voidlang.compiler.node.method.MethodCall;
-import org.voidlang.compiler.node.operator.Accessor;
-import org.voidlang.compiler.node.operator.Operation;
-import org.voidlang.compiler.node.operator.Operator;
+import org.voidlang.compiler.node.operator.*;
 import org.voidlang.compiler.node.element.Class;
-import org.voidlang.compiler.node.operator.SideOperation;
 import org.voidlang.compiler.node.type.pointer.DereferencingAccessor;
 import org.voidlang.compiler.node.type.pointer.ReferencedAccessor;
 import org.voidlang.compiler.node.type.pointer.Referencing;
@@ -1511,6 +1508,14 @@ public class Parser {
         //                         ^ the closing bracket indicates, that the initializator has been terminated
         else if (peek().is(TokenType.END))
             return literal;
+
+        // handle type casting
+        // let val = 100 as float
+        //                 ^ the 'as' keyword indicates, that the expression has been terminated
+        else if (peek().is(TokenType.EXPRESSION, "as")) {
+            get();
+            return new Casting(literal, nextType());
+        }
 
         // TODO handle indexing
 
