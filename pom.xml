@@ -14,11 +14,18 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
-            <groupId>dev.inventex.octa</groupId>
-            <artifactId>Octa</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <groupId>com.github.Inventex-Development</groupId>
+            <artifactId>OctaCore</artifactId>
+            <version>1.0.7</version>
         </dependency>
         <dependency>
             <groupId>org.voidlang.llvm</groupId>
