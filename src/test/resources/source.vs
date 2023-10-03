@@ -1,8 +1,10 @@
 package "FloatingPointLiteralTest"
 
+float add(float a, float b) {
+    return a + b
+}
+
 int main() {
-    let a = 2.0
-    let b = 1.5
-    let c = a + b
+    let sum = add(1.5F, 2.5F)
     return 100
 }

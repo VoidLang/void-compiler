@@ -178,8 +178,12 @@ public class Operation extends Value {
     }
 
     private boolean isFloatingPoint() {
-        boolean leftFloating = left.getValueType() == Type.FLOAT || left.getValueType() == Type.DOUBLE;
-        boolean rightFloating = right.getValueType() == Type.FLOAT || right.getValueType() == Type.DOUBLE;
+        Type leftType = left.getValueType();
+        Type rightType = right.getValueType();
+
+        boolean leftFloating = leftType.equals(Type.FLOAT) || leftType.equals(Type.DOUBLE);
+        boolean rightFloating = rightType.equals(Type.FLOAT) || rightType.equals(Type.DOUBLE);
+
         return leftFloating || rightFloating;
     }
 
