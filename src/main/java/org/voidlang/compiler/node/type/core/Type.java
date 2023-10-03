@@ -61,6 +61,16 @@ public interface Type {
     Type BOOL = primitive("bool");
 
     /**
+     * The type wrapper for a 32-bit floating point number.
+     */
+    Type FLOAT = primitive("float");
+
+    /**
+     * The type wrapper for a 64-bit floating point number.
+     */
+    Type DOUBLE = primitive("double");
+
+    /**
      * The type wrapper for a const char* string.
      */
     Type STR = new ScalarType(

@@ -47,6 +47,7 @@ import org.voidlang.compiler.node.type.named.NamedTypeGroup;
 import org.voidlang.compiler.node.type.parameter.LambdaParameter;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
+import org.voidlang.compiler.util.Prettier;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -71,7 +71,12 @@ public class Literal extends Value {
         IRModule module = generator.getModule();
 
         return switch (type) {
+            case BYTE -> IRType.int8(context).constInt(Byte.parseByte(value));
+            case SHORT -> IRType.int16(context).constInt(Short.parseShort(value));
             case INTEGER -> IRType.int32(context).constInt(Integer.parseInt(value));
+            case LONG -> IRType.int64(context).constInt(Long.parseLong(value));
+            case FLOAT -> IRType.floatType(context).constFloat(Float.parseFloat(value));
+            case DOUBLE -> IRType.doubleType(context).constFloat(Double.parseDouble(value));
             case BOOLEAN -> IRType.int1(context).constInt("true".equals(value) ? 1 : 0);
             case STRING -> {
                 if (!initialized) {
@@ -111,6 +116,8 @@ public class Literal extends Value {
             case LONG -> Type.LONG;
             case BOOLEAN -> Type.BOOL;
             case STRING -> Type.STR;
+            case FLOAT -> Type.FLOAT;
+            case DOUBLE -> Type.DOUBLE;
             default -> throw new IllegalStateException("Unable to get value type for literal " + type);
         };
     }

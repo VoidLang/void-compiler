@@ -1,39 +1,7 @@
-package "DynamicLengthStringPrintTest"
-
-extern int GetStdHandle(int kind)
-
-extern int WriteConsoleA(int handle, ref byte buffer, int length, ref int written, int reserved)
-
-extern int strlen(ref byte buffer)
-
-void printSizedBuffer(ref byte buffer, int length) {
-    let handle = GetStdHandle(-11)
-    let written = 0
-    WriteConsoleA(handle, buffer, length, ref written, 0)
-    return
-}
-
-void print(ref byte buffer) {
-    let len = strlen(buffer)
-    printSizedBuffer(buffer, len)
-    return
-}
-
-void println(ref byte buffer) {
-    print(buffer)
-    printSizedBuffer("\r\n", 2)
-    return
-}
-
-void println() {
-    printSizedBuffer("\r\n", 2)
-    return
-}
+package "FloatingPointLiteralTest"
 
 int main() {
-    mut x = 0
-    while (x < 10) {
-        x = x + 1
-    }
-    return x
+    let PI = 3.14159265358F
+    let E = 2.7182818284590452353602874713527D
+    return 100
 }

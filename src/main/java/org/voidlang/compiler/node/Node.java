@@ -7,6 +7,7 @@ import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
 import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.node.value.Value;
+import org.voidlang.compiler.util.Prettier;
 import org.voidlang.llvm.element.IRValue;
 
 import org.voidlang.compiler.node.type.core.Type;
