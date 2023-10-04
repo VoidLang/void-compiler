@@ -93,9 +93,11 @@ public class Operation extends Value {
         left.postProcessUse(generator);
         right.postProcessUse(generator);
 
+        // extract the types of the values
         Type leftValueType = getLeft().getValueType();
         Type rightValueType = getRight().getValueType();
 
+        // extract the scalar types of the values in case of e.g. method parameter types
         if (leftValueType instanceof NamedScalarType leftNamed)
             leftValueType = leftNamed.getScalarType();
         if (rightValueType instanceof NamedScalarType rightNamed)
