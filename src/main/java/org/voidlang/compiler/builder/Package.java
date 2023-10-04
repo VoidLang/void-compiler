@@ -1,6 +1,7 @@
 package org.voidlang.compiler.builder;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
@@ -13,12 +14,15 @@ import org.voidlang.llvm.element.IRValue;
 
 import java.util.*;
 
+@RequiredArgsConstructor
 @Getter
 @NodeInfo(type = NodeType.ROOT)
 public class Package extends Node {
     private final Map<String, List<Method>> methods = new HashMap<>();
 
     private final Map<String, Class> classes = new HashMap<>();
+
+    private final Generator generator;
 
     /**
      * Generate an LLVM instruction for this node

@@ -14,6 +14,7 @@ import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.Tokenizer;
 import org.voidlang.compiler.token.Transformer;
 import org.voidlang.llvm.element.*;
+import util.LLVM;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -26,14 +27,14 @@ public class ParserTest {
         List<Token> tokens = tokenizeSource();
         debugTokens(tokens);
 
-        Package root = new Package();
+        Generator generator = LLVM.createContext();
+
+        Package root = new Package(generator);
         Parser parser = new Parser(root, tokens);
 
         System.out.println();
         System.out.println(ConsoleFormat.RED + "           " + ConsoleFormat.BOLD + "PARSED NODES");
         System.out.println(ConsoleFormat.DEFAULT);
-
-        Generator generator = initLLVM();
 
         Node node;
         List<Node> nodes = new ArrayList<>();
@@ -68,20 +69,6 @@ public class ParserTest {
 
         Method main = root.resolveMethod("main", new ArrayList<>());
         debugBitcode(generator, main);
-    }
-
-    private static Generator initLLVM() {
-        LLVMInitializeCore(LLVMGetGlobalPassRegistry());
-        LLVMLinkInMCJIT();
-        LLVMInitializeNativeAsmPrinter();
-        LLVMInitializeNativeAsmParser();
-        LLVMInitializeNativeTarget();
-
-        IRContext context = IRContext.create();
-        IRModule module = IRModule.create(context, "test_module");
-        IRBuilder builder = IRBuilder.create(context);
-
-        return new Generator(context, module, builder);
     }
 
     private static void debugBitcode(Generator generator, Method main) throws Exception {
