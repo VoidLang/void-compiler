@@ -1382,6 +1382,14 @@ public class Parser {
             return makeOperator(group, operator, nextValue());
         }
 
+        // handle type casting
+        // let val = 100 as float
+        //                 ^ the 'as' keyword indicates, that the expression has been terminated
+        else if (peek().is(TokenType.EXPRESSION, "as")) {
+            get();
+            return new Casting(group, nextType());
+        }
+
         return group;
     }
 

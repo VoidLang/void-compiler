@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 @Getter
 public enum PrimitiveType {
-    BOOLEAN(0, false),
+    BOOL(0, false),
     CHAR(1, false),
     BYTE(2, false),
     UBYTE(2, false),

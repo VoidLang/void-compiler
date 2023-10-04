@@ -121,7 +121,10 @@ public class Operation extends Value {
         rightType = PrimitiveType.of(rightScalar);
 
         if (leftType == PrimitiveType.UNKNOWN || rightType == PrimitiveType.UNKNOWN)
-            throw new IllegalStateException("Trying to do complex operation with non-primitive types: " + leftType + " " + rightType);
+            throw new IllegalStateException(
+                "Trying to do complex operation with non-primitive types: " + leftType + "(" + leftScalar + ")" +
+                rightType + "(" + rightScalar + ")"
+            );
 
         resultType = leftType.getPrecedence() >= rightType.getPrecedence()
             ? leftType

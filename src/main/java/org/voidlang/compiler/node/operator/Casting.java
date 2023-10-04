@@ -54,6 +54,11 @@ public class Casting extends Value {
                 return builder.signedIntToFloat(operand, IRType.floatType(context));
         }
 
+        else if (operandType.equals(Type.BOOL)) {
+            if (type.equals(Type.INT))
+                return builder.intCast(operand, IRType.int32(context));
+        }
+
         throw new IllegalStateException("Cannot cast from " + operandType + " to " + type);
     }
 
