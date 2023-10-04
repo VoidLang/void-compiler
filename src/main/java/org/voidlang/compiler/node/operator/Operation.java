@@ -61,24 +61,6 @@ public class Operation extends Value {
         this.parent = parent;
         left.preProcess(this);
         right.preProcess(this);
-
-        // check if non-scalar types are being operated
-        if (!(getLeft().getValueType() instanceof ScalarType leftScalar))
-            throw new IllegalStateException("Left operand of operation is not a scalar type: " + getLeft().getValueType());
-
-        if (!(getRight().getValueType() instanceof ScalarType rightScalar))
-            throw new IllegalStateException("Right operand of operation is not a scalar type: " + getRight().getValueType());
-
-        // check if non-primitive types are being operated
-        leftType = PrimitiveType.of(leftScalar);
-        rightType = PrimitiveType.of(rightScalar);
-
-        if (leftType == PrimitiveType.UNKNOWN || rightType == PrimitiveType.UNKNOWN)
-            throw new IllegalStateException("Trying to do complex operation with non-primitive types: " + leftType + " " + rightType);
-
-        resultType = leftType.getPrecedence() >= rightType.getPrecedence()
-            ? leftType
-            : rightType;
     }
 
     /**
@@ -109,6 +91,25 @@ public class Operation extends Value {
     public void postProcessUse(Generator generator) {
         left.postProcessUse(generator);
         right.postProcessUse(generator);
+
+
+        // check if non-scalar types are being operated
+        if (!(getLeft().getValueType() instanceof ScalarType leftScalar))
+            throw new IllegalStateException("Left operand of operation is not a scalar type: " + getLeft().getValueType());
+
+        if (!(getRight().getValueType() instanceof ScalarType rightScalar))
+            throw new IllegalStateException("Right operand of operation is not a scalar type: " + getRight().getValueType());
+
+        // check if non-primitive types are being operated
+        leftType = PrimitiveType.of(leftScalar);
+        rightType = PrimitiveType.of(rightScalar);
+
+        if (leftType == PrimitiveType.UNKNOWN || rightType == PrimitiveType.UNKNOWN)
+            throw new IllegalStateException("Trying to do complex operation with non-primitive types: " + leftType + " " + rightType);
+
+        resultType = leftType.getPrecedence() >= rightType.getPrecedence()
+            ? leftType
+            : rightType;
     }
 
     /**
