@@ -93,7 +93,6 @@ public class ParserTest {
 
         BytePointer error = new BytePointer((Pointer) null);
         if (!module.verify(IRModule.VerifierFailureAction.ABORT_PROCESS, error)) {
-            // System.err.println("Error: " + error.getString());
             LLVMDisposeMessage(error);
             return;
         }
@@ -138,10 +137,10 @@ public class ParserTest {
         Process linkProcess = linkBuilder.start();
         int linkStatus = linkProcess.waitFor();
 
-        runAndDebugExecutable(runFile, dumpFile);
+        runAndDebugExecutable(runFile);
     }
 
-    private static void runAndDebugExecutable(File exeFile, File fos) throws Exception {
+    private static void runAndDebugExecutable(File exeFile) throws Exception {
         // ProcessBuilder builder = new ProcessBuilder("cmd.exe".split("\\s+")); //exeFile.getAbsolutePath());
         // ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/C", exeFile.getAbsolutePath()); //exeFile.getAbsolutePath());
         ProcessBuilder builder = new ProcessBuilder(exeFile.getAbsolutePath());
