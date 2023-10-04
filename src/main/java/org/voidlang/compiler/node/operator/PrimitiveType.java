@@ -24,8 +24,8 @@ public enum PrimitiveType {
     UINT(4, false),
     LONG(5, false),
     ULONG(5, false),
-    FLOAT(6, false),
-    DOUBLE(7, false),
+    FLOAT(6, true),
+    DOUBLE(7, true),
     UNKNOWN(-1, false);
 
     private final int precedence;
