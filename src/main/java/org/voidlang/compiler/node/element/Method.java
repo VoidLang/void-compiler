@@ -118,6 +118,8 @@ public class Method extends Node {
         if (defined)
             return;
 
+        this.generator = generator;
+
         for (Node node : body)
             node.postProcessMember(generator);
 
@@ -200,7 +202,6 @@ public class Method extends Node {
         // extract the context from the generator
         IRContext context = generator.getContext();
         IRBuilder builder = generator.getBuilder();
-        this.generator = generator;
 
         if (bodyLess)
             return function;
