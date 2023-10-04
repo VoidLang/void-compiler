@@ -46,8 +46,8 @@ public class Return extends Instruction {
         // check if the value does not match the method return type
         if (!valueType.equals(returnType))
             throw new IllegalStateException(
-                "Cannot return " + valueType + "(" + valueType.getClass().getSimpleName() + ") in a " + returnType +
-                "(" + returnType.getClass().getSimpleName() + ") function"
+                "Cannot return " + valueType + "(" + valueType.getClass().getSimpleName() + ") in a " +
+                returnType + "(" + returnType.getClass().getSimpleName() + ") function"
             );
 
         // generate the code to the value to be returned

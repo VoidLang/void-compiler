@@ -39,24 +39,90 @@ public class Casting extends Value {
         IRValue operand = getOperand().generateAndLoad(generator);
         Type operandType = getOperand().getValueType();
 
+        // TODO you should only emit a warning here, and generate ir value for the operand
         if (type.equals(operandType))
             throw new IllegalStateException("Trying to cast a value to the same type");
 
         if (operandType.equals(Type.DOUBLE) || operandType.equals(Type.FLOAT)) {
-            if (type.equals(Type.INT))
+            if (type.equals(Type.BYTE))
+                return builder.floatToSignedInt(operand, IRType.int8(context));
+            else if (type.equals(Type.SHORT))
+                return builder.floatToSignedInt(operand, IRType.int16(context));
+            else if (type.equals(Type.INT))
                 return builder.floatToSignedInt(operand, IRType.int32(context));
+            else if (type.equals(Type.LONG))
+                return builder.floatToSignedInt(operand, IRType.int64(context));
+            else if (operandType.equals(Type.DOUBLE) && type.equals(Type.FLOAT))
+                return builder.floatTruncate(operand, IRType.floatType(context));
+            else if (operandType.equals(Type.FLOAT) && type.equals(Type.DOUBLE))
+                return builder.floatExtend(operand, IRType.doubleType(context));
+        }
+
+        else if (operandType.equals(Type.LONG)) {
+            if (type.equals(Type.BYTE))
+                return builder.truncate(operand, IRType.int8(context));
+            else if (type.equals(Type.SHORT))
+                return builder.truncate(operand, IRType.int16(context));
+            else if (type.equals(Type.INT))
+                return builder.truncate(operand, IRType.int32(context));
+            else if (type.equals(Type.DOUBLE))
+                return builder.signedIntToFloat(operand, IRType.doubleType(context));
+            else if (type.equals(Type.FLOAT))
+                return builder.signedIntToFloat(operand, IRType.floatType(context));
         }
 
         else if (operandType.equals(Type.INT)) {
+            if (type.equals(Type.BYTE))
+                return builder.truncate(operand, IRType.int8(context));
+            else if (type.equals(Type.SHORT))
+                return builder.truncate(operand, IRType.int16(context));
+            else if (type.equals(Type.LONG))
+                return builder.signExtend(operand, IRType.int64(context));
             if (type.equals(Type.DOUBLE))
                 return builder.signedIntToFloat(operand, IRType.doubleType(context));
             if (type.equals(Type.FLOAT))
                 return builder.signedIntToFloat(operand, IRType.floatType(context));
         }
 
+        else if (operandType.equals(Type.SHORT)) {
+            if (type.equals(Type.BYTE))
+                return builder.truncate(operand, IRType.int8(context));
+            else if (type.equals(Type.INT))
+                return builder.signExtend(operand, IRType.int32(context));
+            else if (type.equals(Type.LONG))
+                return builder.signExtend(operand, IRType.int64(context));
+            else if (type.equals(Type.DOUBLE))
+                return builder.signedIntToFloat(operand, IRType.doubleType(context));
+            else if (type.equals(Type.FLOAT))
+                return builder.signedIntToFloat(operand, IRType.floatType(context));
+        }
+
+        else if (operandType.equals(Type.BYTE)) {
+            if (type.equals(Type.SHORT))
+                return builder.signExtend(operand, IRType.int16(context));
+            else if (type.equals(Type.INT))
+                return builder.signExtend(operand, IRType.int32(context));
+            else if (type.equals(Type.LONG))
+                return builder.signExtend(operand, IRType.int64(context));
+            else if (type.equals(Type.DOUBLE))
+                return builder.signedIntToFloat(operand, IRType.doubleType(context));
+            else if (type.equals(Type.FLOAT))
+                return builder.signedIntToFloat(operand, IRType.floatType(context));
+        }
+
         else if (operandType.equals(Type.BOOL)) {
-            if (type.equals(Type.INT))
+            if (type.equals(Type.BYTE))
+                return builder.intCast(operand, IRType.int8(context));
+            else if (type.equals(Type.SHORT))
+                return builder.intCast(operand, IRType.int16(context));
+            else if (type.equals(Type.INT))
                 return builder.intCast(operand, IRType.int32(context));
+            else if (type.equals(Type.LONG))
+                return builder.intCast(operand, IRType.int64(context));
+            else if (type.equals(Type.DOUBLE))
+                return builder.signedIntToFloat(operand, IRType.doubleType(context));
+            else if (type.equals(Type.FLOAT))
+                return builder.signedIntToFloat(operand, IRType.floatType(context));
         }
 
         throw new IllegalStateException("Cannot cast from " + operandType + " to " + type);
