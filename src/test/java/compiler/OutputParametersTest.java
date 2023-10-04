@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class OutputParametersTest {
     @Test
-    public void testCallingMainMethod() {
+    public void testFunctionWithIntOutputParameters() {
         Package root = assertDoesNotThrow(() -> Compiler.compile("compiler/OutputParameters.vs"));
 
         JIT jit = assertDoesNotThrow(() -> JIT.create(root));

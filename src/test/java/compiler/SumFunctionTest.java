@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class SumFunctionTest {
     @Test
-    public void testCallingMainMethod() {
+    public void testSumFunctionThatAddsIntegers() {
         Package root = assertDoesNotThrow(() -> Compiler.compile("compiler/SumFunction.vs"));
 
         JIT jit = assertDoesNotThrow(() -> JIT.create(root));

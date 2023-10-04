@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class FibonacciTest {
     @Test
-    public void testCallingMainMethod() {
+    public void testFibonacciFunction() {
         Package root = assertDoesNotThrow(() -> Compiler.compile("compiler/Fibonacci.vs"));
 
         JIT jit = assertDoesNotThrow(() -> JIT.create(root));
