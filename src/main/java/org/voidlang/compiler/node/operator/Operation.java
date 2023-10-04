@@ -7,6 +7,7 @@ import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.Comparator;
 import org.voidlang.llvm.element.IRBuilder;
@@ -92,13 +93,26 @@ public class Operation extends Value {
         left.postProcessUse(generator);
         right.postProcessUse(generator);
 
+        Type leftValueType = getLeft().getValueType();
+        Type rightValueType = getRight().getValueType();
+
+        if (leftValueType instanceof NamedScalarType leftNamed)
+            leftValueType = leftNamed.getScalarType();
+        if (rightValueType instanceof NamedScalarType rightNamed)
+            rightValueType = rightNamed.getScalarType();
 
         // check if non-scalar types are being operated
-        if (!(getLeft().getValueType() instanceof ScalarType leftScalar))
-            throw new IllegalStateException("Left operand of operation is not a scalar type: " + getLeft().getValueType());
+        if (!(leftValueType instanceof ScalarType leftScalar))
+            throw new IllegalStateException(
+                "Left operand of operation is not a scalar type: " + leftValueType +
+                " but is a " + leftValueType.getClass().getSimpleName()
+            );
 
-        if (!(getRight().getValueType() instanceof ScalarType rightScalar))
-            throw new IllegalStateException("Right operand of operation is not a scalar type: " + getRight().getValueType());
+        if (!(rightValueType instanceof ScalarType rightScalar))
+            throw new IllegalStateException(
+                "Right operand of operation is not a scalar type: " + rightValueType +
+                " but is a " + rightValueType.getClass().getSimpleName()
+            );
 
         // check if non-primitive types are being operated
         leftType = PrimitiveType.of(leftScalar);
