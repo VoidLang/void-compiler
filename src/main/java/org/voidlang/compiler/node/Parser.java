@@ -1400,7 +1400,7 @@ public class Parser {
         }
 
         // parse the value to be returned
-        Node value = nextExpression();
+        Value value = nextValue();
 
         // handle the semicolon after the return statement
         if (peek().is(TokenType.SEMICOLON))
@@ -1661,6 +1661,14 @@ public class Parser {
             else if (!isComplexOperator(operator.getValue()))
                 throw new IllegalStateException("Expected complex operator, but got " + operator);
             return makeOperator(value, operator, nextValue());
+        }
+
+        // handle type casting
+        // let val = 100 as float
+        //                 ^ the 'as' keyword indicates, that the expression has been terminated
+        else if (peek().is(TokenType.EXPRESSION, "as")) {
+            get();
+            return new Casting(value, nextType());
         }
 
         System.out.println(ConsoleFormat.RED + "Error (Qualified Name / Call) " + peek());
