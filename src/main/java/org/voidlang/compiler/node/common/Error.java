@@ -15,7 +15,6 @@ import org.voidlang.llvm.element.IRValue;
 @NodeInfo(type = NodeType.ERROR)
 public class Error extends Value {
     public Error() {
-        System.exit(-1);
     }
 
     /**

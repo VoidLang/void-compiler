@@ -23,7 +23,6 @@ public class AST {
         // System.out.println(ConsoleFormat.RED + "           " + ConsoleFormat.BOLD + "PARSED NODES");
         // System.out.println(ConsoleFormat.DEFAULT);
 
-
         Node node;
         List<Node> nodes = new ArrayList<>();
         // preprocess nodes

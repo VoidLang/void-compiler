@@ -2,6 +2,7 @@ package util;
 
 import lombok.experimental.UtilityClass;
 import org.voidlang.compiler.token.Token;
+import org.voidlang.compiler.token.TokenType;
 import org.voidlang.compiler.token.Tokenizer;
 import org.voidlang.compiler.token.Transformer;
 
@@ -17,6 +18,8 @@ public class Tokenizers {
 
         do {
             tokens.add(token = tokenizer.next());
+            if (token.is(TokenType.UNEXPECTED))
+                throw new RuntimeException(token.getValue());
         } while (token.hasNext());
 
         return new Transformer(tokens).transform();
