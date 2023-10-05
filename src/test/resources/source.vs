@@ -1,5 +1,12 @@
-package "NumberTypeCasting"
+void foo(ref int a, ref int b) {
+    a = 10
+    b = 20
+    return
+}
 
 int main() {
-    return (3.3 as int) + 1
+    mut a = 1
+    mut b = 2
+    foo(ref a, ref b)
+    return a + b
 }

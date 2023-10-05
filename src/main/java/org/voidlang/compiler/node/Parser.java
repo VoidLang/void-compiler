@@ -976,9 +976,8 @@ public class Parser {
         else if (peek().is(TokenType.TYPE, "mut"))
             return nextMutableLocalDeclaration();
 
-        // else if (peek().is(TokenType.TYPE, "ref")) {
-        //     return nextReferenceLocalDeclaration();
-        // }
+        else if (peek().is(TokenType.TYPE, "ref"))
+            return nextReferenceLocalDeclaration();
 
         // handle variable assignation
         if (peek().is(TokenType.IDENTIFIER) && at(cursor + 1).is(TokenType.OPERATOR, "=")
@@ -1574,49 +1573,6 @@ public class Parser {
         return new Error();
     }
 
-    private Value nextReferencedQualifiedNameOrCall() {
-        get(TokenType.TYPE, "ref");
-
-        // parse the qualified name
-        QualifiedName name = nextQualifiedName();
-
-        Value value = new ReferencedAccessor(name);
-
-        // handle method call
-        // println("Hello, World!")
-        //        ^ the open parenthesis token after an identifier indicates, that a method call is expected
-        if (peek().is(TokenType.OPEN))
-            throw new IllegalStateException("Referenced method call is not supported yet.");
-
-        // handle group closing
-        // print(ref foo)
-        //              ^ we don't need to handle this closing tag here, just finish qualified name parsing
-        if (peek().is(TokenType.CLOSE, TokenType.COMMA, TokenType.STOP, TokenType.END))
-            return value;
-
-        // handle single value expression, in which case the local variable is initialized with a single value
-        // let myVar = ref foo;
-        //                    ^ the (auto-inserted) semicolon indicates, initialized with a single value
-        if (peek().is(TokenType.SEMICOLON))
-            return value;
-
-        // terminate the literal if an 'else' case of a one-liner 'if' statement is expected
-        // let foo = x < 10 ? 1 + 2 : 12 / 6
-        //                         ^ terminate the parsing of '1 + 2', as the else case is expected
-        if (peek().is(TokenType.COLON))
-            return value;
-
-        // handle operation between two expressions
-        // let var = foo +
-        //               ^ the operator after an identifier indicates, that there are more expressions to be parsed
-        //                 the two operands are grouped together by an Operation node
-        if (peek().is(TokenType.OPERATOR))
-            throw new IllegalStateException("Referenced operation is not supported yet.");
-
-        System.out.println(ConsoleFormat.RED + "Error (Referenced Qualified Name / Call) " + peek());
-        return new Error();
-    }
-
     /**
      * Parse the next qualified name or method call declaration.
      * @return new qualified name or method call
@@ -1786,7 +1742,102 @@ public class Parser {
         return Operator.of(builder.toString());
     }
 
+    private Value nextReferencedQualifiedNameOrCall() {
+        get(TokenType.TYPE, "ref");
+
+        // parse the qualified name
+        QualifiedName name = nextQualifiedName();
+
+        Value value = new ReferencedAccessor(name);
+
+        // handle method call
+        // println("Hello, World!")
+        //        ^ the open parenthesis token after an identifier indicates, that a method call is expected
+        if (peek().is(TokenType.OPEN))
+            throw new IllegalStateException("Referenced method call is not supported yet.");
+
+        // handle group closing
+        // print(ref foo)
+        //              ^ we don't need to handle this closing tag here, just finish qualified name parsing
+        if (peek().is(TokenType.CLOSE, TokenType.COMMA, TokenType.STOP, TokenType.END))
+            return value;
+
+        // handle single value expression, in which case the local variable is initialized with a single value
+        // let myVar = ref foo;
+        //                    ^ the (auto-inserted) semicolon indicates, initialized with a single value
+        if (peek().is(TokenType.SEMICOLON))
+            return value;
+
+        // terminate the literal if an 'else' case of a one-liner 'if' statement is expected
+        // let foo = x < 10 ? 1 + 2 : 12 / 6
+        //                         ^ terminate the parsing of '1 + 2', as the else case is expected
+        if (peek().is(TokenType.COLON))
+            return value;
+
+        // handle operation between two expressions
+        // let var = foo +
+        //               ^ the operator after an identifier indicates, that there are more expressions to be parsed
+        //                 the two operands are grouped together by an Operation node
+        if (peek().is(TokenType.OPERATOR))
+            throw new IllegalStateException("Referenced operation is not supported yet.");
+
+        System.out.println(ConsoleFormat.RED + "Error (Referenced Qualified Name / Call) " + peek());
+        return new Error();
+    }
+
+    private Value nextReferencedQualifiedNameOrCall(Referencing referencing) {
+        // TODO handle parsed referencing
+
+        // parse the qualified name
+        QualifiedName name = nextQualifiedName();
+
+        Value value = new ReferencedAccessor(name);
+
+        // handle method call
+        // println("Hello, World!")
+        //        ^ the open parenthesis token after an identifier indicates, that a method call is expected
+        if (peek().is(TokenType.OPEN))
+            throw new IllegalStateException("Referenced method call is not supported yet.");
+
+        // handle group closing
+        // print(ref foo)
+        //              ^ we don't need to handle this closing tag here, just finish qualified name parsing
+        if (peek().is(TokenType.CLOSE, TokenType.COMMA, TokenType.STOP, TokenType.END))
+            return value;
+
+        // handle single value expression, in which case the local variable is initialized with a single value
+        // let myVar = ref foo;
+        //                    ^ the (auto-inserted) semicolon indicates, initialized with a single value
+        if (peek().is(TokenType.SEMICOLON))
+            return value;
+
+        // terminate the literal if an 'else' case of a one-liner 'if' statement is expected
+        // let foo = x < 10 ? 1 + 2 : 12 / 6
+        //                         ^ terminate the parsing of '1 + 2', as the else case is expected
+        if (peek().is(TokenType.COLON))
+            return value;
+
+        // handle operation between two expressions
+        // let var = foo +
+        //               ^ the operator after an identifier indicates, that there are more expressions to be parsed
+        //                 the two operands are grouped together by an Operation node
+        if (peek().is(TokenType.OPERATOR))
+            throw new IllegalStateException("Referenced operation is not supported yet.");
+
+        System.out.println(ConsoleFormat.RED + "Error (Referenced Qualified Name / Call) " + peek());
+        return new Error();
+    }
+
+
     private Value nextReferenceLocalDeclaration() {
+        Referencing referencing = nextReferencing();
+
+        if (!peek().is(TokenType.IDENTIFIER))
+            throw new IllegalStateException("Referencing must be followed by an identifier, but got " + peek());
+
+        if (!at(cursor + 1).is(TokenType.OPERATOR, "="))
+            return nextReferencedQualifiedNameOrCall(referencing);
+
         throw new IllegalStateException("Not supported yet");
     }
 
