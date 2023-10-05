@@ -41,7 +41,7 @@ public class Casting extends Value {
 
         // TODO you should only emit a warning here, and generate ir value for the operand
         if (type.equals(operandType))
-            throw new IllegalStateException("Trying to cast a value to the same type");
+            throw new IllegalStateException("Trying to cast a value to the same type: " + type);
 
         if (operandType.equals(Type.DOUBLE) || operandType.equals(Type.FLOAT)) {
             if (type.equals(Type.BYTE))

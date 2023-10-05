@@ -1013,12 +1013,17 @@ public class Parser {
             return nextNewType(ignoreJoin);
 
         // handle single-node operation
-
         if (peek().is(TokenType.OPERATOR)) {
             Operator operator = nextOperator();
             if (!isSideOperator(operator.getValue()))
                 throw new IllegalStateException("Expected side operator, but received " + operator);
             return new SideOperation(operator, nextValue());
+        }
+
+        // handle "sizeof" operator
+        else if (peek().is(TokenType.EXPRESSION, "sizeof")) {
+            get();
+            return new Sizeof(nextType());
         }
 
         System.err.println(ConsoleFormat.RED + "Error (Value) " + peek());
