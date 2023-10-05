@@ -17,10 +17,16 @@ public class OutputParametersTest {
 
         JIT jit = assertDoesNotThrow(() -> JIT.create(root));
 
-        Method method = root.resolveMethod("main", new ArrayList<>());
-        assertNotNull(method);
+        Method passAsReference = root.resolveMethod("passAsReference", new ArrayList<>());
+        assertNotNull(passAsReference);
 
-        long result = jit.run(method).toInt();
+        long result = jit.run(passAsReference).toInt();
         assertEquals(30, result);
+
+        Method passPointers = root.resolveMethod("passPointers", new ArrayList<>());
+        assertNotNull(passPointers);
+
+        long result2 = jit.run(passPointers).toInt();
+        assertEquals(30, result2);
     }
 }
