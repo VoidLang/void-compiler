@@ -1838,7 +1838,40 @@ public class Parser {
         if (!at(cursor + 1).is(TokenType.OPERATOR, "="))
             return nextReferencedQualifiedNameOrCall(referencing);
 
-        throw new IllegalStateException("Not supported yet");
+        // parse the name of the local variable
+        Name name = nextName();
+
+        // check if the name is a tuple destructuring
+        if (name.isCompound())
+            throw new IllegalStateException("Not supported yet");
+
+        // skip the semicolon after the declaration
+        // let variable;
+        //             ^ the (auto-inserted) semicolon indicates, that the declaration has been ended
+        if (peek().is(TokenType.SEMICOLON))
+            get();
+
+        // check if the local variable does not have an initialization declared
+        if (!peek().is(TokenType.OPERATOR, "="))
+            throw new IllegalStateException("Cannot declare a reference without an initialization");
+
+        // handle the assignation of the local variable
+        // let number = 100
+        //            ^ the equals sign indicates that the assignation of the local variable has been started
+        get(TokenType.OPERATOR, "=");
+
+        // parse the value of the local variable
+        // let value = 100 + 50 - 25
+        //             ^^^^^^^^^^^^^ the instructions after the equals sign is the value of the local variable
+        Value value = nextValue();
+
+        // skip the semicolon after the declaration
+        // let variable = 100;
+        //                   ^ the (auto-inserted) semicolon indicates, that the assigning variable declaration has been ended
+        if (peek().is(TokenType.SEMICOLON))
+            get();
+
+        return new ReferenceLocalDeclareAssign(referencing, Type.MUT, ((ScalarName) name).getValue(), value);
     }
 
     private Value nextMutableLocalDeclaration() {

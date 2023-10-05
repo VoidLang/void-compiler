@@ -312,6 +312,8 @@ public class Method extends Node {
                 return local;
             else if (node instanceof MutableLocalDeclareAssign local && local.getName().equals(name))
                 return local;
+            else if (node instanceof ReferenceLocalDeclareAssign local && local.getName().equals(name))
+                return local;
         }
 
         // let the parent nodes recursively resolve the name

@@ -23,7 +23,7 @@ import org.voidlang.llvm.element.IRValue;
 @RequiredArgsConstructor
 @Getter
 @NodeInfo(type = NodeType.IMMUTABLE_LOCAL_DECLARE_ASSIGN)
-public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, Loadable, Mutable {
+public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, Loadable {
     private final Type type;
 
     private final String name;

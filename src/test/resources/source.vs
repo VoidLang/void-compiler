@@ -1,12 +1,13 @@
-void foo(ref int a, ref int b) {
-    a = 10
-    b = 20
-    return
+package "ReferenceLocalDeclaration"
+
+int sum(ref int a, ref int b) {
+    let x = deref a
+    let y = deref b
+    return x + y
 }
 
 int main() {
-    mut a = 1
-    mut b = 2
-    foo(ref a, ref b)
-    return a + b
+    ref a = 5
+    ref b = 2
+    return sum(a, b)
 }

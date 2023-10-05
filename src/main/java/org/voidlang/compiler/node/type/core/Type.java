@@ -36,6 +36,11 @@ public interface Type {
     Type MUT = primitive("mut");
 
     /**
+     * The type wrapper for the "mut" keyword.
+     */
+    Type REF = primitive("ref");
+
+    /**
      * The type wrapper for a signed 8-bit integer.
      */
     Type BYTE = primitive("byte");
