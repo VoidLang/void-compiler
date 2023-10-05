@@ -1988,14 +1988,12 @@ public class Parser {
     }
 
     private boolean shouldOperatorTerminate(String prev, String next) {
-        boolean termed = switch (prev) {
+        return switch (prev) {
             case "?" -> !next.equals(".") && !next.equals("?");
-            case "=" -> !next.equals("=");
-            case "!" -> !next.equals("!");
+            case "=", "!" -> !next.equals("=");
             case "&" -> !next.equals("&");
             default -> false;
         };
-        return termed;
     }
 
     /**
