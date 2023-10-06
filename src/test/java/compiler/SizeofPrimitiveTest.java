@@ -52,5 +52,11 @@ public class SizeofPrimitiveTest {
 
         long byteResult = jit.run(byteSize).toInt();
         assertEquals(1, byteResult);
+
+        Method boolSize = root.resolveMethod("boolSize", new ArrayList<>());
+        assertNotNull(boolSize);
+
+        long boolResult = jit.run(boolSize).toInt();
+        assertEquals(1, boolResult);
     }
 }

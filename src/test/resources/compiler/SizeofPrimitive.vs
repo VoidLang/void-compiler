@@ -21,3 +21,7 @@ long shortSize() {
 long byteSize() {
     return sizeof byte
 }
+
+long boolSize() {
+    return sizeof bool
+}
