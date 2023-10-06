@@ -21,7 +21,6 @@ public class Sizeof extends Value implements Loadable {
 
     private IRValue size;
 
-
     /**
      * Generate an LLVM instruction for this node
      *
@@ -35,8 +34,6 @@ public class Sizeof extends Value implements Loadable {
         Type type = getType();
         if (type instanceof NamedScalarType named)
             type = named.getScalarType();
-
-        System.err.println("GET SIZE OF " + type);
 
         IRType irType = type.generateType(generator.getContext());
         return size = irType.size();
@@ -54,7 +51,7 @@ public class Sizeof extends Value implements Loadable {
      */
     @Override
     public void preProcess(Node parent) {
-
+        this.parent = parent;
     }
 
     /**

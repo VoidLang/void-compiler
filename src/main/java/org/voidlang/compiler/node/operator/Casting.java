@@ -9,6 +9,7 @@ import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRContext;
@@ -37,7 +38,14 @@ public class Casting extends Value {
         IRContext context = generator.getContext();
 
         IRValue operand = getOperand().generateAndLoad(generator);
+
         Type operandType = getOperand().getValueType();
+        if (operandType instanceof NamedScalarType named)
+            operandType = named.getScalarType();
+
+        Type type = getType();
+        if (type instanceof NamedScalarType named)
+            type = named.getScalarType();
 
         // TODO you should only emit a warning here, and generate ir value for the operand
         if (type.equals(operandType))
