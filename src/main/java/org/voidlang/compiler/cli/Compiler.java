@@ -1,17 +1,52 @@
 package org.voidlang.compiler.cli;
 
+import com.moandjiezana.toml.Toml;
+import dev.inventex.octa.console.ConsoleFormat;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.Pointer;
+import org.voidlang.compiler.builder.Application;
+import org.voidlang.compiler.builder.Package;
+import org.voidlang.compiler.builder.ProjectSettings;
+import org.voidlang.compiler.node.Generator;
+import org.voidlang.compiler.node.Node;
+import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.Parser;
+import org.voidlang.compiler.node.element.Class;
+import org.voidlang.compiler.node.element.Method;
+import org.voidlang.compiler.token.Token;
+import org.voidlang.compiler.token.TokenType;
+import org.voidlang.compiler.token.Tokenizer;
+import org.voidlang.compiler.token.Transformer;
 import org.voidlang.compiler.util.Validate;
+import org.voidlang.llvm.element.IRBuilder;
+import org.voidlang.llvm.element.IRContext;
+import org.voidlang.llvm.element.IRModule;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
+
+import static org.bytedeco.llvm.global.LLVM.*;
+import static org.bytedeco.llvm.global.LLVM.LLVMInitializeNativeTarget;
 
 @RequiredArgsConstructor
 public class Compiler {
     private final String inputDir;
 
+    private Application application;
+
+    private ProjectSettings settings;
+
+    private File targetDir;
+
+
     public void compile() {
         File projectDir = new File(inputDir);
-        if (projectDir.exists() || !projectDir.isDirectory())
+        if (!projectDir.exists() || !projectDir.isDirectory())
             Validate.panic("Project " + inputDir + " does not exist");
 
         File sourceDir = new File(projectDir, "src");
@@ -19,7 +54,290 @@ public class Compiler {
             Validate.panic("Project source folder does not exist");
 
         File buildFile = new File(projectDir, "void.toml");
-        if (!buildFile.exists() || !projectDir.isFile())
+        if (!buildFile.exists() || !buildFile.isFile())
             Validate.panic("Project void.html file does not exist");
+
+        targetDir = new File(inputDir, "target");
+        targetDir.mkdir();
+
+        Toml toml = new Toml().read(buildFile);
+        settings = toml
+            .getTable("project")
+            .to(ProjectSettings.class);
+
+        compileSources(sourceDir);
+    }
+
+    @SneakyThrows
+    private void compileSources(File sourceDir) {
+        application = new Application();
+
+        walk(sourceDir);
+
+        linkModules();
+
+        /*
+        File objDir = new File(targetDir, "object");
+        File[] files = objDir.listFiles();
+        if (files == null)
+            return;
+        File objectFile = null;
+        for (File file : files) {
+            if (file.getName().endsWith(".obj")) {
+                objectFile = file;
+                break;
+            }
+        }
+
+        File exeFile = new File(targetDir, settings.name + ".exe");
+
+        ProcessBuilder linkBuilder = new ProcessBuilder("clang", "-o", exeFile.getAbsolutePath(),
+                objectFile.getAbsolutePath(), "-luser32", "-lgdi32", "-lkernel32");
+        Process linkProcess = linkBuilder.start();
+        linkProcess.waitFor();
+         */
+
+    }
+
+    @SneakyThrows
+    private void linkModules() {
+        File exeFile = new File(targetDir, settings.name + ".exe");
+
+        // List<String> args = new ArrayList<>(List.of("clang", "-o", exeFile.getAbsolutePath()));
+        List<String> args = new ArrayList<>(List.of("clang"));
+
+        File objDir = new File(targetDir, "object");
+
+        File mainFile = new File(objDir, "main.obj");
+        // if (!mainFile.exists())
+        //    throw new IllegalStateException("No main file found");
+
+        // mainFile.renameTo(new File(objDir, "abc.obj"));
+
+        File[] list = objDir.listFiles();
+
+        if (list == null)
+            throw new IllegalStateException("No object files found");
+
+        List<File> files = new ArrayList<>(Arrays.asList(list));
+
+        Collections.reverse(files);
+
+        for (File file : files) {
+            if (!file.getName().endsWith(".obj"))
+                continue;
+
+            args.add(file.getAbsolutePath());
+        }
+
+        // args.add("-W1,/ENTRY:main");
+        //args.addAll(List.of("--entry=main"));
+        // args.addAll(List.of("-e", "main"));
+
+        // args.add("-Wl,--entry=main");
+
+        args.addAll(List.of("-o", exeFile.getAbsolutePath()));
+        args.addAll(List.of("-luser32", "-lgdi32", "-lkernel32"));
+
+        // args.addAll(List.of("-Wl,-e,main"));
+
+        // args.add("/ENTRY:main");
+        args.add("-v");
+
+
+        System.out.println(String.join(" ", args));
+
+        ProcessBuilder linkBuilder = new ProcessBuilder(args);
+        Process linkProcess = linkBuilder.start();
+
+        System.out.print(ConsoleFormat.DEFAULT);
+        System.err.print(ConsoleFormat.DEFAULT);
+
+        linkProcess.getErrorStream().transferTo(System.err);
+        linkProcess.getInputStream().transferTo(System.out);
+
+        linkProcess.waitFor();
+    }
+
+    private void readSource(File file) {
+        String content = readFile(file);
+        List<Token> tokens = tokenizeSource(content);
+
+        String fileName = file.getName();
+        String moduleName = fileName.substring(0, fileName.length() - ".vs".length());
+
+        Generator generator = createContext(moduleName);
+
+        if (!tokens.get(0).is(TokenType.INFO, "package"))
+            throw new IllegalStateException("Package declaration is missing from file: " + fileName);
+        String packageName = tokens.get(1).getValue();
+
+        Package pkg = application.getPackage(packageName);
+        if (pkg == null) {
+            pkg = new Package(generator);
+            application.addPackage(packageName, pkg);
+        }
+
+        System.err.println("PARSE PKG " + packageName + " -> " + pkg.hashCode());
+        parsePackage(pkg, tokens);
+
+        IRModule module = generator.getModule();
+
+        BytePointer error = new BytePointer((Pointer) null);
+        if (!module.verify(IRModule.VerifierFailureAction.ABORT_PROCESS, error)) {
+            LLVMDisposeMessage(error);
+            return;
+        }
+
+        compileModule(module);
+
+    }
+
+    private void parsePackage(Package pkg, List<Token> tokens) {
+        Generator generator = pkg.getGenerator();
+        Parser parser = new Parser(pkg, tokens);
+
+        Node node;
+        List<Node> nodes = new ArrayList<>();
+        // preprocess nodes
+        do {
+            nodes.add(node = parser.next());
+            if (node.is(NodeType.ERROR))
+                throw new RuntimeException();
+            node.preProcess(pkg);
+        } while (node.hasNext());
+
+        // preprocess types
+        for (Node e : nodes) {
+            if (e instanceof Class clazz) {
+                clazz.generateType(generator.getContext());
+                pkg.defineClass(clazz);
+            }
+            else if (e instanceof Method method)
+                pkg.defineMethod(method);
+        }
+
+        for (Node e : nodes)
+            e.postProcessType(generator);
+
+        for (Node e : nodes)
+            e.postProcessMember(generator);
+
+        for (Node e : nodes)
+            e.postProcessUse(generator);
+
+        // generate bitcode
+        for (Node e : nodes)
+            e.generate(generator);
+    }
+
+    @SneakyThrows
+    private void compileModule(IRModule module) {
+        File bitcodeDir = new File(targetDir, "bitcode");
+        File objDir = new File(targetDir, "object");
+        File debugDir = new File(targetDir, "debug");
+
+        bitcodeDir.mkdir();
+        objDir.mkdir();
+        debugDir.mkdir();
+
+        String name = module.getName();
+
+        File bitcodeFile = new File(bitcodeDir, name + ".bc");
+        module.writeBitcodeToFile(bitcodeFile);
+
+        File dumpFile = new File(debugDir, name + ".ll");
+        module.printIRToFile(dumpFile);
+
+        File objectFile = new File(objDir, name + ".obj");
+        File exeFile = new File(targetDir, settings.name + ".exe");
+
+        ProcessBuilder compileBuilder = new ProcessBuilder("clang", "-c", "-o",
+            objectFile.getAbsolutePath(), bitcodeFile.getAbsolutePath());
+        Process compileProcess = compileBuilder.start();
+        compileProcess.waitFor();
+
+    }
+
+    @SneakyThrows
+    private void compileAndLinkModule(IRModule module) {
+        File bitcodeDir = new File(targetDir, "bitcode");
+        bitcodeDir.mkdir();
+
+        File objDir = new File(targetDir, "object");
+        objDir.mkdir();
+
+        File debugDir = new File(targetDir, "debug");
+        debugDir.mkdir();
+
+        File bitcodeFile = new File(bitcodeDir, "bitcode.bc");
+        module.writeBitcodeToFile(bitcodeFile);
+
+        File dumpFile = new File(debugDir, "dump.ll");
+        module.printIRToFile(dumpFile);
+
+        File objectFile = new File(objDir, "test.obj");
+        File runFile = new File(targetDir, settings.name + ".exe");
+
+        ProcessBuilder compileBuilder = new ProcessBuilder("clang", "-c", "-o",
+                objectFile.getAbsolutePath(), bitcodeFile.getAbsolutePath());
+        Process compileProcess = compileBuilder.start();
+        compileProcess.waitFor();
+
+        ProcessBuilder linkBuilder = new ProcessBuilder("clang", "-o", runFile.getAbsolutePath(),
+                objectFile.getAbsolutePath(), "-luser32", "-lgdi32", "-lkernel32");
+        Process linkProcess = linkBuilder.start();
+        linkProcess.waitFor();
+    }
+
+    private List<Token> tokenizeSource(String data) {
+        Tokenizer tokenizer = new Tokenizer(data);
+        List<Token> tokens = new ArrayList<>();
+        Token token;
+
+        do {
+            tokens.add(token = tokenizer.next());
+            if (token.is(TokenType.UNEXPECTED))
+                throw new RuntimeException(token.getValue());
+        } while (token.hasNext());
+
+        return new Transformer(tokens).transform();
+    }
+
+    @SneakyThrows
+    private String readFile(File file) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            StringBuilder builder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null)
+                builder.append(line).append('\n');
+            return builder.toString();
+        }
+    }
+
+    public Generator createContext(String moduleName) {
+        LLVMInitializeCore(LLVMGetGlobalPassRegistry());
+        LLVMLinkInMCJIT();
+        LLVMInitializeNativeAsmPrinter();
+        LLVMInitializeNativeAsmParser();
+        LLVMInitializeNativeTarget();
+
+        IRContext context = IRContext.create();
+        IRModule module = IRModule.create(context, moduleName);
+        IRBuilder builder = IRBuilder.create(context);
+
+        return new Generator(context, module, builder);
+    }
+
+    private void walk(File file) {
+        if (file.isFile())
+            readSource(file);
+        else if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files == null)
+                return;
+            for (File child : files)
+                walk(child);
+        }
     }
 }
