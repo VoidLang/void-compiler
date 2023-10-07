@@ -16,11 +16,15 @@ public class Transformer {
         requiredBefore.add(Token.of(TokenType.STRING));
         requiredBefore.add(Token.of(TokenType.CHARACTER));
         requiredBefore.add(Token.of(TokenType.BYTE));
+        requiredBefore.add(Token.of(TokenType.UBYTE));
         requiredBefore.add(Token.of(TokenType.SHORT));
+        requiredBefore.add(Token.of(TokenType.USHORT));
         requiredBefore.add(Token.of(TokenType.DOUBLE));
         requiredBefore.add(Token.of(TokenType.FLOAT));
         requiredBefore.add(Token.of(TokenType.LONG));
+        requiredBefore.add(Token.of(TokenType.ULONG));
         requiredBefore.add(Token.of(TokenType.INTEGER));
+        requiredBefore.add(Token.of(TokenType.UINTEGER));
         requiredBefore.add(Token.of(TokenType.HEXADECIMAL));
         requiredBefore.add(Token.of(TokenType.BOOLEAN));
         requiredBefore.add(Token.of(TokenType.NULL));

@@ -122,7 +122,8 @@ public class Token {
      */
     public boolean isNumber() {
         return switch (type) {
-            case BYTE, SHORT, INTEGER, LONG, FLOAT, DOUBLE, HEXADECIMAL, BINARY -> true;
+            case BYTE, UBYTE, SHORT, USHORT, INTEGER, UINTEGER, LONG,
+                    ULONG, FLOAT, DOUBLE, HEXADECIMAL, BINARY -> true;
             default -> false;
         };
     }

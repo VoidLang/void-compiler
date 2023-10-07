@@ -13,9 +13,7 @@ public enum TokenType {
     SHORT,       // 100S
     USHORT,      // u100S
     DOUBLE,      // 3.0D, 3.0
-    UDOUBLE,     // u3.0D, u3.0
     FLOAT,       // 1.5F
-    UFLOAT,      // u1.5F
     LONG,        // 123L
     ULONG,       // u123L
     INTEGER,     // 1337

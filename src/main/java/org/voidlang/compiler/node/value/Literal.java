@@ -71,10 +71,10 @@ public class Literal extends Value {
         IRModule module = generator.getModule();
 
         return switch (type) {
-            case BYTE -> IRType.int8(context).constInt(Byte.parseByte(value));
-            case SHORT -> IRType.int16(context).constInt(Short.parseShort(value));
-            case INTEGER -> IRType.int32(context).constInt(Integer.parseInt(value));
-            case LONG -> IRType.int64(context).constInt(Long.parseLong(value));
+            case BYTE, UBYTE -> IRType.int8(context).constInt(Byte.parseByte(value));
+            case SHORT, USHORT -> IRType.int16(context).constInt(Short.parseShort(value));
+            case INTEGER, UINTEGER -> IRType.int32(context).constInt(Integer.parseInt(value));
+            case LONG, ULONG -> IRType.int64(context).constInt(Long.parseLong(value));
             case FLOAT -> IRType.floatType(context).constFloat(Float.parseFloat(value));
             case DOUBLE -> IRType.doubleType(context).constFloat(Double.parseDouble(value));
             case BOOLEAN -> IRType.int1(context).constInt("true".equals(value) ? 1 : 0);
@@ -111,12 +111,15 @@ public class Literal extends Value {
         TokenType type = value.getType();
         return switch (type) {
             case BYTE -> Type.BYTE;
+            case UBYTE -> Type.UBYTE;
             case SHORT -> Type.SHORT;
+            case USHORT -> Type.USHORT;
             case INTEGER -> Type.INT;
+            case UINTEGER -> Type.UINT;
             case LONG -> Type.LONG;
+            case ULONG -> Type.ULONG;
             case BOOLEAN -> Type.BOOL;
             case STRING -> Type.STR;
-            case FLOAT -> Type.FLOAT;
             case DOUBLE -> Type.DOUBLE;
             default -> throw new IllegalStateException("Unable to get value type for literal " + type);
         };

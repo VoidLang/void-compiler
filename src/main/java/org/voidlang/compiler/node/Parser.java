@@ -1463,8 +1463,9 @@ public class Parser {
         //            ^^^^^^^^^^ the literal token indicates, that a value is expected
         Token token = get(
             TokenType.BOOLEAN, TokenType.CHARACTER, TokenType.STRING,
-            TokenType.BYTE, TokenType.SHORT, TokenType.INTEGER,
-            TokenType.LONG, TokenType.FLOAT, TokenType.DOUBLE,
+            TokenType.BYTE, TokenType.UBYTE, TokenType.SHORT, TokenType.USHORT,
+            TokenType.INTEGER, TokenType.UINTEGER, TokenType.LONG, TokenType.ULONG,
+            TokenType.FLOAT, TokenType.DOUBLE,
             TokenType.HEXADECIMAL, TokenType.BINARY
         );
         Literal literal = new Literal(token);

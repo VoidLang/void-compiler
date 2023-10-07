@@ -129,6 +129,27 @@ public class Tokenizer {
     public Token nextIdentifier() {
         // get the full identifier
         int begin = cursor;
+
+        // handle unsigned number literal
+        if (peek() == 'u' && isNumber(at(cursor + 1))) {
+            get();
+
+            Token token = nextNumber();
+
+            TokenType type = token.getType();
+            String value = token.getValue();
+
+            type = switch (type) {
+                case BYTE -> TokenType.UBYTE;
+                case SHORT -> TokenType.USHORT;
+                case INTEGER -> TokenType.UINTEGER;
+                case LONG -> TokenType.ULONG;
+                default -> TokenType.UNEXPECTED;
+            };
+
+            return makeToken(type, value);
+        }
+
         while (isIdentifierPart(peek()))
             get();
         String token = range(begin, cursor);

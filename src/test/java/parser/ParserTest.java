@@ -7,10 +7,12 @@ import org.bytedeco.javacpp.Pointer;
 import org.voidlang.compiler.builder.Package;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
+import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.Parser;
 import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.token.Token;
+import org.voidlang.compiler.token.TokenType;
 import org.voidlang.compiler.token.Tokenizer;
 import org.voidlang.compiler.token.Transformer;
 import org.voidlang.llvm.element.*;
@@ -41,6 +43,8 @@ public class ParserTest {
         // preprocess nodes
         do {
             nodes.add(node = parser.next());
+            if (node.is(NodeType.ERROR))
+                throw new RuntimeException();
             node.preProcess(root);
         } while (node.hasNext());
 
@@ -166,6 +170,8 @@ public class ParserTest {
 
         do {
             tokens.add(token = tokenizer.next());
+            if (token.is(TokenType.UNEXPECTED))
+                throw new RuntimeException(token.getValue());
         } while (token.hasNext());
 
         return new Transformer(tokens).transform();
