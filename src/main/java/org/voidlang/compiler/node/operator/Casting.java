@@ -133,6 +133,21 @@ public class Casting extends Value {
                 return builder.signedIntToFloat(operand, IRType.floatType(context));
         }
 
+        if (
+            (operandType.equals(Type.BYTE) && type.equals(Type.UBYTE)) ||
+            (operandType.equals(Type.UBYTE) && type.equals(Type.BYTE)) ||
+
+            (operandType.equals(Type.SHORT) && type.equals(Type.USHORT)) ||
+            (operandType.equals(Type.USHORT) && type.equals(Type.SHORT)) ||
+
+            (operandType.equals(Type.INT) && type.equals(Type.UINT)) ||
+            (operandType.equals(Type.UINT) && type.equals(Type.INT)) ||
+
+            (operandType.equals(Type.LONG) && type.equals(Type.ULONG)) ||
+            (operandType.equals(Type.ULONG) && type.equals(Type.LONG))
+        )
+            return operand;
+
         throw new IllegalStateException("Cannot cast from " + operandType + " to " + type);
     }
 

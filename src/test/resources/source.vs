@@ -1,11 +1,6 @@
-package "ReferenceDeclarationTest"
-
-class Entity {
-    int id
-}
+package "UnsignedLiteralTest"
 
 int main() {
-    ref entity = new Entity()
-    entity.id = 200
-    return entity.id
+    let val = u100
+    return val as int
 }
