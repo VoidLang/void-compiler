@@ -7,8 +7,9 @@ import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.element.Class;
+import org.voidlang.compiler.node.memory.HeapAllocator;
+import org.voidlang.compiler.node.memory.StackAllocator;
 import org.voidlang.compiler.node.method.MethodCall;
-import org.voidlang.compiler.node.operator.Accessor;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
@@ -101,10 +102,15 @@ public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, 
 
         pointerType = getType().generateType(context);
 
-        // let the value allocate the value if it is an allocator
+        // let the value allocate the value on the stack
         // this happens when using the "new" keyword
-        if (value instanceof Allocator allocator)
-            pointer = allocator.allocate(generator, "let (alloc) " + name);
+        if (value instanceof StackAllocator allocator)
+            pointer = allocator.allocateStack(generator, "let (alloc) " + name);
+
+        // let the value allocate the value on the heap
+        // this happens when using the "malloc" keyword
+        else if (value instanceof HeapAllocator allocator)
+            pointer = allocator.allocateHeap(generator, "let (malloc) " + name);
 
         // let the method call allocate the value for method calls
         else if (value instanceof MethodCall call && call.getMethod().getResolvedType() instanceof PassedByReference)

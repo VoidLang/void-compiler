@@ -7,6 +7,8 @@ import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.element.Class;
+import org.voidlang.compiler.node.memory.HeapAllocator;
+import org.voidlang.compiler.node.memory.StackAllocator;
 import org.voidlang.compiler.node.method.MethodCall;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
@@ -98,10 +100,15 @@ public class MutableLocalDeclareAssign extends Value implements PointerOwner, Lo
 
         pointerType = getType().generateType(context);
 
-        // let the value allocate the value if it is an allocator
+        // let the value allocate the value on the stack
         // this happens when using the "new" keyword
-        if (value instanceof Allocator allocator)
-            pointer = allocator.allocate(generator, "declare assign (alloc) " + name);
+        if (value instanceof StackAllocator allocator)
+            pointer = allocator.allocateStack(generator, "declare assign (alloc) " + name);
+
+        // let the value allocate the value on the heap
+        // this happens when using the "malloc" keyword
+        else if (value instanceof HeapAllocator allocator)
+            pointer = allocator.allocateHeap(generator, "declare assign (malloc) " + name);
 
         // let the method call allocate the value for method calls
         else if (value instanceof MethodCall call && call.getMethod().getResolvedType() instanceof PassedByReference)

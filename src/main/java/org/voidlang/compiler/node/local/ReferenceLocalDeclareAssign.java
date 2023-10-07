@@ -8,6 +8,8 @@ import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.control.Element;
 import org.voidlang.compiler.node.element.Class;
+import org.voidlang.compiler.node.memory.HeapAllocator;
+import org.voidlang.compiler.node.memory.StackAllocator;
 import org.voidlang.compiler.node.method.MethodCall;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
@@ -105,14 +107,18 @@ public class ReferenceLocalDeclareAssign extends Value implements PointerOwner, 
 
         pointerType = getType().generateType(context);
 
-        // let the value allocate the value if it is an allocator
+        // let the value allocate the value on the stack
         // this happens when using the "new" keyword
-        if (value instanceof Allocator allocator)
-            pointer = allocator.allocate(generator, "let (alloc) " + name);
+        if (value instanceof StackAllocator allocator)
+            pointer = allocator.allocateStack(generator, "ref (alloc) " + name);
 
-            // let the method call allocate the value for method calls
+        // let the value allocate the value on the heap
+        else if (value instanceof HeapAllocator allocator)
+            pointer = allocator.allocateHeap(generator, "ref (malloc) " + name);
+
+        // let the method call allocate the value for method calls
         else if (value instanceof MethodCall call && call.getMethod().getResolvedType() instanceof PassedByReference)
-            pointer = call.generateNamed(generator, "let (call) " + name);
+            pointer = call.generateNamed(generator, "ref (call) " + name);
 
             // else if (value instanceof Accessor accessor)
             //     pointer = accessor.generateNamed(generator, name);
@@ -121,7 +127,7 @@ public class ReferenceLocalDeclareAssign extends Value implements PointerOwner, 
         else {
             // System.err.println(name + " -> " + value + " @ " + value.getValueType());
 
-            pointer = builder.alloc(pointerType, "let (ptr) " + name);
+            pointer = builder.alloc(pointerType, "ref (ptr) " + name);
 
             IRValue value = getValue().generate(generator);
             builder.store(value, pointer);

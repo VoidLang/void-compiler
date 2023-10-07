@@ -630,7 +630,7 @@ public class Tokenizer {
         return switch (token) {
             case "new", "class", "enum", "union", "struct", "interface", "for", "while", "repeat", "do",
                 "if", "else", "switch", "case", "loop", "continue", "break", "return", "await", "goto",
-                "is", "in", "as", "where", "defer", "assert", "sizeof" -> true;
+                "is", "in", "as", "where", "defer", "assert", "sizeof", "malloc", "free" -> true;
             default -> false;
         };
     }

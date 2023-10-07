@@ -8,7 +8,7 @@ import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.element.Field;
-import org.voidlang.compiler.node.local.Allocator;
+import org.voidlang.compiler.node.memory.StackAllocator;
 import org.voidlang.compiler.node.local.PointerOwner;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.Type;
@@ -19,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Getter
 @NodeInfo(type = NodeType.NEW)
-public class New extends Value implements PointerOwner, Allocator {
+public class New extends Value implements PointerOwner, StackAllocator {
     private final QualifiedName name;
 
     private final List<Value> arguments;
@@ -41,11 +41,11 @@ public class New extends Value implements PointerOwner, Allocator {
         // e.g. if the constructor is called in a method call
         // greet(new Person("John"))
         //       ^^^^^^ here is an anonymous value of Person, which isn't meant to be mutated
-        return allocate(generator, "anonymous new");
+        return allocateStack(generator, "anonymous new");
     }
 
     @Override
-    public IRValue allocate(Generator generator, String name) {
+    public IRValue allocateStack(Generator generator, String name) {
         IRContext context = generator.getContext();
         IRBuilder builder = generator.getBuilder();
 

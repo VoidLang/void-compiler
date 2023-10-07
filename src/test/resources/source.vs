@@ -1,6 +1,9 @@
-package "UnsignedLiteralTest"
+package "HeapAllocationTest"
 
 int main() {
-    let val = u100
-    return val as int
+    ref val = malloc int
+    val = 100
+    let x = deref val
+    free val
+    return x
 }

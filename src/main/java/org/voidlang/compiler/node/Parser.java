@@ -14,6 +14,8 @@ import org.voidlang.compiler.node.element.MultiField;
 import org.voidlang.compiler.node.info.PackageImport;
 import org.voidlang.compiler.node.info.PackageSet;
 import org.voidlang.compiler.node.local.*;
+import org.voidlang.compiler.node.memory.Free;
+import org.voidlang.compiler.node.memory.Malloc;
 import org.voidlang.compiler.node.method.MethodCall;
 import org.voidlang.compiler.node.operator.*;
 import org.voidlang.compiler.node.element.Class;
@@ -1026,6 +1028,14 @@ public class Parser {
             return new Sizeof(nextType());
         }
 
+        // handle allocation on the heap using "malloc"
+        else if (peek().is(TokenType.EXPRESSION, "malloc"))
+            return nextMalloc();
+
+        // handle heap deallocation using "free"
+        else if (peek().is(TokenType.EXPRESSION, "free"))
+            return nextFree();
+
         System.err.println(ConsoleFormat.RED + "Error (Value) " + peek());
         return new Error();
     }
@@ -1063,6 +1073,35 @@ public class Parser {
         }
 
         return nextValue(ignoreJoin);
+    }
+
+    private Value nextMalloc() {
+        // skip the "malloc" keyword
+        get(TokenType.EXPRESSION, "malloc");
+
+        // parse the name of the target type
+        QualifiedName name = nextQualifiedName();
+
+        Value node = new Malloc(name);
+
+        if (peek().is(TokenType.SEMICOLON))
+            get();
+
+        return node;
+    }
+
+    private Value nextFree() {
+        get(TokenType.EXPRESSION, "free");
+
+        // parse the name of the target type
+        QualifiedName name = nextQualifiedName();
+
+        Value node = new Free(name);
+
+        if (peek().is(TokenType.SEMICOLON))
+            get();
+
+        return node;
     }
 
     private Value nextNewType(boolean ignoreJoin) {
