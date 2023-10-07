@@ -1,5 +1,11 @@
-package "TypeSizeTest"
+package "ReferenceDeclarationTest"
+
+class Entity {
+    int id
+}
 
 int main() {
-    return (sizeof double) as int
+    ref entity = new Entity()
+    entity.id = 200
+    return entity.id
 }

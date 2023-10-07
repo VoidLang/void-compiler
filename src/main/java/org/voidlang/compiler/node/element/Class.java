@@ -169,7 +169,7 @@ public class Class extends Element implements PassedByReference {
     @Override
     public Referencing getReferencing() {
         // TODO change this to 1D ref
-        return Referencing.none();
+        return Referencing.reference(1);
     }
 
     /**

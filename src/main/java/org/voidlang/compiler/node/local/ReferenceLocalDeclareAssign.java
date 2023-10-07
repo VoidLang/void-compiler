@@ -6,6 +6,7 @@ import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.control.Element;
 import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.method.MethodCall;
 import org.voidlang.compiler.node.type.QualifiedName;
@@ -151,11 +152,20 @@ public class ReferenceLocalDeclareAssign extends Value implements PointerOwner, 
     public Type getValueType() {
         Type type = value.getValueType();
 
-        if (!(type instanceof ScalarType scalar))
-            throw new IllegalStateException("Not a scalar type");
+        if (type instanceof ScalarType scalar) {
+            type = new ScalarType(Referencing.reference(scalar.getReferencing().getDimensions() + 1),
+                scalar.getName(), scalar.getGenerics(), scalar.getArray());
+        }
 
-        type = new ScalarType(Referencing.reference(scalar.getReferencing().getDimensions() + 1),
-            scalar.getName(), scalar.getGenerics(), scalar.getArray());
+        else if (type instanceof Element) {
+            // classes are referenced by default
+            if (!(type instanceof Class))
+                throw new IllegalStateException("Expected class type, but got " + type.getClass().getSimpleName());
+            // TODO check more element types
+        }
+
+        else
+            throw new IllegalStateException("Expected scalar type or element, but got " + type.getClass().getSimpleName());
 
         return type;
     }
