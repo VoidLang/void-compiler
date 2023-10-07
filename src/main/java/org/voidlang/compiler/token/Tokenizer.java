@@ -1,6 +1,9 @@
 package org.voidlang.compiler.token;
 
 import lombok.RequiredArgsConstructor;
+import org.voidlang.compiler.util.Error;
+
+import java.io.File;
 
 /**
  * Represents a utility that parses raw string input to tokens.
@@ -11,6 +14,11 @@ public class Tokenizer {
      * The maximum length of a displayable line of code in a syntax error.
      */
     private static final int MAX_ERROR_LINE_LENGTH = 30;
+
+    /**
+     * The file that is being parsed.
+     */
+    private final File file;
 
     /**
      * The input data of the tokenizer.
@@ -99,7 +107,7 @@ public class Tokenizer {
             return nextAnnotation();
         // handle invalid syntax
 
-        syntaxError("");
+        syntaxError(Error.INVALID_TOKEN, "Unexpected token: `" + peek() + "`");
         return makeToken(TokenType.UNEXPECTED);
     }
 
@@ -144,7 +152,10 @@ public class Tokenizer {
                 case SHORT -> TokenType.USHORT;
                 case INTEGER -> TokenType.UINTEGER;
                 case LONG -> TokenType.ULONG;
-                default -> TokenType.UNEXPECTED;
+                default -> {
+                    syntaxError(Error.INVALID_TOKEN, "Invalid unsigned number literal: `" + value + "`");
+                    yield TokenType.UNEXPECTED;
+                }
             };
 
             return makeToken(type, value);
@@ -186,35 +197,18 @@ public class Tokenizer {
     public Token nextSeparator() {
         TokenType type = TokenType.UNEXPECTED;
         char c = get();
-        switch (c) {
-            case ';':
-                type = TokenType.SEMICOLON;
-                break;
-            case ':':
-                type = TokenType.COLON;
-                break;
-            case ',':
-                type = TokenType.COMMA;
-                break;
-            case '{':
-                type = TokenType.BEGIN;
-                break;
-            case '}':
-                type = TokenType.END;
-                break;
-            case '(':
-                type = TokenType.OPEN;
-                break;
-            case ')':
-                type = TokenType.CLOSE;
-                break;
-            case '[':
-                type = TokenType.START;
-                break;
-            case ']':
-                type = TokenType.STOP;
-                break;
-        }
+        type = switch (c) {
+            case ';' -> TokenType.SEMICOLON;
+            case ':' -> TokenType.COLON;
+            case ',' -> TokenType.COMMA;
+            case '{' -> TokenType.BEGIN;
+            case '}' -> TokenType.END;
+            case '(' -> TokenType.OPEN;
+            case ')' -> TokenType.CLOSE;
+            case '[' -> TokenType.START;
+            case ']' -> TokenType.STOP;
+            default -> type;
+        };
         return makeToken(type, String.valueOf(c));
     }
 
@@ -257,8 +251,14 @@ public class Tokenizer {
             // handle floating point number
             if (peek() == '.') {
                 // check if the floating-point number contains multiple dot symbols
-                if (!integer)
-                    return makeToken(TokenType.UNEXPECTED, "Floating point number cannot have multiple dot symbols.");
+                if (!integer) {
+                    tokenLineIndex += cursor - begin;
+                    syntaxError(
+                        Error.MULTIPLE_DECIMAL_POINTS,
+                        "Floating point number cannot have multiple dot symbols."
+                    );
+                    return makeToken(TokenType.UNEXPECTED);
+                }
                 integer = false;
             }
 
@@ -290,7 +290,12 @@ public class Tokenizer {
                 // check if integer type value has non-floating-point data
                 if (!integer && (type == TokenType.BYTE || type == TokenType.SHORT
                         || type == TokenType.INTEGER || type == TokenType.LONG)) {
-                    return makeToken(TokenType.UNEXPECTED, type + " cannot have a floating-point value.");
+                    tokenLineIndex += cursor - begin - 2;
+                    syntaxError(
+                        Error.CANNOT_HAVE_DECIMAL_POINT,
+                        "`" + type.name().toLowerCase() + "` type cannot have floating-point data."
+                    );
+                    return makeToken(TokenType.UNEXPECTED);
                 }
 
                 // skip the type specifier
@@ -358,8 +363,10 @@ public class Tokenizer {
                     default:
                         if ((string && peek() == '"') || (!string && peek() == '\''))
                             content.append(peek());
-                        else
-                            syntaxError("Invalid escape sequance: \\" + peek());
+                        else {
+                            tokenLineIndex += content.length() + 2;
+                            syntaxError(Error.INVALID_ESCAPE_SEQUENCE, "Invalid escape sequence: `\\" + peek() + "`");
+                        }
                 }
                 escapeNext = false;
             }
@@ -382,7 +389,10 @@ public class Tokenizer {
             skip(1);
         }
 
-        syntaxError("Missing trailing `" + (string ? '"' : '\'') + "` symbol to terminate the " + (string ? "string" : "char") + " literal.");
+        syntaxError(
+            Error.MISSING_STRING_TERMINATOR,
+            "Missing trailing `" + (string ? '"' : '\'') + "` symbol to terminate the " + (string ? "string" : "char") + " literal."
+        );
         return makeToken(TokenType.UNEXPECTED);
     }
 
@@ -719,6 +729,31 @@ public class Tokenizer {
      * Display a syntax error in the console with debug information.
      * @param message error message
      */
-    private void syntaxError(String message) {
+    private void syntaxError(Error error, String message) {
+        System.err.println("error[E" + error.getCode() + "]: " + message);
+        System.err.println(" --> " + file.getName() + ":" + tokenLineNumber + ":" + tokenLineIndex);
+
+        int lineSize = String.valueOf(tokenLineNumber).length();
+
+        // display the line number
+        System.err.print(" ".repeat(lineSize + 1));
+        System.err.println(" | ");
+
+        System.err.print(" " + tokenLineNumber + " | ");
+
+        // get the line of the error
+        String line = data.split("\n")[tokenLineNumber - 1];
+        // get the start and end index of the line
+        int start = Math.max(0, tokenLineIndex - MAX_ERROR_LINE_LENGTH);
+        int end = Math.min(line.length(), tokenLineIndex + MAX_ERROR_LINE_LENGTH);
+
+        // display the line of the error
+        System.err.println(line.substring(start, end));
+        // display the error pointer
+        System.err.print(" ".repeat(lineSize + 1));
+        System.err.println(" | " + " ".repeat(lineSize + (tokenLineIndex - start) - 1) + "^");
+        // exit the program with the error code
+
+        System.exit(error.getCode());
     }
 }

@@ -8,6 +8,7 @@ import org.voidlang.compiler.token.Tokenizer;
 import org.voidlang.compiler.token.Transformer;
 import util.Resources;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,7 +39,7 @@ public class TokenizerTest {
     }
 
     private static List<Token> tokenizeSource(String source) {
-        Tokenizer tokenizer = new Tokenizer(source);
+        Tokenizer tokenizer = new Tokenizer(new File(""), source);
         List<Token> tokens = new ArrayList<>();
         Token token;
 

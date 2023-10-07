@@ -27,7 +27,6 @@ import org.voidlang.llvm.element.IRModule;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.*;
 
 import static org.bytedeco.llvm.global.LLVM.*;
@@ -75,44 +74,16 @@ public class Compiler {
         walk(sourceDir);
 
         linkModules();
-
-        /*
-        File objDir = new File(targetDir, "object");
-        File[] files = objDir.listFiles();
-        if (files == null)
-            return;
-        File objectFile = null;
-        for (File file : files) {
-            if (file.getName().endsWith(".obj")) {
-                objectFile = file;
-                break;
-            }
-        }
-
-        File exeFile = new File(targetDir, settings.name + ".exe");
-
-        ProcessBuilder linkBuilder = new ProcessBuilder("clang", "-o", exeFile.getAbsolutePath(),
-                objectFile.getAbsolutePath(), "-luser32", "-lgdi32", "-lkernel32");
-        Process linkProcess = linkBuilder.start();
-        linkProcess.waitFor();
-         */
-
     }
 
     @SneakyThrows
     private void linkModules() {
         File exeFile = new File(targetDir, settings.name + ".exe");
 
-        // List<String> args = new ArrayList<>(List.of("clang", "-o", exeFile.getAbsolutePath()));
         List<String> args = new ArrayList<>(List.of("clang"));
 
         File objDir = new File(targetDir, "object");
-
         File mainFile = new File(objDir, "main.obj");
-        // if (!mainFile.exists())
-        //    throw new IllegalStateException("No main file found");
-
-        // mainFile.renameTo(new File(objDir, "abc.obj"));
 
         File[] list = objDir.listFiles();
 
@@ -130,20 +101,10 @@ public class Compiler {
             args.add(file.getAbsolutePath());
         }
 
-        // args.add("-W1,/ENTRY:main");
-        //args.addAll(List.of("--entry=main"));
-        // args.addAll(List.of("-e", "main"));
-
-        // args.add("-Wl,--entry=main");
-
         args.addAll(List.of("-o", exeFile.getAbsolutePath()));
         args.addAll(List.of("-luser32", "-lgdi32", "-lkernel32"));
 
-        // args.addAll(List.of("-Wl,-e,main"));
-
-        // args.add("/ENTRY:main");
         args.add("-v");
-
 
         System.out.println(String.join(" ", args));
 
@@ -160,8 +121,7 @@ public class Compiler {
     }
 
     private void readSource(File file) {
-        String content = readFile(file);
-        List<Token> tokens = tokenizeSource(content);
+        List<Token> tokens = tokenizeFile(file);
 
         String fileName = file.getName();
         String moduleName = fileName.substring(0, fileName.length() - ".vs".length());
@@ -259,39 +219,10 @@ public class Compiler {
 
     }
 
-    @SneakyThrows
-    private void compileAndLinkModule(IRModule module) {
-        File bitcodeDir = new File(targetDir, "bitcode");
-        bitcodeDir.mkdir();
+    private List<Token> tokenizeFile(File file) {
+        String content = readFile(file);
 
-        File objDir = new File(targetDir, "object");
-        objDir.mkdir();
-
-        File debugDir = new File(targetDir, "debug");
-        debugDir.mkdir();
-
-        File bitcodeFile = new File(bitcodeDir, "bitcode.bc");
-        module.writeBitcodeToFile(bitcodeFile);
-
-        File dumpFile = new File(debugDir, "dump.ll");
-        module.printIRToFile(dumpFile);
-
-        File objectFile = new File(objDir, "test.obj");
-        File runFile = new File(targetDir, settings.name + ".exe");
-
-        ProcessBuilder compileBuilder = new ProcessBuilder("clang", "-c", "-o",
-                objectFile.getAbsolutePath(), bitcodeFile.getAbsolutePath());
-        Process compileProcess = compileBuilder.start();
-        compileProcess.waitFor();
-
-        ProcessBuilder linkBuilder = new ProcessBuilder("clang", "-o", runFile.getAbsolutePath(),
-                objectFile.getAbsolutePath(), "-luser32", "-lgdi32", "-lkernel32");
-        Process linkProcess = linkBuilder.start();
-        linkProcess.waitFor();
-    }
-
-    private List<Token> tokenizeSource(String data) {
-        Tokenizer tokenizer = new Tokenizer(data);
+        Tokenizer tokenizer = new Tokenizer(file, content);
         List<Token> tokens = new ArrayList<>();
         Token token;
 

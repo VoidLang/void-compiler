@@ -164,7 +164,7 @@ public class ParserTest {
     private static List<Token> tokenizeSource() {
         String data = readSource();
 
-        Tokenizer tokenizer = new Tokenizer(data);
+        Tokenizer tokenizer = new Tokenizer(new File("main.vs"), data);
         List<Token> tokens = new ArrayList<>();
         Token token;
 
