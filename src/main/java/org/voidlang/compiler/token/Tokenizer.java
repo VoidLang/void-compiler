@@ -107,7 +107,7 @@ public class Tokenizer {
             return nextAnnotation();
         // handle invalid syntax
 
-        syntaxError(Error.INVALID_TOKEN, "Unexpected token: `" + peek() + "`");
+        syntaxError(Error.INVALID_TOKEN, "unexpected token: `" + peek() + "`");
         return makeToken(TokenType.UNEXPECTED);
     }
 
@@ -153,7 +153,7 @@ public class Tokenizer {
                 case INTEGER -> TokenType.UINTEGER;
                 case LONG -> TokenType.ULONG;
                 default -> {
-                    syntaxError(Error.INVALID_TOKEN, "Invalid unsigned number literal: `" + value + "`");
+                    syntaxError(Error.INVALID_TOKEN, "invalid unsigned number literal: `" + value + "`");
                     yield TokenType.UNEXPECTED;
                 }
             };
@@ -255,7 +255,7 @@ public class Tokenizer {
                     tokenLineIndex += cursor - begin;
                     syntaxError(
                         Error.MULTIPLE_DECIMAL_POINTS,
-                        "Floating point number cannot have multiple dot symbols."
+                        "floating point number cannot have multiple dot symbols"
                     );
                     return makeToken(TokenType.UNEXPECTED);
                 }
@@ -293,7 +293,7 @@ public class Tokenizer {
                     tokenLineIndex += cursor - begin - 2;
                     syntaxError(
                         Error.CANNOT_HAVE_DECIMAL_POINT,
-                        "`" + type.name().toLowerCase() + "` type cannot have floating-point data."
+                        "`" + type.name().toLowerCase() + "` type cannot have floating-point data"
                     );
                     return makeToken(TokenType.UNEXPECTED);
                 }
@@ -365,7 +365,7 @@ public class Tokenizer {
                             content.append(peek());
                         else {
                             tokenLineIndex += content.length() + 2;
-                            syntaxError(Error.INVALID_ESCAPE_SEQUENCE, "Invalid escape sequence: `\\" + peek() + "`");
+                            syntaxError(Error.INVALID_ESCAPE_SEQUENCE, "invalid escape sequence: `\\" + peek() + "`");
                         }
                 }
                 escapeNext = false;
@@ -391,7 +391,7 @@ public class Tokenizer {
 
         syntaxError(
             Error.MISSING_STRING_TERMINATOR,
-            "Missing trailing `" + (string ? '"' : '\'') + "` symbol to terminate the " + (string ? "string" : "char") + " literal."
+            "missing trailing `" + (string ? '"' : '\'') + "` symbol to terminate the " + (string ? "string" : "char") + " literal"
         );
         return makeToken(TokenType.UNEXPECTED);
     }
