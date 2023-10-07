@@ -103,19 +103,19 @@ public class MutableLocalDeclareAssign extends Value implements PointerOwner, Lo
         // let the value allocate the value on the stack
         // this happens when using the "new" keyword
         if (value instanceof StackAllocator allocator)
-            pointer = allocator.allocateStack(generator, "declare assign (alloc) " + name);
+            pointer = allocator.allocateStack(generator, "mut (alloc) " + name);
 
         // let the value allocate the value on the heap
-        // this happens when using the "malloc" keyword
         else if (value instanceof HeapAllocator allocator)
-            pointer = allocator.allocateHeap(generator, "declare assign (malloc) " + name);
+            pointer = allocator.allocateHeap(generator, "mut (malloc) " + name);
 
         // let the method call allocate the value for method calls
         else if (value instanceof MethodCall call && call.getMethod().getResolvedType() instanceof PassedByReference)
-            pointer = call.generateNamed(generator, "declare assign (method) " + name);
+            pointer = call.generateNamed(generator, "mut (method) " + name);
+
         // allocate the value on the stack, and assign its value
         else {
-            pointer = builder.alloc(pointerType, "declare assign (ptr) " + name);
+            pointer = builder.alloc(pointerType, "mut (ptr) " + name);
 
             IRValue value = getValue().generate(generator);
             builder.store(value, pointer);

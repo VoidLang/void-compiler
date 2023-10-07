@@ -120,10 +120,10 @@ public class ReferenceLocalDeclareAssign extends Value implements PointerOwner, 
         else if (value instanceof MethodCall call && call.getMethod().getResolvedType() instanceof PassedByReference)
             pointer = call.generateNamed(generator, "ref (call) " + name);
 
-            // else if (value instanceof Accessor accessor)
-            //     pointer = accessor.generateNamed(generator, name);
+        // else if (value instanceof Accessor accessor)
+        //     pointer = accessor.generateNamed(generator, name);
 
-            // allocate the value on the stack, and assign its value
+        // allocate the value on the stack, and assign its value
         else {
             // System.err.println(name + " -> " + value + " @ " + value.getValueType());
 

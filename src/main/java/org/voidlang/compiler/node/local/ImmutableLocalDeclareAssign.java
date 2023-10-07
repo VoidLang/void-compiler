@@ -108,7 +108,6 @@ public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, 
             pointer = allocator.allocateStack(generator, "let (alloc) " + name);
 
         // let the value allocate the value on the heap
-        // this happens when using the "malloc" keyword
         else if (value instanceof HeapAllocator allocator)
             pointer = allocator.allocateHeap(generator, "let (malloc) " + name);
 
@@ -121,8 +120,6 @@ public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, 
 
         // allocate the value on the stack, and assign its value
         else {
-            // System.err.println(name + " -> " + value + " @ " + value.getValueType());
-
             pointer = builder.alloc(pointerType, "let (ptr) " + name);
 
             IRValue value = getValue().generate(generator);

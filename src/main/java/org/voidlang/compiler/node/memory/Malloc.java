@@ -92,7 +92,7 @@ public class Malloc extends Value implements PointerOwner, HeapAllocator {
     public void postProcessUse(Generator generator) {
         if (name.isPrimitive()) {
             type = new ScalarType(
-                Referencing.none(),
+                Referencing.reference(1),
                 name,
                 GenericArgumentList.implicit(),
                 Array.noArray()
