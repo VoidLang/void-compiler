@@ -1,5 +1,6 @@
 package org.voidlang.compiler.token;
 
+import dev.inventex.octa.console.ConsoleFormat;
 import lombok.RequiredArgsConstructor;
 import org.voidlang.compiler.util.Error;
 
@@ -730,13 +731,13 @@ public class Tokenizer {
      * @param message error message
      */
     private void syntaxError(Error error, String message) {
-        System.err.println("error[E" + error.getCode() + "]: " + message);
-        System.err.println(" --> " + file.getName() + ":" + tokenLineNumber + ":" + tokenLineIndex);
+        System.err.println(ConsoleFormat.RED + "error[E" + error.getCode() + "]" + ConsoleFormat.WHITE + ": " + message);
+        System.err.println(ConsoleFormat.CYAN + " --> " + ConsoleFormat.LIGHT_GRAY + file.getName() + ":" + tokenLineNumber + ":" + tokenLineIndex);
 
         int lineSize = String.valueOf(tokenLineNumber).length();
 
         // display the line number
-        System.err.print(" ".repeat(lineSize + 1));
+        System.err.print(ConsoleFormat.CYAN + " ".repeat(lineSize + 1));
         System.err.println(" | ");
 
         System.err.print(" " + tokenLineNumber + " | ");
@@ -748,10 +749,10 @@ public class Tokenizer {
         int end = Math.min(line.length(), tokenLineIndex + MAX_ERROR_LINE_LENGTH);
 
         // display the line of the error
-        System.err.println(line.substring(start, end));
+        System.err.println(ConsoleFormat.LIGHT_GRAY + line.substring(start, end));
         // display the error pointer
-        System.err.print(" ".repeat(lineSize + 1));
-        System.err.println(" | " + " ".repeat(lineSize + (tokenLineIndex - start) - 1) + "^");
+        System.err.print(ConsoleFormat.CYAN + " ".repeat(lineSize + 1));
+        System.err.println(" | " + " ".repeat(lineSize + (tokenLineIndex - start) - 1) + ConsoleFormat.RED + "^");
         // exit the program with the error code
 
         System.exit(error.getCode());
