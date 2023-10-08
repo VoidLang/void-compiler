@@ -74,9 +74,74 @@ public class Compiler {
     private void compileSources(File sourceDir) {
         application = new Application();
 
+        initLLVM();
+
         walk(sourceDir);
 
+        postProcessTypes();
+        postProcessMembers();
+        postProcessUses();
+        generate();
+
+        compilePackages();
+
         linkModules();
+    }
+
+    private void postProcessTypes() {
+        application
+            .getPackages()
+            .values()
+            .forEach(pkg -> pkg.postProcessType(pkg.getGenerator()));
+    }
+
+    private void postProcessMembers() {
+        application
+            .getPackages()
+            .values()
+            .forEach(pkg -> pkg.postProcessMember(pkg.getGenerator()));
+    }
+
+    private void postProcessUses() {
+        application
+            .getPackages()
+            .values()
+            .forEach(pkg -> pkg.postProcessUse(pkg.getGenerator()));
+    }
+
+    private void generate() {
+        application
+            .getPackages()
+            .values()
+            .forEach(pkg -> pkg.generate(pkg.getGenerator()));
+    }
+
+    private void compilePackages() {
+        application
+            .getPackages()
+            .values()
+            .forEach(pkg -> {
+                Generator generator = pkg.getGenerator();
+
+                IRModule module = generator.getModule();
+
+                BytePointer error = new BytePointer((Pointer) null);
+                if (!module.verify(IRModule.VerifierFailureAction.ABORT_PROCESS, error)) {
+                    LLVMDisposeMessage(error);
+                    return;
+                }
+
+                compileModule(module);
+            });
+    }
+
+
+    private void initLLVM() {
+        LLVMInitializeCore(LLVMGetGlobalPassRegistry());
+        LLVMLinkInMCJIT();
+        LLVMInitializeNativeAsmPrinter();
+        LLVMInitializeNativeAsmParser();
+        LLVMInitializeNativeTarget();
     }
 
     @SneakyThrows
@@ -142,17 +207,6 @@ public class Compiler {
         }
 
         parsePackage(pkg, tokens);
-
-        IRModule module = generator.getModule();
-
-        BytePointer error = new BytePointer((Pointer) null);
-        if (!module.verify(IRModule.VerifierFailureAction.ABORT_PROCESS, error)) {
-            LLVMDisposeMessage(error);
-            return;
-        }
-
-        compileModule(module);
-
     }
 
     private void parsePackage(Package pkg, List<Token> tokens) {
@@ -178,11 +232,6 @@ public class Compiler {
             else if (e instanceof Method method)
                 pkg.defineMethod(method);
         }
-
-        pkg.postProcessType(generator);
-        pkg.postProcessMember(generator);
-        pkg.postProcessUse(generator);
-        pkg.generate(generator);
     }
 
     @SneakyThrows
@@ -241,12 +290,6 @@ public class Compiler {
     }
 
     public Generator createContext(String moduleName) {
-        LLVMInitializeCore(LLVMGetGlobalPassRegistry());
-        LLVMLinkInMCJIT();
-        LLVMInitializeNativeAsmPrinter();
-        LLVMInitializeNativeAsmParser();
-        LLVMInitializeNativeTarget();
-
         IRContext context = IRContext.create();
         IRModule module = IRModule.create(context, moduleName);
         IRBuilder builder = IRBuilder.create(context);
