@@ -13,8 +13,12 @@ import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.Parser;
+import org.voidlang.compiler.node.common.Finish;
 import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.element.Method;
+import org.voidlang.compiler.node.info.PackageImport;
+import org.voidlang.compiler.node.info.PackageSet;
+import org.voidlang.compiler.node.type.modifier.ModifierList;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
 import org.voidlang.compiler.token.Tokenizer;
@@ -41,7 +45,6 @@ public class Compiler {
     private ProjectSettings settings;
 
     private File targetDir;
-
 
     public void compile() {
         File projectDir = new File(inputDir);
@@ -138,7 +141,6 @@ public class Compiler {
             application.addPackage(packageName, pkg);
         }
 
-        System.err.println("PARSE PKG " + packageName + " -> " + pkg.hashCode());
         parsePackage(pkg, tokens);
 
         IRModule module = generator.getModule();
@@ -177,18 +179,10 @@ public class Compiler {
                 pkg.defineMethod(method);
         }
 
-        for (Node e : nodes)
-            e.postProcessType(generator);
-
-        for (Node e : nodes)
-            e.postProcessMember(generator);
-
-        for (Node e : nodes)
-            e.postProcessUse(generator);
-
-        // generate bitcode
-        for (Node e : nodes)
-            e.generate(generator);
+        pkg.postProcessType(generator);
+        pkg.postProcessMember(generator);
+        pkg.postProcessUse(generator);
+        pkg.generate(generator);
     }
 
     @SneakyThrows

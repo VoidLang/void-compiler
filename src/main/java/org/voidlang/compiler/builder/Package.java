@@ -30,6 +30,15 @@ public class Package extends Node {
      */
     @Override
     public IRValue generate(Generator generator) {
+        for (List<Method> methodList : methods.values()) {
+            for (Method method : methodList)
+                method.generate(generator);
+        }
+
+        for (Class clazz : classes.values()) {
+            clazz.generate(generator);
+        }
+
         return null;
     }
 

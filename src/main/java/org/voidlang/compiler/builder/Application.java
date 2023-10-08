@@ -1,8 +1,11 @@
 package org.voidlang.compiler.builder;
 
+import lombok.Getter;
+
 import java.util.HashMap;
 import java.util.Map;
 
+@Getter
 public class Application {
     private final Map<String, Package> packages = new HashMap<>();
 
