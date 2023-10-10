@@ -24,9 +24,7 @@ import org.voidlang.compiler.token.TokenType;
 import org.voidlang.compiler.token.Tokenizer;
 import org.voidlang.compiler.token.Transformer;
 import org.voidlang.compiler.util.Validate;
-import org.voidlang.llvm.element.IRBuilder;
-import org.voidlang.llvm.element.IRContext;
-import org.voidlang.llvm.element.IRModule;
+import org.voidlang.llvm.element.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -86,6 +84,22 @@ public class Compiler {
         compilePackages();
 
         linkModules();
+
+        Package mainPackage = application.getPackage("main");
+        Method mainMethod = mainPackage.resolveMethod("main", new ArrayList<>());
+
+        IRModule module = mainPackage.getGenerator().getModule();
+
+        ExecutionEngine engine = ExecutionEngine.create();
+        MMCJITCompilerOptions options = MMCJITCompilerOptions.create();
+        BytePointer error = new BytePointer();
+        if (!engine.createMCJITCompilerForModule(module, options, error)) {
+            LLVMDisposeMessage(error);
+            throw new RuntimeException("Failed to create JIT compiler: " + error.getString());
+        }
+
+        IRGenericValue result = engine.runFunction(mainMethod.getFunction(), List.of());
+        System.out.println(result.toInt());
     }
 
     private void postProcessTypes() {

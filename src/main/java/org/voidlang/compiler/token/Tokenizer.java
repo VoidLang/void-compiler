@@ -365,7 +365,7 @@ public class Tokenizer {
                         if ((string && peek() == '"') || (!string && peek() == '\''))
                             content.append(peek());
                         else {
-                            tokenLineIndex += content.length() + 2;
+                            tokenLineIndex += content.length() + 1;
                             syntaxError(Error.INVALID_ESCAPE_SEQUENCE, "invalid escape sequence: `\\" + peek() + "`");
                         }
                 }
