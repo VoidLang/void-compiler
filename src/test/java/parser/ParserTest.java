@@ -11,6 +11,7 @@ import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.Parser;
 import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.element.Method;
+import org.voidlang.compiler.node.element.Struct;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
 import org.voidlang.compiler.token.Tokenizer;
@@ -53,6 +54,10 @@ public class ParserTest {
             if (e instanceof Class clazz) {
                 clazz.generateType(generator.getContext());
                 root.defineClass(clazz);
+            }
+            else if (e instanceof Struct struct) {
+                struct.generateType(generator.getContext());
+                root.defineStruct(struct);
             }
             else if (e instanceof Method method)
                 root.defineMethod(method);

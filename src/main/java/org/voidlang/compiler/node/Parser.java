@@ -8,9 +8,8 @@ import org.voidlang.compiler.node.common.Empty;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
 import org.voidlang.compiler.node.control.*;
-import org.voidlang.compiler.node.element.Field;
-import org.voidlang.compiler.node.element.Method;
-import org.voidlang.compiler.node.element.MultiField;
+import org.voidlang.compiler.node.element.*;
+import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.info.PackageImport;
 import org.voidlang.compiler.node.info.PackageSet;
 import org.voidlang.compiler.node.local.*;
@@ -18,7 +17,6 @@ import org.voidlang.compiler.node.memory.Free;
 import org.voidlang.compiler.node.memory.Malloc;
 import org.voidlang.compiler.node.method.MethodCall;
 import org.voidlang.compiler.node.operator.*;
-import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.type.pointer.DereferencingAccessor;
 import org.voidlang.compiler.node.type.pointer.ReferencedAccessor;
 import org.voidlang.compiler.node.type.pointer.Referencing;
@@ -264,6 +262,31 @@ public class Parser {
         return new Class(name, generics, body);
     }
 
+    private Node nextStruct(String name, GenericTypeList generics) {
+        // handle type body begin
+        get(TokenType.BEGIN);
+
+        System.out.println(ConsoleFormat.LIGHT_GRAY + " {");
+
+        // parse the body of the class
+        Node.prettier.enterScope();
+        List<Node> body = new ArrayList<>();
+        while (!peek().is(TokenType.END))
+            body.add(nextContent());
+        Node.prettier.exitScope();
+
+        // handle type body end
+        get(TokenType.END);
+
+        System.out.println(ConsoleFormat.LIGHT_GRAY + "}");
+
+        // handle auto-inserted semicolon at the end or the body
+        if (peek().is(TokenType.SEMICOLON, "auto"))
+            get();
+
+        return new Struct(name, generics, body);
+    }
+
     /**
      * Parse the next content of a type, which might be a nested type, a method or a field.
      * @return new declared type, method or field
@@ -282,10 +305,6 @@ public class Parser {
 
         System.err.println(ConsoleFormat.RED + "Error (Content) " + peek());
         return new Error();
-    }
-
-    private Node nextStruct(String name, GenericTypeList generics) {
-        return null;
     }
 
     private Node nextEnum(String name, GenericTypeList generics) {

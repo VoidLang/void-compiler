@@ -9,6 +9,7 @@ import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.element.Method;
+import org.voidlang.compiler.node.element.Struct;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.llvm.element.IRValue;
 
@@ -21,6 +22,8 @@ public class Package extends Node {
     private final Map<String, List<Method>> methods = new HashMap<>();
 
     private final Map<String, Class> classes = new HashMap<>();
+
+    private final Map<String, Struct> structs = new HashMap<>();
 
     private final Generator generator;
 
@@ -114,7 +117,10 @@ public class Package extends Node {
 
     @Override
     public @Nullable Type resolveType(String name) {
-        return classes.get(name);
+        Class clazz = classes.get(name);
+        if (clazz != null)
+            return clazz;
+        return structs.get(name);
     }
 
     public void defineMethod(Method method) {
@@ -125,5 +131,9 @@ public class Package extends Node {
 
     public void defineClass(Class clazz) {
         classes.put(clazz.getName(), clazz);
+    }
+
+    public void defineStruct(Struct struct) {
+        structs.put(struct.getName(), struct);
     }
 }

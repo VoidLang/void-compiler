@@ -1,11 +1,9 @@
-package "ClassAllocationTest"
+package "StructTest"
 
-class Entity {
-    int id
+struct Foo {
+    int x
 }
 
 int main() {
-    let entity = new Entity()
-    entity.id = 22
-    return entity.id
+    return 100
 }

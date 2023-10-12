@@ -16,6 +16,7 @@ import org.voidlang.compiler.node.Parser;
 import org.voidlang.compiler.node.common.Finish;
 import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.element.Method;
+import org.voidlang.compiler.node.element.Struct;
 import org.voidlang.compiler.node.info.PackageImport;
 import org.voidlang.compiler.node.info.PackageSet;
 import org.voidlang.compiler.node.type.modifier.ModifierList;
@@ -242,6 +243,10 @@ public class Compiler {
             if (e instanceof Class clazz) {
                 clazz.generateType(generator.getContext());
                 pkg.defineClass(clazz);
+            }
+            else if (e instanceof Struct struct) {
+                struct.generateType(generator.getContext());
+                pkg.defineStruct(struct);
             }
             else if (e instanceof Method method)
                 pkg.defineMethod(method);
