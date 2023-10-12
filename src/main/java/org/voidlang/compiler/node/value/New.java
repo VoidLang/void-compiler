@@ -8,6 +8,7 @@ import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.element.Field;
+import org.voidlang.compiler.node.memory.HeapAllocator;
 import org.voidlang.compiler.node.memory.StackAllocator;
 import org.voidlang.compiler.node.local.PointerOwner;
 import org.voidlang.compiler.node.type.QualifiedName;
@@ -19,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Getter
 @NodeInfo(type = NodeType.NEW)
-public class New extends Value implements PointerOwner, StackAllocator {
+public class New extends Value implements PointerOwner, StackAllocator, HeapAllocator {
     private final QualifiedName name;
 
     private final List<Value> arguments;
@@ -41,7 +42,7 @@ public class New extends Value implements PointerOwner, StackAllocator {
         // e.g. if the constructor is called in a method call
         // greet(new Person("John"))
         //       ^^^^^^ here is an anonymous value of Person, which isn't meant to be mutated
-        return allocateStack(generator, "anonymous new");
+        return allocateHeap(generator, "anonymous new");
     }
 
     @Override
@@ -68,6 +69,37 @@ public class New extends Value implements PointerOwner, StackAllocator {
 
                 IRValue fieldPointer = builder.structMemberPointer(pointerType, pointer,
                     field.getFieldIndex(), "init " + field.getName());
+                builder.store(value, fieldPointer);
+            }
+        }
+
+        return pointer;
+    }
+
+    @Override
+    public IRValue allocateHeap(Generator generator, String name) {
+        IRContext context = generator.getContext();
+        IRBuilder builder = generator.getBuilder();
+
+        pointerType = (IRStruct) type.generateType(context);
+        pointer = builder.malloc(pointerType, name);
+
+        if (type instanceof Class clazz) {
+            for (Field field : clazz.getFields().values()) {
+                Type fieldType = field.getType();
+                Node fieldValue = field.getValue();
+
+                IRValue value;
+                if (fieldValue != null)
+                    value = fieldValue.generateAndLoad(generator);
+                else
+                    value = fieldType.defaultValue(generator);
+
+                if (value == null)
+                    continue;
+
+                IRValue fieldPointer = builder.structMemberPointer(pointerType, pointer,
+                        field.getFieldIndex(), "init " + field.getName());
                 builder.store(value, fieldPointer);
             }
         }

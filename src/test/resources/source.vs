@@ -1,9 +1,11 @@
-package "HeapAllocationTest"
+package "ClassAllocationTest"
+
+class Entity {
+    int id
+}
 
 int main() {
-    mut val = malloc int
-    val = 100
-    let x = deref val
-    free val
-    return x
+    let entity = new Entity()
+    entity.id = 22
+    return entity.id
 }

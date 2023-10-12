@@ -102,9 +102,20 @@ public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, 
 
         pointerType = getType().generateType(context);
 
+        // let classes be allocated on the stack
+        if (getType() instanceof Class) {
+            // check if the class does not have a heap allocator
+            if (!(value instanceof HeapAllocator allocator))
+                throw new IllegalStateException("Class type must have a heap allocator");
+            // allocate the class on the heap
+            pointer = allocator.allocateHeap(generator, "let (class) " + name);
+        }
+
+        // TODO handle struct allocation
+
         // let the value allocate the value on the stack
         // this happens when using the "new" keyword
-        if (value instanceof StackAllocator allocator)
+        else if (value instanceof StackAllocator allocator)
             pointer = allocator.allocateStack(generator, "let (alloc) " + name);
 
         // let the value allocate the value on the heap
