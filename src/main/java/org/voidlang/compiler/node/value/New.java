@@ -8,6 +8,7 @@ import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.element.Field;
+import org.voidlang.compiler.node.element.Struct;
 import org.voidlang.compiler.node.memory.HeapAllocator;
 import org.voidlang.compiler.node.memory.StackAllocator;
 import org.voidlang.compiler.node.local.PointerOwner;
@@ -42,7 +43,15 @@ public class New extends Value implements PointerOwner, StackAllocator, HeapAllo
         // e.g. if the constructor is called in a method call
         // greet(new Person("John"))
         //       ^^^^^^ here is an anonymous value of Person, which isn't meant to be mutated
-        return allocateHeap(generator, "anonymous new");
+
+        if (type instanceof Class)
+            return allocateHeap(generator, "anonymous new");
+
+        else if (type instanceof Struct)
+            return allocateStack(generator, "anonymous new");
+
+        else
+            throw new IllegalStateException("Expected class or struct type for `new` keyword, but got: " + type);
     }
 
     @Override

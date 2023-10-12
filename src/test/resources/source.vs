@@ -5,5 +5,7 @@ struct Foo {
 }
 
 int main() {
-    return 100
+    let a = new Foo()
+    a.x = 32
+    return a.x
 }
