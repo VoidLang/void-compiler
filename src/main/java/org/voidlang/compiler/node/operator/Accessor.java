@@ -134,8 +134,6 @@ public class Accessor extends Value implements Loadable {
 
     @Override
     public IRValue generateAndLoad(Generator generator) {
-        System.out.println("Accessor.generateAndLoad");
-
         if (value instanceof PointerOwner owner && owner.getValueType() instanceof PassedByReference
                 && !getName().isFieldAccess() && !getName().isIndexAccess())
             return owner.getPointer();
@@ -176,8 +174,6 @@ public class Accessor extends Value implements Loadable {
         else if (getName().isIndexAccess()) {
             Type valueType = value.getValueType();
             PointerOwner owner = (PointerOwner) value;
-
-            System.out.println("Accessor.generateAndLoad: " + valueType.getClass().getSimpleName());
 
             if (!(valueType instanceof NamedTypeGroup group))
                 throw new IllegalStateException("Trying to access index of a non-group type " + valueType);
