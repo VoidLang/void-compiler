@@ -5,6 +5,7 @@ import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.CompoundType;
 import org.voidlang.compiler.node.type.pointer.Referencing;
 import org.voidlang.llvm.element.IRContext;
+import org.voidlang.llvm.element.IRStruct;
 import org.voidlang.llvm.element.IRType;
 
 import java.util.List;
@@ -26,6 +27,8 @@ public class NamedTypeGroup extends NamedType {
      * The list of the held nested named type entries.
      */
     private final List<NamedType> members;
+
+    private IRStruct struct;
 
     public NamedTypeGroup(Referencing referencing, List<NamedType> members) {
         this.referencing = referencing;
@@ -55,6 +58,12 @@ public class NamedTypeGroup extends NamedType {
      */
     @Override
     public IRType generateType(IRContext context) {
-        throw new IllegalStateException("Generating type for " + getClass().getSimpleName() + " is not implemented yet.");
+        if (struct != null)
+            return struct;
+        List<IRType> types = members
+            .stream()
+            .map(member -> member.generateType(context))
+            .toList();
+        return struct = IRStruct.define(context, "Tuple", types);
     }
 }

@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.generic.GenericArgumentList;
+import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.type.pointer.Referencing;
 import org.voidlang.compiler.node.type.pointer.ReferencingType;
 import org.voidlang.llvm.element.IRContext;
@@ -74,9 +75,14 @@ public class ScalarType implements Type {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null) return false;
 
-        ScalarType type = (ScalarType) o;
+        if (o instanceof NamedScalarType named) {
+            return referencing.equals(named.getReferencing())
+                && this.equals(named.getScalarType());
+        }
+
+        if (!(o instanceof ScalarType type)) return false;
 
         if (!referencing.equals(type.referencing)) return false;
         if (!name.equals(type.name)) return false;

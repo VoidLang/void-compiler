@@ -7,9 +7,9 @@ import org.voidlang.compiler.node.*;
 import org.voidlang.compiler.node.local.Loadable;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
+import org.voidlang.compiler.node.value.Tuple;
 import org.voidlang.compiler.node.value.Value;
-import org.voidlang.llvm.element.IRBuilder;
-import org.voidlang.llvm.element.IRValue;
+import org.voidlang.llvm.element.*;
 
 @RequiredArgsConstructor
 @Getter
@@ -25,6 +25,7 @@ public class Return extends Instruction {
     @Override
     public IRValue generate(Generator generator) {
         IRBuilder builder = generator.getBuilder();
+        IRContext context = generator.getContext();
 
         // simply return a void if no value was specified
         // TODO check if the method actually returns void
@@ -42,6 +43,17 @@ public class Return extends Instruction {
         // extract the type of the return type
         if (returnType instanceof NamedScalarType namedReturnType)
             returnType = namedReturnType.getScalarType();
+
+        // handle tuple allocation and return
+        if (value instanceof Tuple tuple) {
+            // retrieve the tuple type from the method context
+            Type structType = getContext().getReturnType();
+            IRType struct = structType.generateType(context);
+            // allocate the tuple on the stack
+            IRValue result = tuple.generateTuple(generator, (IRStruct) struct);
+            // let the current block to be terminated, and the value be returned
+            return builder.returnValue(result);
+        }
 
         // check if the value does not match the method return type
         if (!valueType.equals(returnType))

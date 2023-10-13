@@ -1,6 +1,5 @@
 package org.voidlang.compiler.node.type.named;
 
-import org.voidlang.compiler.builder.Package;
 import org.voidlang.compiler.node.type.core.Type;
 
 /**

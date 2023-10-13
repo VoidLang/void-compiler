@@ -1,11 +1,9 @@
-package "StructTest"
+package "TupleReturnTest"
 
-struct Foo {
-    int x
+(int, int) foo() {
+    return (10, 20)
 }
 
 int main() {
-    let a = new Foo()
-    a.x = 32
-    return a.x
+    return 100
 }
