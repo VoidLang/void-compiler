@@ -687,7 +687,11 @@ public class Parser {
             // skip the '.' symbol
             get();
             // parse the next token type
-            Token token = get(TokenType.IDENTIFIER, TokenType.TYPE /* here again, TYPE might be removed */);
+            Token token = get(
+                TokenType.IDENTIFIER,
+                TokenType.TYPE, // here again, TYPE might be removed
+                TokenType.INTEGER // support tuple indexing
+            );
             tokens.add(token);
             // exit the loop if there aren't any type tokens left
             if (!peek().is(TokenType.OPERATOR, "."))

@@ -5,5 +5,6 @@ package "TupleReturnTest"
 }
 
 int main() {
-    return 100
+    let x = foo()
+    return x.1
 }

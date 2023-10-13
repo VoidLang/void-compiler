@@ -93,7 +93,7 @@ public class QualifiedName {
      * @return true if this accessor accesses nested fields
      */
     public boolean isFieldAccess() {
-        return types.size() > 1;
+        return types.size() > 1 && types.get(1).is(TokenType.IDENTIFIER);
     }
 
     /**
@@ -102,6 +102,22 @@ public class QualifiedName {
      */
     public String getFieldName() {
         return types.get(1).getValue();
+    }
+
+    /**
+     * Indicate, whether this qualified name is an index accessor.
+     * @return true if this accessor accesses nested elements by index
+     */
+    public boolean isIndexAccess() {
+        return types.size() > 1 && types.get(1).is(TokenType.INTEGER);
+    }
+
+    /**
+     * Get the index of the accessing nested element from the accessor.
+     * @return accessed element index
+     */
+    public int getIndex() {
+        return Integer.parseInt(types.get(1).getValue());
     }
 
     /**

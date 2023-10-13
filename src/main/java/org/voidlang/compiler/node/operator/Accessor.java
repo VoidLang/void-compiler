@@ -1,7 +1,6 @@
 package org.voidlang.compiler.node.operator;
 
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.node.Generator;
@@ -17,8 +16,12 @@ import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
+import org.voidlang.compiler.node.type.named.NamedType;
+import org.voidlang.compiler.node.type.named.NamedTypeGroup;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Getter
@@ -72,7 +75,7 @@ public class Accessor extends Value implements Loadable {
      */
     @Override
     public IRValue generate(Generator generator) {
-        if (value instanceof Loadable loadable && !getName().isFieldAccess())
+        if (value instanceof Loadable loadable && !getName().isFieldAccess() && !getName().isIndexAccess())
             // TODO probably should use Loadable#load() here as well
             return value.generateAndLoad(generator);
 
@@ -104,16 +107,40 @@ public class Accessor extends Value implements Loadable {
             return builder.structMemberPointer(rootType, instance, field.getFieldIndex(), "struct (gen) " + field.getName());
         }
 
+        else if (getName().isIndexAccess()) {
+            Type valueType = value.getValueType();
+            PointerOwner owner = (PointerOwner) value;
+            IRValue instance = owner.getPointer();
+
+            if (!(valueType instanceof NamedTypeGroup group))
+                throw new IllegalStateException("Trying to access index of a non-group type " + valueType);
+
+            List<NamedType> members = group.getMembers();
+            int index = name.getIndex();
+
+            if (index < 0 || index >= members.size())
+                throw new IllegalStateException("Index " + index + " out of bounds for group " + group);
+
+            Type member = members.get(index);
+
+            if (member instanceof NamedScalarType named)
+                member = named.getScalarType();
+
+            return builder.extract(instance, index, "tuple::" + index);
+        }
+
         return value.generate(generator);
     }
 
     @Override
     public IRValue generateAndLoad(Generator generator) {
+        System.out.println("Accessor.generateAndLoad");
+
         if (value instanceof PointerOwner owner && owner.getValueType() instanceof PassedByReference
-                && !getName().isFieldAccess())
+                && !getName().isFieldAccess() && !getName().isIndexAccess())
             return owner.getPointer();
 
-        else if (value instanceof Loadable loadable && !getName().isFieldAccess())
+        else if (value instanceof Loadable loadable && !getName().isFieldAccess() && !getName().isIndexAccess())
             return loadable.load(generator);
 
         IRContext context = generator.getContext();
@@ -146,16 +173,37 @@ public class Accessor extends Value implements Loadable {
             return builder.load(fieldType, pointer, "field load " + fieldName);
         }
 
+        else if (getName().isIndexAccess()) {
+            Type valueType = value.getValueType();
+            PointerOwner owner = (PointerOwner) value;
+
+            System.out.println("Accessor.generateAndLoad: " + valueType.getClass().getSimpleName());
+
+            if (!(valueType instanceof NamedTypeGroup group))
+                throw new IllegalStateException("Trying to access index of a non-group type " + valueType);
+
+            List<NamedType> members = group.getMembers();
+            int index = name.getIndex();
+
+            if (index < 0 || index >= members.size())
+                throw new IllegalStateException("Index " + index + " out of bounds for group " + group);
+
+            IRValue pointer = owner.getPointer();
+            IRValue instance = builder.load(owner.getPointerType(), pointer, "load tuple pointer");
+
+            return builder.extract(instance, index, "tuple::" + index);
+        }
+
         return value.generate(generator);
     }
 
     @Override
     public IRValue generateNamed(Generator generator, String localName) {
         if (value instanceof PointerOwner owner && owner.getValueType() instanceof PassedByReference
-                && !getName().isFieldAccess())
+                && !getName().isFieldAccess() && !getName().isIndexAccess())
             return owner.getPointer();
 
-        else if (value instanceof Loadable loadable && !getName().isFieldAccess())
+        else if (value instanceof Loadable loadable && !getName().isFieldAccess() && !getName().isIndexAccess())
             return loadable.load(generator);
 
         IRContext context = generator.getContext();
@@ -188,6 +236,28 @@ public class Accessor extends Value implements Loadable {
             return builder.load(fieldType, pointer, localName);
 
             // return builder.structMemberPointer(rootType, instance, field.getFieldIndex(), localName);
+        }
+
+        else if (getName().isIndexAccess()) {
+            Type valueType = value.getValueType();
+            PointerOwner owner = (PointerOwner) value;
+            IRValue instance = owner.getPointer();
+
+            if (!(valueType instanceof NamedTypeGroup group))
+                throw new IllegalStateException("Trying to access index of a non-group type " + valueType);
+
+            List<NamedType> members = group.getMembers();
+            int index = name.getIndex();
+
+            if (index < 0 || index >= members.size())
+                throw new IllegalStateException("Index " + index + " out of bounds for group " + group);
+
+            Type member = members.get(index);
+
+            if (member instanceof NamedScalarType named)
+                member = named.getScalarType();
+
+            return builder.extract(instance, index, "tuple::" + index);
         }
 
         return value.generate(generator);
@@ -228,6 +298,26 @@ public class Accessor extends Value implements Loadable {
                 throw new IllegalStateException("No such field '" + fieldName + "' in type " + element);
 
             return field.getResolvedType();
+        }
+
+        else if (name.isIndexAccess()) {
+            Type valueType = value.getValueType();
+
+            if (!(valueType instanceof NamedTypeGroup group))
+                throw new IllegalStateException("Trying to access index of a non-group type " + valueType);
+
+            List<NamedType> members = group.getMembers();
+            int index = name.getIndex();
+
+            if (index < 0 || index >= members.size())
+                throw new IllegalStateException("Index " + index + " out of bounds for group " + group);
+
+            Type member = members.get(index);
+
+            if (member instanceof NamedScalarType named)
+                member = named.getScalarType();
+
+            return member;
         }
 
         return value.getValueType();

@@ -1,6 +1,7 @@
 package org.voidlang.compiler.node.type.named;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.CompoundType;
 import org.voidlang.compiler.node.type.pointer.Referencing;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
  * } </pre>
  * Here {@code (bool, string)} is a {@link CompoundType} of two {@link ScalarType} elements: {@code bool} and {@code string}.
  */
+@RequiredArgsConstructor
 @Getter
 public class NamedTypeGroup extends NamedType {
     private final Referencing referencing;
@@ -29,11 +31,6 @@ public class NamedTypeGroup extends NamedType {
     private final List<NamedType> members;
 
     private IRStruct struct;
-
-    public NamedTypeGroup(Referencing referencing, List<NamedType> members) {
-        this.referencing = referencing;
-        this.members = members;
-    }
 
     /**
      * Get the string representation of the named type group.
