@@ -13,6 +13,7 @@ import org.voidlang.compiler.node.local.Loadable;
 import org.voidlang.compiler.node.local.PassedByReference;
 import org.voidlang.compiler.node.local.PointerOwner;
 import org.voidlang.compiler.node.type.QualifiedName;
+import org.voidlang.compiler.node.type.core.CompoundType;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
@@ -175,14 +176,28 @@ public class Accessor extends Value implements Loadable {
             Type valueType = value.getValueType();
             PointerOwner owner = (PointerOwner) value;
 
-            if (!(valueType instanceof NamedTypeGroup group))
-                throw new IllegalStateException("Trying to access index of a non-group type " + valueType);
+            List<Type> members;
 
-            List<NamedType> members = group.getMembers();
+            if (valueType instanceof NamedTypeGroup group)
+                members = group
+                    .getMembers()
+                    .stream()
+                    .map(t -> (Type) t)
+                    .toList();
+
+            else if (valueType instanceof CompoundType compound)
+                members = compound.getMembers();
+
+            else
+                throw new IllegalStateException(
+                    "Trying to access index of a non-group type " + valueType + " of " +
+                    valueType.getClass().getSimpleName()
+                );
+
             int index = name.getIndex();
 
             if (index < 0 || index >= members.size())
-                throw new IllegalStateException("Index " + index + " out of bounds for group " + group);
+                throw new IllegalStateException("Index " + index + " out of bounds for group " + valueType);
 
             IRValue pointer = owner.getPointer();
             IRValue instance = builder.load(owner.getPointerType(), pointer, "load tuple pointer");
@@ -239,14 +254,28 @@ public class Accessor extends Value implements Loadable {
             PointerOwner owner = (PointerOwner) value;
             IRValue instance = owner.getPointer();
 
-            if (!(valueType instanceof NamedTypeGroup group))
-                throw new IllegalStateException("Trying to access index of a non-group type " + valueType);
+            List<Type> members;
 
-            List<NamedType> members = group.getMembers();
+            if (valueType instanceof NamedTypeGroup group)
+                members = group
+                    .getMembers()
+                    .stream()
+                    .map(t -> (Type) t)
+                    .toList();
+
+            else if (valueType instanceof CompoundType compound)
+                members = compound.getMembers();
+
+            else
+                throw new IllegalStateException(
+                    "Trying to access index of a non-group type " + valueType + " of " +
+                    valueType.getClass().getSimpleName()
+                );
+
             int index = name.getIndex();
 
             if (index < 0 || index >= members.size())
-                throw new IllegalStateException("Index " + index + " out of bounds for group " + group);
+                throw new IllegalStateException("Index " + index + " out of bounds for group " + valueType);
 
             Type member = members.get(index);
 
@@ -299,14 +328,28 @@ public class Accessor extends Value implements Loadable {
         else if (name.isIndexAccess()) {
             Type valueType = value.getValueType();
 
-            if (!(valueType instanceof NamedTypeGroup group))
-                throw new IllegalStateException("Trying to access index of a non-group type " + valueType);
+            List<Type> members;
 
-            List<NamedType> members = group.getMembers();
+            if (valueType instanceof NamedTypeGroup group)
+                members = group
+                    .getMembers()
+                    .stream()
+                    .map(t -> (Type) t)
+                    .toList();
+
+            else if (valueType instanceof CompoundType compound)
+                members = compound.getMembers();
+
+            else
+                throw new IllegalStateException(
+                    "Trying to access index of a non-group type " + valueType + " of " +
+                    valueType.getClass().getSimpleName()
+                );
+
             int index = name.getIndex();
 
             if (index < 0 || index >= members.size())
-                throw new IllegalStateException("Index " + index + " out of bounds for group " + group);
+                throw new IllegalStateException("Index " + index + " out of bounds for group " + valueType);
 
             Type member = members.get(index);
 

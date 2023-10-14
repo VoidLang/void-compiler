@@ -50,9 +50,11 @@ public class Return extends Instruction {
             Type structType = getContext().getReturnType();
             IRType struct = structType.generateType(context);
             // allocate the tuple on the stack
-            IRValue result = tuple.generateTuple(generator, (IRStruct) struct);
+            IRValue tuplePtr = tuple.generateTuple(generator, (IRStruct) struct);
+            // load the value of the tuple
+            IRValue value = builder.load(struct, tuplePtr, "tuple value");
             // let the current block to be terminated, and the value be returned
-            return builder.returnValue(result);
+            return builder.returnValue(value);
         }
 
         // check if the value does not match the method return type

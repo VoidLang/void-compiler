@@ -80,7 +80,8 @@ public class Tuple extends Value {
             builder.store(member, builder.structMemberPointer(struct, tuple, i, "tuple-member-" + i));
         }
 
-        return builder.load(struct, tuple, "tuple-val");
+        // return builder.load(struct, tuple, "tuple-val");
+        return tuple;
     }
 
     /**

@@ -1,10 +1,6 @@
-package "TupleReturnTest"
-
-(int, int) foo() {
-    return (10, 20)
-}
+package "TupleLocalTest"
 
 int main() {
-    let x = foo()
-    return x.1
+    let a = (100, 200)
+    return a.0
 }

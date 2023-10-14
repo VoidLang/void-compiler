@@ -14,12 +14,10 @@ import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
+import org.voidlang.compiler.node.value.Tuple;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.compiler.util.PrettierIgnore;
-import org.voidlang.llvm.element.IRBuilder;
-import org.voidlang.llvm.element.IRContext;
-import org.voidlang.llvm.element.IRType;
-import org.voidlang.llvm.element.IRValue;
+import org.voidlang.llvm.element.*;
 
 @RequiredArgsConstructor
 @Getter
@@ -126,6 +124,13 @@ public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, 
         else if (value instanceof MethodCall call && call.getMethod().getResolvedType() instanceof PassedByReference)
             pointer = call.generateNamed(generator, "let (call) " + name);
 
+        // handle tuple allocation
+        else if (value instanceof Tuple tuple) {
+            IRStruct struct = (IRStruct) pointerType;
+            pointer = tuple.generateTuple(generator, struct);
+        }
+
+
         // else if (value instanceof Accessor accessor)
         //     pointer = accessor.generateNamed(generator, name);
 
@@ -136,6 +141,7 @@ public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, 
             IRValue value = getValue().generate(generator);
             builder.store(value, pointer);
         }
+
 
         allocated = true;
 
