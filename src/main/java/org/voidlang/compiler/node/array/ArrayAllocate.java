@@ -6,7 +6,6 @@ import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
-import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
@@ -20,7 +19,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @NodeInfo(type = NodeType.ARRAY)
-public class ArrayAllocation extends Value {
+public class ArrayAllocate extends Value {
     private final List<Value> values;
 
     private ScalarType elementType;

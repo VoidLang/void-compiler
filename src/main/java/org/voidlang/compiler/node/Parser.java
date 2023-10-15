@@ -4,8 +4,9 @@ import dev.inventex.octa.console.ConsoleFormat;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.builder.Package;
-import org.voidlang.compiler.node.array.ArrayAllocation;
+import org.voidlang.compiler.node.array.ArrayAllocate;
 import org.voidlang.compiler.node.array.ArrayLoad;
+import org.voidlang.compiler.node.array.ArrayStore;
 import org.voidlang.compiler.node.common.Empty;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
@@ -1088,7 +1089,7 @@ public class Parser {
         // skip the ']' symbol
         get(TokenType.STOP);
 
-        return new ArrayAllocation(values);
+        return new ArrayAllocate(values);
     }
 
     private Node nextExpression() {
@@ -1733,13 +1734,13 @@ public class Parser {
 
         // handle array indexing
         else if (peek().is(TokenType.START))
-            return nextArrayLoad((Accessor) value);
+            return nextArrayLoadOrStore((Accessor) value);
 
         System.out.println(ConsoleFormat.RED + "Error (Qualified Name / Call) " + peek());
         return new Error();
     }
 
-    private Value nextArrayLoad(Accessor accessor) {
+    private Value nextArrayLoadOrStore(Accessor accessor) {
         get(TokenType.START);
 
         Value value = nextValue();
@@ -1753,10 +1754,19 @@ public class Parser {
 
         get(TokenType.STOP);
 
+        if (peek().is(TokenType.SEMICOLON, "auto"))
+            get();
+
+        if (peek().is(TokenType.OPERATOR, "=")) {
+            get();
+            return new ArrayStore(accessor, index, nextValue());
+        }
+
         if (peek().is(TokenType.SEMICOLON))
             get();
 
         return new ArrayLoad(accessor, index);
+
     }
 
     private List<Value> nextArgumentList() {
