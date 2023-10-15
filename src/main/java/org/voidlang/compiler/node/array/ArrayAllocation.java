@@ -1,4 +1,4 @@
-package org.voidlang.compiler.node.value;
+package org.voidlang.compiler.node.array;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +10,7 @@ import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
@@ -51,7 +52,9 @@ public class ArrayAllocation extends Value {
         for (int i = 0; i < values.size(); i++) {
             Value value = values.get(i);
             IRValue valuePointer = value.generateAndLoad(generator);
-            IRValue indexPointer = getIndexPointer(generator, i);
+
+            IRValue indexPointer = builder.structMemberPointer(arrayType, arrayPointer, i, "array init[" + i + "]");
+
             builder.store(valuePointer, indexPointer);
         }
 
@@ -96,12 +99,6 @@ public class ArrayAllocation extends Value {
             elementType.getGenerics(),
             Array.explicit(dimensions)
         );
-    }
-
-    private IRValue getIndexPointer(Generator generator, int index) {
-        IRBuilder builder = generator.getBuilder();
-
-        return builder.structMemberPointer(arrayType, arrayPointer, index, "array[" + index + "]");
     }
 
     /**
