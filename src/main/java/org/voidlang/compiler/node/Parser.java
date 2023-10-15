@@ -1045,6 +1045,10 @@ public class Parser {
             return new SideOperation(operator, nextValue());
         }
 
+        // handle array allocation
+        else if (peek().is(TokenType.START))
+            return nextArrayAllocation();
+
         // handle "sizeof" operator
         else if (peek().is(TokenType.EXPRESSION, "sizeof")) {
             get();
@@ -1061,6 +1065,28 @@ public class Parser {
 
         System.err.println(ConsoleFormat.RED + "Error (Value) " + peek());
         return new Error();
+    }
+
+    private Value nextArrayAllocation() {
+        // skip the '[' symbol
+        get(TokenType.START);
+
+        List<Value> values = new ArrayList<>();
+        while (!peek().is(TokenType.STOP)) {
+            // parse the next value
+            values.add(nextValue());
+            // check if there are more values to be parsed
+            if (peek().is(TokenType.COMMA))
+                get();
+            // no more values expected, exit loop
+            else
+                break;
+        }
+
+        // skip the ']' symbol
+        get(TokenType.STOP);
+
+        return new ArrayAllocation(values);
     }
 
     private Node nextExpression() {

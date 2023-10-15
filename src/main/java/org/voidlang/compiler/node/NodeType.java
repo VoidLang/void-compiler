@@ -55,6 +55,7 @@ public enum NodeType {
     RETURN,
     DEFER,
     TUPLE,
+    ARRAY,
     IF,
     ELSE_IF,
     ELSE,

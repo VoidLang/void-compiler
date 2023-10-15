@@ -16,12 +16,11 @@ import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
+import org.voidlang.compiler.node.value.Tuple;
 import org.voidlang.compiler.node.value.Value;
-import org.voidlang.llvm.element.IRBuilder;
-import org.voidlang.llvm.element.IRContext;
-import org.voidlang.llvm.element.IRModule;
-import org.voidlang.llvm.element.IRValue;
+import org.voidlang.llvm.element.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -145,10 +144,22 @@ public class MethodCall extends Value {
         if (returnType instanceof ScalarType scalar && scalar.getName().isVoid())
             callName = "";
 
-        return builder.call(method.getFunction(), arguments
-            .stream()
-            .map(arg -> arg.generateAndLoad(generator))
-            .toList(), "");
+        List<IRValue> irArgs = new ArrayList<>(arguments.size());
+        System.err.println(arguments.size());
+        for (Value argument : arguments) {
+            IRValue value;
+
+            if (argument instanceof Tuple tuple) {
+                IRType struct = argument.getValueType().generateType(context);
+                IRValue tuplePtr = tuple.generateTuple(generator, (IRStruct) struct);
+                value = builder.load(struct, tuplePtr, "tuple value");
+            } else
+                value = argument.generateAndLoad(generator);
+
+            irArgs.add(value);
+        }
+
+        return builder.call(method.getFunction(), irArgs, "");
     }
 
     @Override

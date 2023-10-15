@@ -70,7 +70,6 @@ public class Tuple extends Value {
     }
 
     public IRValue generateTuple(Generator generator, IRStruct struct) {
-        IRContext context = generator.getContext();
         IRBuilder builder = generator.getBuilder();
 
         IRValue tuple = builder.alloc(struct, "tuple");

@@ -14,6 +14,7 @@ import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
+import org.voidlang.compiler.node.value.ArrayAllocation;
 import org.voidlang.compiler.node.value.Tuple;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.compiler.util.PrettierIgnore;
@@ -130,6 +131,9 @@ public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, 
             pointer = tuple.generateTuple(generator, struct);
         }
 
+        // handle array allocation
+        else if (value instanceof ArrayAllocation array)
+            pointer = array.generate(generator);
 
         // else if (value instanceof Accessor accessor)
         //     pointer = accessor.generateNamed(generator, name);
