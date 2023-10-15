@@ -16,6 +16,7 @@ import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.type.pointer.Referencing;
+import org.voidlang.compiler.node.value.ArrayAllocation;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.compiler.util.PrettierIgnore;
 import org.voidlang.llvm.element.IRBuilder;
@@ -119,6 +120,10 @@ public class ReferenceLocalDeclareAssign extends Value implements PointerOwner, 
         // let the method call allocate the value for method calls
         else if (value instanceof MethodCall call && call.getMethod().getResolvedType() instanceof PassedByReference)
             pointer = call.generateNamed(generator, "ref (call) " + name);
+
+        // handle array allocation
+        else if (value instanceof ArrayAllocation array)
+            pointer = array.generate(generator);
 
         // else if (value instanceof Accessor accessor)
         //     pointer = accessor.generateNamed(generator, name);

@@ -1,5 +1,6 @@
 package org.voidlang.compiler.node.value;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
@@ -9,8 +10,6 @@ import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
-import org.voidlang.compiler.node.type.generic.GenericArgumentList;
-import org.voidlang.compiler.node.type.pointer.Referencing;
 import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
@@ -23,9 +22,12 @@ import java.util.List;
 public class ArrayAllocation extends Value {
     private final List<Value> values;
 
-    private IRType arrayType;
     private ScalarType elementType;
     private Type valueType;
+
+    private IRType arrayType;
+    @Getter
+    private IRValue arrayPointer;
 
     /**
      * Generate an LLVM instruction for this node
@@ -37,10 +39,23 @@ public class ArrayAllocation extends Value {
         IRContext context = generator.getContext();
         IRBuilder builder = generator.getBuilder();
 
-        IRType irElementType = elementType.generateType(context);
-        arrayType = irElementType.toArrayType(values.size());
+        // generate the type for the array of a fixed size
+        arrayType = elementType
+            .generateType(context)
+            .toArrayType(values.size());
 
-        return builder.alloc(arrayType, "let array");
+        // allocate the fixed size array on the stack
+        arrayPointer = builder.alloc(arrayType, "let array");
+
+        // initialize the array elements
+        for (int i = 0; i < values.size(); i++) {
+            Value value = values.get(i);
+            IRValue valuePointer = value.generateAndLoad(generator);
+            IRValue indexPointer = getIndexPointer(generator, i);
+            builder.store(valuePointer, indexPointer);
+        }
+
+        return arrayPointer;
     }
 
     /**
@@ -83,6 +98,12 @@ public class ArrayAllocation extends Value {
         );
     }
 
+    private IRValue getIndexPointer(Generator generator, int index) {
+        IRBuilder builder = generator.getBuilder();
+
+        return builder.structMemberPointer(arrayType, arrayPointer, index, "array[" + index + "]");
+    }
+
     /**
      * Initialize all type declarations for the overriding node.
      *
@@ -90,7 +111,8 @@ public class ArrayAllocation extends Value {
      */
     @Override
     public void postProcessType(Generator generator) {
-
+        for (Value value : values)
+            value.postProcessType(generator);
     }
 
     /**
@@ -100,7 +122,8 @@ public class ArrayAllocation extends Value {
      */
     @Override
     public void postProcessMember(Generator generator) {
-
+        for (Value value : values)
+            value.postProcessMember(generator);
     }
 
     /**
@@ -110,7 +133,8 @@ public class ArrayAllocation extends Value {
      */
     @Override
     public void postProcessUse(Generator generator) {
-
+        for (Value value : values)
+            value.postProcessUse(generator);
     }
 
     /**

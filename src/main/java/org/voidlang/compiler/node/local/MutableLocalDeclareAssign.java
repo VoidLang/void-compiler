@@ -14,6 +14,7 @@ import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
+import org.voidlang.compiler.node.value.ArrayAllocation;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRContext;
@@ -112,6 +113,10 @@ public class MutableLocalDeclareAssign extends Value implements PointerOwner, Lo
         // let the method call allocate the value for method calls
         else if (value instanceof MethodCall call && call.getMethod().getResolvedType() instanceof PassedByReference)
             pointer = call.generateNamed(generator, "mut (method) " + name);
+
+        // handle array allocation
+        else if (value instanceof ArrayAllocation array)
+            pointer = array.generate(generator);
 
         // allocate the value on the stack, and assign its value
         else {
