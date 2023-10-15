@@ -14,7 +14,7 @@ import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
-import org.voidlang.compiler.node.value.ArrayAllocation;
+import org.voidlang.compiler.node.array.ArrayAllocation;
 import org.voidlang.compiler.node.value.Tuple;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.compiler.util.PrettierIgnore;
@@ -93,7 +93,8 @@ public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, 
         if (allocated) {
             // do not load the values from class struct pointers, as classes
             // are meant to be handled by reference, and not by value
-            if (value.getValueType() instanceof Class)
+            if (value.getValueType() instanceof Class ||
+                    (value.getValueType() instanceof ScalarType scala && !scala.getArray().getDimensions().isEmpty()))
                 return pointer;
             // local variable is meant to be passed by value, so load it from the pointer
             return load(generator);

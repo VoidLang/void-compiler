@@ -4,6 +4,8 @@ import dev.inventex.octa.console.ConsoleFormat;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.builder.Package;
+import org.voidlang.compiler.node.array.ArrayAllocation;
+import org.voidlang.compiler.node.array.ArrayLoad;
 import org.voidlang.compiler.node.common.Empty;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
@@ -1729,8 +1731,32 @@ public class Parser {
             return new Casting(value, nextType());
         }
 
+        // handle array indexing
+        else if (peek().is(TokenType.START))
+            return nextArrayLoad((Accessor) value);
+
         System.out.println(ConsoleFormat.RED + "Error (Qualified Name / Call) " + peek());
         return new Error();
+    }
+
+    private Value nextArrayLoad(Accessor accessor) {
+        get(TokenType.START);
+
+        Value value = nextValue();
+        if (!(value instanceof Literal literal))
+            throw new IllegalStateException("Expected literal for array size, but got " + value);
+
+        int index = Integer.parseInt(literal
+            .getValue()
+            .getValue()
+        );
+
+        get(TokenType.STOP);
+
+        if (peek().is(TokenType.SEMICOLON))
+            get();
+
+        return new ArrayLoad(accessor, index);
     }
 
     private List<Value> nextArgumentList() {

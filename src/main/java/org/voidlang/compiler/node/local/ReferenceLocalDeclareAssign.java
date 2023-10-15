@@ -16,7 +16,7 @@ import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.type.pointer.Referencing;
-import org.voidlang.compiler.node.value.ArrayAllocation;
+import org.voidlang.compiler.node.array.ArrayAllocation;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.compiler.util.PrettierIgnore;
 import org.voidlang.llvm.element.IRBuilder;

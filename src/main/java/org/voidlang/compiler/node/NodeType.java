@@ -56,6 +56,8 @@ public enum NodeType {
     DEFER,
     TUPLE,
     ARRAY,
+    ARRAY_LOAD,
+    ARRAY_STORE,
     IF,
     ELSE_IF,
     ELSE,
