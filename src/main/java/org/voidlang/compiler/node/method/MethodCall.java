@@ -145,7 +145,6 @@ public class MethodCall extends Value {
             callName = "";
 
         List<IRValue> irArgs = new ArrayList<>(arguments.size());
-        System.err.println(arguments.size());
         for (Value argument : arguments) {
             IRValue value;
 

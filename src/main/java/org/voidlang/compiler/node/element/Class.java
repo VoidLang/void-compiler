@@ -55,7 +55,6 @@ public class Class extends Element implements PassedByReference {
                     fields.put(field.getName(), field);
                 }
             } else if (node instanceof Method method) {
-                System.err.println("reg method " + method.getName());
                 List<Method> methodList = methods.getOrDefault(method.getName(), new ArrayList<>());
                 methodList.add(method);
                 methods.put(method.getName(), methodList);

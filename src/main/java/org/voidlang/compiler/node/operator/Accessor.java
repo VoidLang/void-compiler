@@ -79,10 +79,7 @@ public class Accessor extends Value implements Loadable {
         if (value instanceof Loadable loadable && !getName().isFieldAccess() && !getName().isIndexAccess() &&
                 (!(value.getValueType() instanceof ScalarType scalar) || scalar.getArray().getDimensions().isEmpty()))
             // TODO probably should use Loadable#load() here as well
-        {
-            System.err.println("LOAD)NIG " + ((ScalarType) value.getValueType()).getArray());
             return value.generateAndLoad(generator);
-        }
 
         IRContext context = generator.getContext();
         IRBuilder builder = generator.getBuilder();
