@@ -120,6 +120,7 @@ public class Literal extends Value {
             case ULONG -> Type.ULONG;
             case BOOLEAN -> Type.BOOL;
             case STRING -> Type.STR;
+            case FLOAT -> Type.FLOAT;
             case DOUBLE -> Type.DOUBLE;
             default -> throw new IllegalStateException("Unable to get value type for literal " + type);
         };
