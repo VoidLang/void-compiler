@@ -162,10 +162,17 @@ public interface Type {
      * @return the default value of this type
      */
     default IRValue defaultValue(Generator generator) {
-        if (!(this instanceof NamedScalarType type))
+        // extract the underlying scalar type from a named scalar type
+        Type type = this;
+        if (type instanceof NamedScalarType named)
+            type = named.getScalarType();
+
+        // make sure the type is a scalar type
+        // TODO support compound types
+        if (!(type instanceof ScalarType scalar))
             return null;
+
         IRType irType = generateType(generator.getContext());
-        ScalarType scalar = (ScalarType) type.getScalarType();
         return switch (scalar.getName().getTypes().get(0).getValue()) {
             case "bool", "byte", "ubyte", "short", "ushort", "int", "uint", "long",
                     "ulong", "float", "double" -> irType.constInt(0);
