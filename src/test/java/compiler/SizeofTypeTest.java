@@ -10,10 +10,10 @@ import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SizeofPrimitiveTest {
+public class SizeofTypeTest {
     @Test
-    public void testSizeOfPrimitives() {
-        Package root = assertDoesNotThrow(() -> Compiler.compile("compiler/SizeofPrimitive.vs"));
+    public void testSizeOfTypes() {
+        Package root = assertDoesNotThrow(() -> Compiler.compile("compiler/SizeofType.vs"));
 
         JIT jit = assertDoesNotThrow(() -> JIT.create(root));
 
