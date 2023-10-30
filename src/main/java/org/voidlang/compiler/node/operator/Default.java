@@ -10,16 +10,15 @@ import org.voidlang.compiler.node.local.Loadable;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.value.Value;
-import org.voidlang.llvm.element.IRType;
 import org.voidlang.llvm.element.IRValue;
 
-@NodeInfo(type = NodeType.SIZEOF)
+@NodeInfo(type = NodeType.DEFAULT)
 @RequiredArgsConstructor
 @Getter
-public class Sizeof extends Value implements Loadable {
+public class Default extends Value implements Loadable {
     private final Type type;
 
-    private IRValue size;
+    private IRValue value;
 
     /**
      * Generate an LLVM instruction for this node
@@ -28,15 +27,14 @@ public class Sizeof extends Value implements Loadable {
      */
     @Override
     public IRValue generate(Generator generator) {
-        if (size != null)
-            return size;
+        if (value != null)
+            return value;
 
         Type type = getType();
         if (type instanceof NamedScalarType named)
             type = named.getScalarType();
 
-        IRType irType = type.generateType(generator.getContext());
-        return size = irType.size();
+        return value = type.defaultValue(generator);
     }
 
     @Override
@@ -81,7 +79,6 @@ public class Sizeof extends Value implements Loadable {
     public void postProcessUse(Generator generator) {
     }
 
-
     /**
      * Get the wrapped type of this value.
      *
@@ -89,7 +86,6 @@ public class Sizeof extends Value implements Loadable {
      */
     @Override
     public Type getValueType() {
-        // TODO make it an unsigned long
-        return Type.LONG;
+        return type;
     }
 }

@@ -1058,6 +1058,17 @@ public class Parser {
             return new Sizeof(nextType());
         }
 
+        // handle "default" keyword
+        else if (peek().is(TokenType.MODIFIER, "default")) {
+            get();
+            get(TokenType.OPEN);
+            Type type = nextType();
+            get(TokenType.CLOSE);
+            return new Default(type);
+        }
+
+        // TODO handle "typeof" operator
+
         // handle allocation on the heap using "malloc"
         else if (peek().is(TokenType.EXPRESSION, "malloc"))
             return nextMalloc();

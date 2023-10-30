@@ -28,6 +28,7 @@ public enum NodeType {
     LOCAL_ASSIGN,
     VALUE,
     SIZEOF,
+    DEFAULT,
     ACCESSOR,
     REFERENCED_ACCESSOR,
     DEREFERENCED_ACCESSOR,
