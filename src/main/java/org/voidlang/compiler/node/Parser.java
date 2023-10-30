@@ -1055,7 +1055,15 @@ public class Parser {
         // handle "sizeof" operator
         else if (peek().is(TokenType.EXPRESSION, "sizeof")) {
             get();
-            return new Sizeof(nextType());
+
+            if (peek().is(TokenType.OPEN)) {
+                get(TokenType.OPEN);
+                Type type = nextType();
+                get(TokenType.CLOSE);
+                return new SizeofType(type);
+            }
+
+            return new SizeofValue(nextValue());
         }
 
         // handle "default" keyword

@@ -13,11 +13,11 @@ import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRType;
 import org.voidlang.llvm.element.IRValue;
 
-@NodeInfo(type = NodeType.SIZEOF)
+@NodeInfo(type = NodeType.SIZEOF_VALUE)
 @RequiredArgsConstructor
 @Getter
-public class Sizeof extends Value implements Loadable {
-    private final Type type;
+public class SizeofValue extends Value implements Loadable {
+    private final Value value;
 
     private IRValue size;
 
@@ -31,7 +31,7 @@ public class Sizeof extends Value implements Loadable {
         if (size != null)
             return size;
 
-        Type type = getType();
+        Type type = value.getValueType();
         if (type instanceof NamedScalarType named)
             type = named.getScalarType();
 
@@ -52,6 +52,7 @@ public class Sizeof extends Value implements Loadable {
     @Override
     public void preProcess(Node parent) {
         this.parent = parent;
+        value.preProcess(this);
     }
 
     /**
@@ -61,6 +62,7 @@ public class Sizeof extends Value implements Loadable {
      */
     @Override
     public void postProcessType(Generator generator) {
+        value.postProcessType(generator);
     }
 
     /**
@@ -70,6 +72,7 @@ public class Sizeof extends Value implements Loadable {
      */
     @Override
     public void postProcessMember(Generator generator) {
+        value.postProcessMember(generator);
     }
 
     /**
@@ -79,8 +82,8 @@ public class Sizeof extends Value implements Loadable {
      */
     @Override
     public void postProcessUse(Generator generator) {
+        value.postProcessUse(generator);
     }
-
 
     /**
      * Get the wrapped type of this value.

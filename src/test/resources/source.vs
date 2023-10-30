@@ -1,6 +1,7 @@
-package "DefaultValueTest"
+package "SizeofTest"
 
 int main() {
-    let a = default(int)
-    return a
+    let value = 121L
+    let size = sizeof value
+    return size as int
 }
