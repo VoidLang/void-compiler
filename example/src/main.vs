@@ -1,7 +1,7 @@
-package "main"
+package main
 
-extern int foo()
+import lib
 
 int main() {
-    return foo()
+    return 123
 }

@@ -123,10 +123,10 @@ public class Parser {
         // handle package declaration
         get(TokenType.INFO, "package");
         // get the name of the package
-        String name = get(TokenType.STRING).getValue();
+        String name = get(TokenType.IDENTIFIER).getValue();
         // ensure that the package is ended by a semicolon
         get(TokenType.SEMICOLON);
-        System.out.println(ConsoleFormat.BLUE + "package " + ConsoleFormat.GREEN + "\"" + name + '"');
+        System.out.println(ConsoleFormat.BLUE + "package " + ConsoleFormat.GREEN + name);
         return new PackageSet(name);
     }
 
@@ -138,10 +138,10 @@ public class Parser {
         // handle package import
         get(TokenType.INFO, "import");
         // get the name of the package
-        String name = get(TokenType.STRING).getValue();
+        String name = get(TokenType.IDENTIFIER).getValue();
         // ensure that the package is ended by a semicolon
         get(TokenType.SEMICOLON);
-        System.out.println("import \"" + name + '"');
+        System.out.println(ConsoleFormat.BLUE + "import " + ConsoleFormat.GREEN + name);
         return new PackageImport(name);
     }
 

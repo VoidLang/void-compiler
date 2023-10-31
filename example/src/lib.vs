@@ -1,4 +1,4 @@
-package "lib"
+package lib
 
 int foo() {
     return 1337
