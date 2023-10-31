@@ -1,12 +1,12 @@
 package org.voidlang.compiler.node;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRModule;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Getter
 public class Generator {
     private final IRContext context;

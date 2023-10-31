@@ -86,21 +86,20 @@ public class Compiler {
 
         linkModules();
 
-        Package mainPackage = application.getPackage("main");
-        Method mainMethod = mainPackage.resolveMethod("main", new ArrayList<>());
+        runExecutable();
+    }
 
-        IRModule module = mainPackage.getGenerator().getModule();
+    @SneakyThrows
+    private void runExecutable() {
+        File exeFile = new File(targetDir, settings.name + ".exe");
 
-        ExecutionEngine engine = ExecutionEngine.create();
-        MMCJITCompilerOptions options = MMCJITCompilerOptions.create();
-        BytePointer error = new BytePointer();
-        if (!engine.createMCJITCompilerForModule(module, options, error)) {
-            LLVMDisposeMessage(error);
-            throw new RuntimeException("Failed to create JIT compiler: " + error.getString());
-        }
+        ProcessBuilder runBuilder = new ProcessBuilder(exeFile.getAbsolutePath());
+        Process runProcess = runBuilder.start();
 
-        IRGenericValue result = engine.runFunction(mainMethod.getFunction(), List.of());
-        System.out.println(result.toInt());
+        int status = runProcess.waitFor();
+
+        System.out.println();
+        System.out.println("Process exited with code: " + status);;
     }
 
     private void postProcessTypes() {
@@ -166,7 +165,6 @@ public class Compiler {
         List<String> args = new ArrayList<>(List.of("clang"));
 
         File objDir = new File(targetDir, "object");
-        File mainFile = new File(objDir, "main.obj");
 
         File[] list = objDir.listFiles();
 
@@ -263,16 +261,15 @@ public class Compiler {
         objDir.mkdir();
         debugDir.mkdir();
 
-        String name = module.getName();
+        String fileName = module.getName();
 
-        File bitcodeFile = new File(bitcodeDir, name + ".bc");
+        File bitcodeFile = new File(bitcodeDir, fileName + ".bc");
         module.writeBitcodeToFile(bitcodeFile);
 
-        File dumpFile = new File(debugDir, name + ".ll");
+        File dumpFile = new File(debugDir, fileName + ".ll");
         module.printIRToFile(dumpFile);
 
-        File objectFile = new File(objDir, name + ".obj");
-        File exeFile = new File(targetDir, settings.name + ".exe");
+        File objectFile = new File(objDir, fileName + ".obj");
 
         ProcessBuilder compileBuilder = new ProcessBuilder("clang", "-c", "-o",
             objectFile.getAbsolutePath(), bitcodeFile.getAbsolutePath());

@@ -1,5 +1,5 @@
 package "lib"
 
 int foo() {
-    return 103
+    return 1337
 }

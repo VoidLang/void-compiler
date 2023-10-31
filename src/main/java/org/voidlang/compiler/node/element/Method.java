@@ -3,8 +3,10 @@ package org.voidlang.compiler.node.element;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import static org.bytedeco.llvm.global.LLVM.*;
+import static org.bytedeco.llvm.global.LLVM.LLVMSetFunctionCallConv;
+
 import org.voidlang.compiler.node.*;
-import org.voidlang.compiler.node.control.Return;
 import org.voidlang.compiler.node.local.*;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
@@ -160,7 +162,7 @@ public class Method extends Node {
         if (parent instanceof Class clazz)
             paramTypes.add(0, IRType.pointerType(clazz.generateType(context)));
 
-        IRFunctionType functionType = IRFunctionType.create(returnType, paramTypes);
+        IRFunctionType functionType = IRFunctionType.create(returnType, paramTypes, false);
 
         finalName = name;
         if (parent instanceof Class clazz)
