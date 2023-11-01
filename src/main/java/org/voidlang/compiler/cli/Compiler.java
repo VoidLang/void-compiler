@@ -7,6 +7,7 @@ import lombok.SneakyThrows;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
 import org.voidlang.compiler.builder.Application;
+import org.voidlang.compiler.builder.ImportNode;
 import org.voidlang.compiler.builder.Package;
 import org.voidlang.compiler.builder.ProjectSettings;
 import org.voidlang.compiler.node.Generator;
@@ -238,10 +239,9 @@ public class Compiler {
 
         // preprocess types
         for (Node e : nodes) {
-            if (e instanceof PackageImport packageImport) {
-
-            }
-            if (e instanceof Class clazz) {
+            if (e instanceof PackageImport packageImport)
+                pkg.addAndMergeImport(packageImport.getNode());
+            else if (e instanceof Class clazz) {
                 clazz.generateType(generator.getContext());
                 pkg.defineClass(clazz);
             }

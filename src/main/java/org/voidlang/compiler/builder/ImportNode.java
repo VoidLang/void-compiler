@@ -18,6 +18,24 @@ public class ImportNode {
         children.add(child);
     }
 
+    public void merge(ImportNode other) {
+        for (ImportNode otherChild : other.getChildren()) {
+            String childName = otherChild.name;
+            ImportNode child = getChild(childName);
+            if (child == null)
+                children.add(otherChild);
+            else
+                child.merge(otherChild);
+        }
+    }
+
+    private ImportNode getChild(String name) {
+        return children.stream()
+            .filter(child -> child.name.equals(name))
+            .findFirst()
+            .orElse(null);
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder(name);

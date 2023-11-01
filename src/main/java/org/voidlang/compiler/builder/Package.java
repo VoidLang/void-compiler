@@ -19,7 +19,7 @@ import java.util.*;
 @Getter
 @NodeInfo(type = NodeType.ROOT)
 public class Package extends Node {
-    // private final Map<List<String>> imports = new HashSet<>();
+    private final List<ImportNode> imports = new ArrayList<>();
 
     private final Map<String, List<Method>> methods = new HashMap<>();
 
@@ -137,5 +137,16 @@ public class Package extends Node {
 
     public void defineStruct(Struct struct) {
         structs.put(struct.getName(), struct);
+    }
+
+    public void addAndMergeImport(ImportNode target) {
+        for (ImportNode node : imports) {
+            if (!node.getName().equals(target.getName()))
+                continue;
+
+            node.merge(target);
+            return;
+        }
+        imports.add(target);
     }
 }
