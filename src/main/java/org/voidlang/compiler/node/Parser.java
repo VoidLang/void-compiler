@@ -3,6 +3,7 @@ package org.voidlang.compiler.node;
 import dev.inventex.octa.console.ConsoleFormat;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.voidlang.compiler.builder.ImportNode;
 import org.voidlang.compiler.builder.Package;
 import org.voidlang.compiler.node.array.ArrayAllocate;
 import org.voidlang.compiler.node.array.ArrayLoad;
@@ -141,12 +142,47 @@ public class Parser {
     public Node nextImport() {
         // handle package import
         get(TokenType.INFO, "import");
-        // get the name of the package
-        String name = get(TokenType.IDENTIFIER).getValue();
+
+        ImportNode node = nextImportNode();
+
+        if (peek().is(TokenType.SEMICOLON))
+            get();
+
         // ensure that the package is ended by a semicolon
-        get(TokenType.SEMICOLON);
-        System.out.println(ConsoleFormat.BLUE + "import " + ConsoleFormat.GREEN + name);
-        return new PackageImport(name);
+        System.out.println(ConsoleFormat.BLUE + "import " + ConsoleFormat.GREEN + node);
+        return new PackageImport(node);
+    }
+
+    private ImportNode nextImportNode() {
+        String name = get(TokenType.IDENTIFIER).getValue();
+
+        ImportNode node = new ImportNode(name);
+
+        if (!peek().is(TokenType.COLON))
+            return node;
+
+        get(TokenType.COLON);
+        get(TokenType.COLON);
+
+        if (peek().is(TokenType.IDENTIFIER)) {
+            node.addChild(nextImportNode());
+            return node;
+        }
+
+        get(TokenType.BEGIN);
+
+        while (!peek().is(TokenType.END)) {
+            node.addChild(nextImportNode());
+
+            if (peek(TokenType.COMMA, TokenType.END).is(TokenType.COMMA))
+                get();
+            else
+                break;
+        }
+
+        get(TokenType.END);
+
+        return node;
     }
 
     /**
@@ -161,7 +197,7 @@ public class Parser {
         // ensure that the package is ended by a semicolon
         get(TokenType.SEMICOLON);
         System.out.println(ConsoleFormat.BLUE + "using " + ConsoleFormat.GREEN + name);
-        return new PackageImport(name);
+        return null;
     }
 
     /**

@@ -238,6 +238,9 @@ public class Compiler {
 
         // preprocess types
         for (Node e : nodes) {
+            if (e instanceof PackageImport packageImport) {
+
+            }
             if (e instanceof Class clazz) {
                 clazz.generateType(generator.getContext());
                 pkg.defineClass(clazz);
@@ -275,7 +278,6 @@ public class Compiler {
             objectFile.getAbsolutePath(), bitcodeFile.getAbsolutePath());
         Process compileProcess = compileBuilder.start();
         compileProcess.waitFor();
-
     }
 
     private List<Token> tokenizeFile(File file) {

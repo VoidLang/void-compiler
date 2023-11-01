@@ -2,6 +2,7 @@ package org.voidlang.compiler.node.info;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.voidlang.compiler.builder.ImportNode;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
@@ -18,7 +19,7 @@ public class PackageImport extends Node {
     /**
      * The name of the package to be imported.
      */
-    private final String name;
+    private final ImportNode node;
 
     /**
      * Initialize all the child nodes for the overriding node.

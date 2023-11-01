@@ -1,6 +1,6 @@
 package main
 
-import lib
+import lib::{bar,baz::qux}
 
 int main() {
     return 123
