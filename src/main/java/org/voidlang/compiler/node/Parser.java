@@ -98,6 +98,10 @@ public class Parser {
         else if (peek().is(TokenType.INFO, "import"))
             return nextImport();
 
+        // handle using statement
+        else if (peek().is(TokenType.INFO, "using"))
+            return nextUsing();
+
         // handle modifier list or block declaration
         else if (peek().is(TokenType.MODIFIER))
             return nextModifiers();
@@ -142,6 +146,21 @@ public class Parser {
         // ensure that the package is ended by a semicolon
         get(TokenType.SEMICOLON);
         System.out.println(ConsoleFormat.BLUE + "import " + ConsoleFormat.GREEN + name);
+        return new PackageImport(name);
+    }
+
+    /**
+     * Parse the next using statement.
+     * @return new using statement
+     */
+    private Node nextUsing() {
+        // handle package import
+        get(TokenType.INFO, "import");
+        // get the name of the package
+        String name = get(TokenType.IDENTIFIER).getValue();
+        // ensure that the package is ended by a semicolon
+        get(TokenType.SEMICOLON);
+        System.out.println(ConsoleFormat.BLUE + "using " + ConsoleFormat.GREEN + name);
         return new PackageImport(name);
     }
 

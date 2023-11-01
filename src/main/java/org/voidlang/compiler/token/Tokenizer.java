@@ -691,7 +691,7 @@ public class Tokenizer {
      */
     private boolean isInfo(String token) {
         return switch (token) {
-            case "package", "import" -> true;
+            case "package", "import", "using" -> true;
             default -> false;
         };
     }
