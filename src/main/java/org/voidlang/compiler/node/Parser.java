@@ -148,13 +148,20 @@ public class Parser {
         if (peek().is(TokenType.SEMICOLON))
             get();
 
+        if (node.getName().equals("*"))
+            throw new IllegalStateException("Wildcard import must not be the root of the import tree.");
+
         // ensure that the package is ended by a semicolon
         System.out.println(ConsoleFormat.BLUE + "import " + ConsoleFormat.GREEN + node);
         return new PackageImport(node);
     }
 
     private ImportNode nextImportNode() {
-        String name = get(TokenType.IDENTIFIER).getValue();
+        String name;
+        if (peek().is(TokenType.OPERATOR, "*"))
+            name = "*";
+        else
+            name = get(TokenType.IDENTIFIER).getValue();
 
         ImportNode node = new ImportNode(name);
 
@@ -166,6 +173,13 @@ public class Parser {
 
         if (peek().is(TokenType.IDENTIFIER)) {
             node.addChild(nextImportNode());
+            return node;
+        }
+
+        // do not continue parsing the import tree recursively, as the wildcard must be the top-level import
+        else if (peek().is(TokenType.OPERATOR, "*")) {
+            get();
+            node.addChild(new ImportNode("*"));
             return node;
         }
 
