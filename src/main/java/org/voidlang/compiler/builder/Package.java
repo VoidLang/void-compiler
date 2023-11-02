@@ -19,6 +19,8 @@ import java.util.*;
 @Getter
 @NodeInfo(type = NodeType.ROOT)
 public class Package extends Node {
+    private final Map<String, Package> packages = new HashMap<>();
+    
     private final List<ImportNode> imports = new ArrayList<>();
 
     private final Map<String, List<Method>> methods = new HashMap<>();
@@ -26,6 +28,8 @@ public class Package extends Node {
     private final Map<String, Class> classes = new HashMap<>();
 
     private final Map<String, Struct> structs = new HashMap<>();
+
+    private final Application application;
 
     private final Generator generator;
 

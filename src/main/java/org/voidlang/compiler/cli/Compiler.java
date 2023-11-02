@@ -7,20 +7,16 @@ import lombok.SneakyThrows;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
 import org.voidlang.compiler.builder.Application;
-import org.voidlang.compiler.builder.ImportNode;
 import org.voidlang.compiler.builder.Package;
 import org.voidlang.compiler.builder.ProjectSettings;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.Parser;
-import org.voidlang.compiler.node.common.Finish;
 import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.node.element.Struct;
 import org.voidlang.compiler.node.info.PackageImport;
-import org.voidlang.compiler.node.info.PackageSet;
-import org.voidlang.compiler.node.type.modifier.ModifierList;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
 import org.voidlang.compiler.token.Tokenizer;
@@ -216,7 +212,7 @@ public class Compiler {
 
         Package pkg = application.getPackage(packageName);
         if (pkg == null) {
-            pkg = new Package(generator);
+            pkg = new Package(application, generator);
             application.addPackage(packageName, pkg);
         }
 

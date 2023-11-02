@@ -4,6 +4,7 @@ import dev.inventex.octa.console.ConsoleFormat;
 import lombok.SneakyThrows;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
+import org.voidlang.compiler.builder.Application;
 import org.voidlang.compiler.builder.Package;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
@@ -30,9 +31,10 @@ public class ParserTest {
         List<Token> tokens = tokenizeSource();
         debugTokens(tokens);
 
+        Application application = new Application();
         Generator generator = LLVM.createContext();
 
-        Package root = new Package(generator);
+        Package root = new Package(application, generator);
         Parser parser = new Parser(root, tokens);
 
         System.out.println();

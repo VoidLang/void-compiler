@@ -1,6 +1,7 @@
 package util;
 
 import lombok.experimental.UtilityClass;
+import org.voidlang.compiler.builder.Application;
 import org.voidlang.compiler.builder.Package;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
@@ -15,8 +16,9 @@ public class AST {
     public Package parse(List<Token> tokens) {
         // debugTokens(tokens);
 
+        Application application = new Application();
         Generator generator = LLVM.createContext();
-        Package root = new Package(generator);
+        Package root = new Package(application, generator);
         Parser parser = new Parser(root, tokens);
 
         // System.out.println();
