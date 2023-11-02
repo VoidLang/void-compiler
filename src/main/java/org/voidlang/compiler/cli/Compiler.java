@@ -22,6 +22,7 @@ import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
 import org.voidlang.compiler.token.Tokenizer;
 import org.voidlang.compiler.token.Transformer;
+import org.voidlang.compiler.util.Prettier;
 import org.voidlang.compiler.util.Validate;
 import org.voidlang.llvm.element.*;
 
@@ -41,14 +42,14 @@ public class Compiler {
 
     private ProjectSettings settings;
 
-    private File targetDir;
+    private File targetDir, sourceDir;
 
     public void compile() {
         File projectDir = new File(inputDir);
         if (!projectDir.exists() || !projectDir.isDirectory())
             Validate.panic("Project " + inputDir + " does not exist");
 
-        File sourceDir = new File(projectDir, "src");
+        sourceDir = new File(projectDir, "src");
         if (!sourceDir.exists() || !sourceDir.isDirectory())
             Validate.panic("Project source folder does not exist");
 
@@ -64,16 +65,19 @@ public class Compiler {
             .getTable("project")
             .to(ProjectSettings.class);
 
-        compileSources(sourceDir);
+        Prettier.setEnabled(false);
+
+        compileSources();
     }
 
     @SneakyThrows
-    private void compileSources(File sourceDir) {
+    private void compileSources() {
         application = new Application();
 
         initLLVM();
 
         walk(sourceDir);
+        System.out.println();
 
         resolveImports();
         postProcessTypes();
@@ -82,6 +86,7 @@ public class Compiler {
         generate();
 
         compilePackages();
+        System.out.println();
 
         linkModules();
 
@@ -98,7 +103,12 @@ public class Compiler {
         int status = runProcess.waitFor();
 
         System.out.println();
-        System.out.println("Process exited with code: " + status);;
+        System.out.println(
+            ConsoleFormat.RED + "" + ConsoleFormat.BOLD +
+            "[debug]: process exited with code: " +
+            ConsoleFormat.WHITE + status +
+            ConsoleFormat.DEFAULT
+        );
     }
 
 
@@ -192,9 +202,7 @@ public class Compiler {
         args.addAll(List.of("-o", exeFile.getAbsolutePath()));
         args.addAll(List.of("-luser32", "-lgdi32", "-lkernel32"));
 
-        args.add("-v");
-
-        System.out.println(String.join(" ", args));
+        // args.add("-v");
 
         ProcessBuilder linkBuilder = new ProcessBuilder(args);
         Process linkProcess = linkBuilder.start();
@@ -206,6 +214,13 @@ public class Compiler {
         linkProcess.getInputStream().transferTo(System.out);
 
         linkProcess.waitFor();
+
+        System.out.println(
+            ConsoleFormat.DARK_GRAY + "" + ConsoleFormat.BOLD + "[" + ConsoleFormat.MAGENTA + "Void" +
+            ConsoleFormat.DARK_GRAY + "] " +
+            ConsoleFormat.BOLD + ConsoleFormat.GREEN + "compiled and linked successfully" +
+            ConsoleFormat.DEFAULT
+        );
     }
 
     private void readSource(File file) {
@@ -213,6 +228,13 @@ public class Compiler {
 
         String fileName = file.getName();
         String moduleName = fileName.substring(0, fileName.length() - ".vs".length());
+
+        System.out.println(
+            ConsoleFormat.DARK_GRAY + "" + ConsoleFormat.BOLD + "[" + ConsoleFormat.MAGENTA + "Void" +
+            ConsoleFormat.DARK_GRAY + "] " +
+            ConsoleFormat.YELLOW +  "source" + ConsoleFormat.LIGHT_GRAY + " > " +
+            ConsoleFormat.WHITE + file.getAbsolutePath().substring(sourceDir.getAbsolutePath().length() + 1)
+        );
 
         Generator generator = createContext(moduleName);
 
@@ -286,6 +308,14 @@ public class Compiler {
             objectFile.getAbsolutePath(), bitcodeFile.getAbsolutePath());
         Process compileProcess = compileBuilder.start();
         compileProcess.waitFor();
+
+        System.out.println(
+            ConsoleFormat.DARK_GRAY + "" + ConsoleFormat.BOLD + "[" + ConsoleFormat.MAGENTA + "Void" +
+            ConsoleFormat.DARK_GRAY + "] " +
+            ConsoleFormat.RED + ConsoleFormat.BOLD + "compile" +
+            ConsoleFormat.LIGHT_GRAY + " > " +
+            ConsoleFormat.WHITE + fileName
+        );
     }
 
     private List<Token> tokenizeFile(File file) {

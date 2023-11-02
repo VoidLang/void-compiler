@@ -128,11 +128,15 @@ public class Parser {
     public Node nextPackage() {
         // handle package declaration
         get(TokenType.INFO, "package");
+
         // get the name of the package
         String name = get(TokenType.IDENTIFIER).getValue();
         // ensure that the package is ended by a semicolon
         get(TokenType.SEMICOLON);
-        System.out.println(ConsoleFormat.BLUE + "package " + ConsoleFormat.GREEN + name);
+
+        if (Prettier.isEnabled())
+            System.out.println(ConsoleFormat.BLUE + "package " + ConsoleFormat.GREEN + name);
+
         return new PackageSet(name);
     }
 
@@ -153,7 +157,9 @@ public class Parser {
             throw new IllegalStateException("Wildcard import must not be the root of the import tree.");
 
         // ensure that the package is ended by a semicolon
-        System.out.println(ConsoleFormat.BLUE + "import " + ConsoleFormat.GREEN + node);
+        if (Prettier.isEnabled())
+            System.out.println(ConsoleFormat.BLUE + "import " + ConsoleFormat.GREEN + node);
+
         return new PackageImport(node);
     }
 
@@ -216,7 +222,9 @@ public class Parser {
         if (node.getName().equals("*"))
             throw new IllegalStateException("Wildcard using must not be the root of the using tree.");
 
-        System.out.println(ConsoleFormat.BLUE + "using " + ConsoleFormat.GREEN + node);
+        if (Prettier.isEnabled())
+            System.out.println(ConsoleFormat.BLUE + "using " + ConsoleFormat.GREEN + node);
+
         return new PackageUsing(node);
     }
 
@@ -232,11 +240,13 @@ public class Parser {
         if (peek().is(TokenType.COLON)) {
             // skip the ':' symbol
             get();
-            System.out.println(String.join(" ", modifiers) + ": ");
+            if (Prettier.isEnabled())
+                System.out.println(String.join(" ", modifiers) + ": ");
             return new ModifierBlock(modifiers);
         }
         // handle normal modifier list
-        System.out.println(String.join(" ", modifiers) + " ");
+        if (Prettier.isEnabled())
+            System.out.println(String.join(" ", modifiers) + " ");
         return new ModifierList(modifiers);
     }
 
@@ -319,7 +329,8 @@ public class Parser {
         // handle type body begin
         get(TokenType.BEGIN);
 
-        System.out.println(ConsoleFormat.LIGHT_GRAY + " {");
+        if (Prettier.isEnabled())
+            System.out.println(ConsoleFormat.LIGHT_GRAY + " {");
 
         // parse the body of the class
         Node.prettier.enterScope();
@@ -331,7 +342,8 @@ public class Parser {
         // handle type body end
         get(TokenType.END);
 
-        System.out.println(ConsoleFormat.LIGHT_GRAY + "}");
+        if (Prettier.isEnabled())
+            System.out.println(ConsoleFormat.LIGHT_GRAY + "}");
 
         // handle auto-inserted semicolon at the end or the body
         if (peek().is(TokenType.SEMICOLON, "auto"))
@@ -344,7 +356,8 @@ public class Parser {
         // handle type body begin
         get(TokenType.BEGIN);
 
-        System.out.println(ConsoleFormat.LIGHT_GRAY + " {");
+        if (Prettier.isEnabled())
+            System.out.println(ConsoleFormat.LIGHT_GRAY + " {");
 
         // parse the body of the class
         Node.prettier.enterScope();
@@ -356,7 +369,8 @@ public class Parser {
         // handle type body end
         get(TokenType.END);
 
-        System.out.println(ConsoleFormat.LIGHT_GRAY + "}");
+        if (Prettier.isEnabled())
+            System.out.println(ConsoleFormat.LIGHT_GRAY + "}");
 
         // handle auto-inserted semicolon at the end or the body
         if (peek().is(TokenType.SEMICOLON, "auto"))
@@ -879,7 +893,8 @@ public class Parser {
         get(TokenType.OPEN);
 
         Node.prettier.indent();
-        System.out.print(type + " " + ConsoleFormat.BLUE + name + genericTypes + ConsoleFormat.CYAN + '(');
+        if (Prettier.isEnabled())
+            System.out.print(type + " " + ConsoleFormat.BLUE + name + genericTypes + ConsoleFormat.CYAN + '(');
 
         // parse the method parameters
         List<MethodParameter> parameters = new ArrayList<>();
@@ -894,12 +909,14 @@ public class Parser {
             MethodParameter parameter = new MethodParameter(paramType, paramVar, paramName);
 
             parameters.add(parameter);
-            System.out.print(parameter);
+            if (Prettier.isEnabled())
+                System.out.print(parameter);
 
             // check if there are more parameters to be parsed
             if (peek().is(TokenType.COMMA)) {
                 get();
-                System.out.print(ConsoleFormat.CYAN + ", ");
+                if (Prettier.isEnabled())
+                    System.out.print(ConsoleFormat.CYAN + ", ");
             }
             // no more parameters expected, exit the loop
             else
@@ -908,7 +925,8 @@ public class Parser {
 
         get(TokenType.CLOSE);
 
-        System.out.println(ConsoleFormat.CYAN + ") " + ConsoleFormat.DARK_GRAY + "{");
+        if (Prettier.isEnabled())
+            System.out.println(ConsoleFormat.CYAN + ") " + ConsoleFormat.DARK_GRAY + "{");
 
         Token peek = peek();
         if (peek.is(TokenType.SEMICOLON)) {
@@ -955,7 +973,8 @@ public class Parser {
         prettier.exitScope();
 
         Node.prettier.indent();
-        System.out.println(ConsoleFormat.DARK_GRAY + "}");
+        if (Prettier.isEnabled())
+            System.out.println(ConsoleFormat.DARK_GRAY + "}");
 
         // handle method body end
         get(TokenType.END);
@@ -978,8 +997,10 @@ public class Parser {
         if (peek().is(TokenType.SEMICOLON)) {
             get();
             Node.prettier.indent();
-            System.out.print(type + " " + ConsoleFormat.BLUE + name);
-            System.out.println();
+            if (Prettier.isEnabled()) {
+                System.out.print(type + " " + ConsoleFormat.BLUE + name);
+                System.out.println();
+            }
             return new Field(type, name, null);
         }
 
@@ -1001,8 +1022,10 @@ public class Parser {
         get(TokenType.SEMICOLON);
 
         Node.prettier.indent();
-        System.out.print(type + " " + ConsoleFormat.BLUE + name);
-        System.out.print(ConsoleFormat.CYAN + " = ");
+        if (Prettier.isEnabled()) {
+            System.out.print(type + " " + ConsoleFormat.BLUE + name);
+            System.out.print(ConsoleFormat.CYAN + " = ");
+        }
         Node.prettier.processValue(value);
 
         return new Field(type, name, value);
@@ -1024,10 +1047,11 @@ public class Parser {
         values.put(name, value);
 
         if (value != null) {
-            System.out.print(ConsoleFormat.CYAN + " = ");
+            if (Prettier.isEnabled())
+                System.out.print(ConsoleFormat.CYAN + " = ");
             Node.prettier.processValue(value);
         }
-        else
+        else if (Prettier.isEnabled())
             System.out.println();
 
         while (has(cursor)) {
@@ -1042,7 +1066,8 @@ public class Parser {
             if (peek().is(TokenType.OPERATOR, "=")) {
                 get();
                 fieldValue = nextExpression();
-                System.out.print(ConsoleFormat.CYAN + " = ");
+                if (Prettier.isEnabled())
+                    System.out.print(ConsoleFormat.CYAN + " = ");
                 Node.prettier.processValue(fieldValue);
             }
             else

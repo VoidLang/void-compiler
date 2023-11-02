@@ -29,11 +29,12 @@ public class ImportedMethod extends Method {
 
     private boolean defined;
 
+
+    private IRFunction function;
+
     public ImportedMethod(Method method) {
         super(method.getReturnType(), method.getName(), method.getParameters(), method.getBody());
     }
-
-    private IRFunction function;
 
     /**
      * Initialize all class member declarations for the overriding node.
