@@ -17,6 +17,7 @@ import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.node.element.Struct;
 import org.voidlang.compiler.node.info.PackageImport;
+import org.voidlang.compiler.node.info.PackageUsing;
 import org.voidlang.compiler.token.Token;
 import org.voidlang.compiler.token.TokenType;
 import org.voidlang.compiler.token.Tokenizer;
@@ -74,6 +75,7 @@ public class Compiler {
 
         walk(sourceDir);
 
+        resolveImports();
         postProcessTypes();
         postProcessMembers();
         postProcessUses();
@@ -97,6 +99,14 @@ public class Compiler {
 
         System.out.println();
         System.out.println("Process exited with code: " + status);;
+    }
+
+
+    private void resolveImports() {
+        application
+            .getPackages()
+            .values()
+            .forEach(Package::resolveImports);
     }
 
     private void postProcessTypes() {
@@ -212,7 +222,7 @@ public class Compiler {
 
         Package pkg = application.getPackage(packageName);
         if (pkg == null) {
-            pkg = new Package(application, generator);
+            pkg = new Package(application, generator, packageName);
             application.addPackage(packageName, pkg);
         }
 
@@ -237,6 +247,8 @@ public class Compiler {
         for (Node e : nodes) {
             if (e instanceof PackageImport packageImport)
                 pkg.addAndMergeImport(packageImport.getNode());
+            else if (e instanceof PackageUsing packageUsing)
+                pkg.addAndMergeUsing(packageUsing.getNode());
             else if (e instanceof Class clazz) {
                 clazz.generateType(generator.getContext());
                 pkg.defineClass(clazz);

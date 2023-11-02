@@ -18,7 +18,7 @@ public class AST {
 
         Application application = new Application();
         Generator generator = LLVM.createContext();
-        Package root = new Package(application, generator);
+        Package root = new Package(application, generator, "test");
         Parser parser = new Parser(root, tokens);
 
         // System.out.println();

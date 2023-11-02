@@ -1,6 +1,7 @@
 package main
 
-import lib::foo
+import lib
+using lib::foo
 
 int main() {
     return foo()

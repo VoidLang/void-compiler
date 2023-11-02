@@ -8,9 +8,11 @@ import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.element.Class;
+import org.voidlang.compiler.node.element.ImportedMethod;
 import org.voidlang.compiler.node.element.Method;
 import org.voidlang.compiler.node.element.Struct;
 import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.compiler.node.type.named.MethodParameter;
 import org.voidlang.llvm.element.IRValue;
 
 import java.util.*;
@@ -20,8 +22,10 @@ import java.util.*;
 @NodeInfo(type = NodeType.ROOT)
 public class Package extends Node {
     private final Map<String, Package> packages = new HashMap<>();
-    
+
     private final List<ImportNode> imports = new ArrayList<>();
+
+    private final List<ImportNode> usings = new ArrayList<>();
 
     private final Map<String, List<Method>> methods = new HashMap<>();
 
@@ -32,6 +36,8 @@ public class Package extends Node {
     private final Application application;
 
     private final Generator generator;
+
+    private final String name;
 
     /**
      * Generate an LLVM instruction for this node
@@ -44,11 +50,115 @@ public class Package extends Node {
                 method.generate(generator);
         }
 
-        for (Class clazz : classes.values()) {
+        for (Class clazz : classes.values())
             clazz.generate(generator);
-        }
 
         return null;
+    }
+
+    public void resolveImports() {
+        // resolve each package import declared in this package
+        for (ImportNode node : imports)
+            resolveImport(this, node);
+
+        // let each child package resolve its own imports
+        packages
+            .values()
+            .forEach(Package::resolveImports);
+    }
+
+    private void resolveImport(Package parent, ImportNode node) {
+        String packageName = node.getName();
+        // try to resolve the package from nested scope
+        Package pkg = parent.getPackages().get(packageName);
+        // if the package is not declared locally, try to resolve it from the application root
+        if (pkg == null)
+            pkg = application.getPackage(packageName);
+
+        // if the package is not declared locally or in the application root, throw an error
+        if (pkg == null) {
+            List<String> names = new ArrayList<>();
+            node.getNameTree(names);
+            throw new IllegalStateException("package " + String.join("::", names) + " not found");
+        }
+
+        for (ImportNode using : usings) {
+            resolveUsing(pkg, using);
+        }
+
+        // resolve all package imports of nested import statements
+        for (ImportNode child : node.getChildren())
+            resolveImport(pkg, child);
+    }
+
+    private void resolveUsing(Package target, ImportNode using) {
+        String usingName = using.getName();
+        if (!usingName.equals(target.getName()))
+            return;
+
+        // TODO resolve using wildcards
+
+        for (ImportNode child : using.getChildren()) {
+            String childName = child.getName();
+            boolean topLevel = child.getChildren().isEmpty();
+
+            // assume the top level is a function, class or any data structure
+            if (topLevel) {
+                // for now, we will only handle functions
+                // TODO handle classes and data structures
+
+                // merge the imported methods, without overlapping the existing ones
+                List<Method> targetMethods = target.getMethods().get(childName);
+
+                if (targetMethods == null) {
+                    List<String> names = new ArrayList<>();
+                    child.getNameTree(names);
+                    throw new IllegalStateException(
+                        "method " + String.join("::", names) + "::" + childName + " not found"
+                    );
+                }
+
+                targetMethods = targetMethods
+                    .stream()
+                    .map(ImportedMethod::new)
+                    .map(method -> (Method) method)
+                    .toList();
+
+                List<Method> localMethods = methods.get(childName);
+
+                // if there were no methods associated with the name, just add the imported ones
+                if (localMethods == null) {
+                    methods.put(childName, targetMethods);
+                    continue;
+                }
+
+                // merge all methods from the package, to this package, that's signature does
+                // not overlap a method already declared in this package
+                check: for (Method targetMethod : targetMethods) {
+                    for (Method localMethod : localMethods) {
+                        // resolve the parameter types of the local method
+                        List<Type> paramTypes = localMethod
+                            .getParameters()
+                            .stream()
+                            .map(MethodParameter::getType)
+                            .toList();
+                        // skip the method, if the signature is already declared locally
+                        if (targetMethod.checkTypes(paramTypes))
+                            continue check;
+                    }
+                }
+            }
+
+            // there are more than one child, so we assume, there are more packages
+            else
+                resolveUsing(target.getPackages().get(childName), child);
+        }
+    }
+
+    private void getPackageNames(List<String> names) {
+        names.add(0, name);
+        if (parent != null)
+            names.add(0, ((Package) parent).name);
     }
 
     /**
@@ -111,6 +221,21 @@ public class Package extends Node {
     @Override
     @Nullable
     public Method resolveMethod(String name, List<Type> types) {
+        Method method = resolvePackageMethod(name, types);
+        if (method != null)
+            return method;
+
+        for (ImportNode node : imports) {
+            Package pkg = application.getPackage(node.getName());
+            if (pkg == null)
+                continue;
+
+        }
+
+        return null;
+    }
+
+    public Method resolvePackageMethod(String name, List<Type> types) {
         List<Method> methodList = methods.get(name);
         if (methodList == null)
             return null;
@@ -152,5 +277,16 @@ public class Package extends Node {
             return;
         }
         imports.add(target);
+    }
+
+    public void addAndMergeUsing(ImportNode target) {
+        for (ImportNode node : usings) {
+            if (!node.getName().equals(target.getName()))
+                continue;
+
+            node.merge(target);
+            return;
+        }
+        usings.add(target);
     }
 }

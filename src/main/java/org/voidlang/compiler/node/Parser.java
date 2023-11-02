@@ -16,6 +16,7 @@ import org.voidlang.compiler.node.element.*;
 import org.voidlang.compiler.node.element.Class;
 import org.voidlang.compiler.node.info.PackageImport;
 import org.voidlang.compiler.node.info.PackageSet;
+import org.voidlang.compiler.node.info.PackageUsing;
 import org.voidlang.compiler.node.local.*;
 import org.voidlang.compiler.node.memory.Free;
 import org.voidlang.compiler.node.memory.Malloc;
@@ -205,13 +206,18 @@ public class Parser {
      */
     private Node nextUsing() {
         // handle package import
-        get(TokenType.INFO, "import");
-        // get the name of the package
-        String name = get(TokenType.IDENTIFIER).getValue();
-        // ensure that the package is ended by a semicolon
-        get(TokenType.SEMICOLON);
-        System.out.println(ConsoleFormat.BLUE + "using " + ConsoleFormat.GREEN + name);
-        return null;
+        get(TokenType.INFO, "using");
+
+        ImportNode node = nextImportNode();
+
+        if (peek().is(TokenType.SEMICOLON))
+            get();
+
+        if (node.getName().equals("*"))
+            throw new IllegalStateException("Wildcard using must not be the root of the using tree.");
+
+        System.out.println(ConsoleFormat.BLUE + "using " + ConsoleFormat.GREEN + node);
+        return new PackageUsing(node);
     }
 
     /**
