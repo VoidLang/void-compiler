@@ -30,12 +30,20 @@ import org.voidlang.llvm.element.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.security.MessageDigest;
 import java.util.*;
 
 import static org.bytedeco.llvm.global.LLVM.*;
 
 @RequiredArgsConstructor
 public class Compiler {
+    private final List<File>
+        bitcodeFiles = new ArrayList<>(),
+        dumpFiles = new ArrayList<>(),
+        objectFiles = new ArrayList<>();
+
     private final String inputDir;
 
     private Application application;
@@ -44,10 +52,6 @@ public class Compiler {
 
     private File targetDir, sourceDir;
 
-    private List<File>
-        bitcodeFiles = new ArrayList<>(),
-        dumpFiles = new ArrayList<>(),
-        objectFiles = new ArrayList<>();
 
     public void compile() {
         File projectDir = new File(inputDir);
@@ -94,7 +98,8 @@ public class Compiler {
         System.out.println();
 
         // remove files that are not made be the current compilation
-        removeOldFiles();
+        // TODO improve this logic, do not remove files that are not recompiled, because of being cached
+        // removeOldFiles();
 
         linkModules();
 
@@ -243,14 +248,25 @@ public class Compiler {
     }
 
     private void readSource(File file) {
-        List<Token> tokens = tokenizeFile(file);
-
-        String fileName = file.getName();
-
         String moduleName = file
             .getAbsolutePath()
             .substring(sourceDir.getAbsolutePath().length() + 1)
             .replace('\\', '/');
+
+        String checksum = getChecksum(file);
+        String cachedChecksum = getCachedChecksum(file);
+
+        if (checksum != null && checksum.equals(cachedChecksum)) {
+            System.out.println(
+                ConsoleFormat.DARK_GRAY + "" + ConsoleFormat.BOLD + "[" + ConsoleFormat.MAGENTA + "Void" +
+                ConsoleFormat.DARK_GRAY + "] " +
+                ConsoleFormat.CYAN + "cached" + ConsoleFormat.LIGHT_GRAY + " > " +
+                ConsoleFormat.WHITE + moduleName
+            );
+            return;
+        }
+
+        List<Token> tokens = tokenizeFile(file);
 
         System.out.println(
             ConsoleFormat.DARK_GRAY + "" + ConsoleFormat.BOLD + "[" + ConsoleFormat.MAGENTA + "Void" +
@@ -262,7 +278,7 @@ public class Compiler {
         Generator generator = createContext(moduleName);
 
         if (!tokens.get(0).is(TokenType.INFO, "package"))
-            throw new IllegalStateException("Package declaration is missing from file: " + fileName);
+            throw new IllegalStateException("Package declaration is missing from file: " + file);
 
         String packageName = tokens
             .get(1)
@@ -275,6 +291,65 @@ public class Compiler {
         }
 
         parsePackage(pkg, tokens);
+
+        setFileChecksum(file, checksum);
+    }
+
+    private String getChecksum(File file) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            try (InputStream stream = Files.newInputStream(file.toPath())) {
+                byte[] buffer = new byte[8192];
+                int read;
+                while ((read = stream.read(buffer)) > 0)
+                    digest.update(buffer, 0, read);
+            }
+            byte[] hash = digest.digest();
+            StringBuilder builder = new StringBuilder();
+            for (byte b : hash)
+                builder.append(String.format("%02x", b));
+            return builder.toString();
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private String getCachedChecksum(File file) {
+        File dataDir = new File(targetDir, "data");
+        if (!dataDir.isDirectory())
+            return null;
+
+        String fileName = file
+            .getAbsolutePath()
+            .substring(sourceDir.getAbsolutePath().length() + 1)
+            .replace('\\', '/')
+            .replace('/', '.');
+
+        File checksumFile = new File(dataDir, fileName + ".checksum");
+        if (!checksumFile.exists())
+            return null;
+
+        String content = readFile(checksumFile);
+
+        // remove additional newline
+        return content.substring(0, content.length() - 1);
+    }
+
+    private void setFileChecksum(File file, String checksum) {
+        File dataDir = new File(targetDir, "data");
+        dataDir.mkdir();
+
+        String fileName = file
+            .getAbsolutePath()
+            .substring(sourceDir.getAbsolutePath().length() + 1)
+            .replace('\\', '/')
+            .replace('/', '.');
+
+        File checksumFile = new File(dataDir, fileName + ".checksum");
+        try {
+            Files.writeString(checksumFile.toPath(), checksum);
+        } catch (Exception ignored) {
+        }
     }
 
     private void parsePackage(Package pkg, List<Token> tokens) {
