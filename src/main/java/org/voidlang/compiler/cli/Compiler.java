@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
+import org.jetbrains.annotations.NotNull;
 import org.voidlang.compiler.builder.Application;
 import org.voidlang.compiler.builder.Package;
 import org.voidlang.compiler.builder.ProjectSettings;
@@ -166,7 +167,6 @@ public class Compiler {
             });
     }
 
-
     private void initLLVM() {
         LLVMInitializeCore(LLVMGetGlobalPassRegistry());
         LLVMLinkInMCJIT();
@@ -202,7 +202,7 @@ public class Compiler {
         args.addAll(List.of("-o", exeFile.getAbsolutePath()));
         args.addAll(List.of("-luser32", "-lgdi32", "-lkernel32"));
 
-        // args.add("-v");
+        args.add("-v");
 
         ProcessBuilder linkBuilder = new ProcessBuilder(args);
         Process linkProcess = linkBuilder.start();
@@ -227,13 +227,16 @@ public class Compiler {
         List<Token> tokens = tokenizeFile(file);
 
         String fileName = file.getName();
-        String moduleName = fileName.substring(0, fileName.length() - ".vs".length());
+
+        String moduleName = file
+            .getAbsolutePath()
+            .substring(sourceDir.getAbsolutePath().length() + 1);
 
         System.out.println(
             ConsoleFormat.DARK_GRAY + "" + ConsoleFormat.BOLD + "[" + ConsoleFormat.MAGENTA + "Void" +
             ConsoleFormat.DARK_GRAY + "] " +
             ConsoleFormat.YELLOW +  "source" + ConsoleFormat.LIGHT_GRAY + " > " +
-            ConsoleFormat.WHITE + file.getAbsolutePath().substring(sourceDir.getAbsolutePath().length() + 1)
+            ConsoleFormat.WHITE + moduleName
         );
 
         Generator generator = createContext(moduleName);
@@ -295,7 +298,12 @@ public class Compiler {
         debugDir.mkdir();
 
         String fileName = module.getName();
+        fileName = fileName
+            .substring(0, fileName.length() - 3)
+            .replace('/', '.')
+            .replace('\\', '.');
 
+        // convert the module to LLVM bitcode representation
         File bitcodeFile = new File(bitcodeDir, fileName + ".bc");
         module.writeBitcodeToFile(bitcodeFile);
 
@@ -304,6 +312,7 @@ public class Compiler {
 
         File objectFile = new File(objDir, fileName + ".obj");
 
+        // use clang to convert the LLVM bitcode file to an object file
         ProcessBuilder compileBuilder = new ProcessBuilder("clang", "-c", "-o",
             objectFile.getAbsolutePath(), bitcodeFile.getAbsolutePath());
         Process compileProcess = compileBuilder.start();
@@ -335,7 +344,7 @@ public class Compiler {
     }
 
     @SneakyThrows
-    private String readFile(File file) {
+    private @NotNull String readFile(File file) {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             StringBuilder builder = new StringBuilder();
             String line;
