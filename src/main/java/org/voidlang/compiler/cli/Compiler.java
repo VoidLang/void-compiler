@@ -230,7 +230,8 @@ public class Compiler {
 
         String moduleName = file
             .getAbsolutePath()
-            .substring(sourceDir.getAbsolutePath().length() + 1);
+            .substring(sourceDir.getAbsolutePath().length() + 1)
+            .replace('\\', '/');
 
         System.out.println(
             ConsoleFormat.DARK_GRAY + "" + ConsoleFormat.BOLD + "[" + ConsoleFormat.MAGENTA + "Void" +
@@ -243,7 +244,9 @@ public class Compiler {
 
         if (!tokens.get(0).is(TokenType.INFO, "package"))
             throw new IllegalStateException("Package declaration is missing from file: " + fileName);
-        String packageName = tokens.get(1).getValue();
+        String packageName = tokens
+            .get(1)
+            .getValue();
 
         Package pkg = application.getPackage(packageName);
         if (pkg == null) {
