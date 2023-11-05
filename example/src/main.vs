@@ -1,7 +1,5 @@
 package main
 
-import lib
-using lib::foo
 import util
 using util::add
 

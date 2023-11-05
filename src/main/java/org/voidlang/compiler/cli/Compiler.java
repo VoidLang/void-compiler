@@ -33,7 +33,6 @@ import java.io.FileReader;
 import java.util.*;
 
 import static org.bytedeco.llvm.global.LLVM.*;
-import static org.bytedeco.llvm.global.LLVM.LLVMInitializeNativeTarget;
 
 @RequiredArgsConstructor
 public class Compiler {
@@ -44,6 +43,11 @@ public class Compiler {
     private ProjectSettings settings;
 
     private File targetDir, sourceDir;
+
+    private List<File>
+        bitcodeFiles = new ArrayList<>(),
+        dumpFiles = new ArrayList<>(),
+        objectFiles = new ArrayList<>();
 
     public void compile() {
         File projectDir = new File(inputDir);
@@ -77,7 +81,7 @@ public class Compiler {
 
         initLLVM();
 
-        walk(sourceDir);
+        walkDir(sourceDir).forEach(this::readSource);
         System.out.println();
 
         resolveImports();
@@ -89,9 +93,24 @@ public class Compiler {
         compilePackages();
         System.out.println();
 
+        // remove files that are not made be the current compilation
+        removeOldFiles();
+
         linkModules();
 
         runExecutable();
+    }
+
+    private void removeOldFiles() {
+        walkDir(targetDir).forEach(file -> {
+            String name = file.getName();
+            if (
+                (name.endsWith(".bc") && !bitcodeFiles.contains(file)) ||
+                (name.endsWith(".ll") && !dumpFiles.contains(file)) ||
+                (name.endsWith(".obj") && !objectFiles.contains(file))
+            )
+                file.delete();
+        });
     }
 
     @SneakyThrows
@@ -106,7 +125,7 @@ public class Compiler {
         System.out.println();
         System.out.println(
             ConsoleFormat.RED + "" + ConsoleFormat.BOLD +
-            "[debug]: process exited with code: " +
+            "[Debug]: process exited with code: " +
             ConsoleFormat.WHITE + status +
             ConsoleFormat.DEFAULT
         );
@@ -178,20 +197,16 @@ public class Compiler {
     @SneakyThrows
     private void linkModules() {
         File exeFile = new File(targetDir, settings.name + ".exe");
-
-        List<String> args = new ArrayList<>(List.of("clang"));
-
         File objDir = new File(targetDir, "object");
 
         File[] list = objDir.listFiles();
-
         if (list == null)
             throw new IllegalStateException("No object files found");
 
         List<File> files = new ArrayList<>(Arrays.asList(list));
-
         Collections.reverse(files);
 
+        List<String> args = new ArrayList<>(List.of("clang"));
         for (File file : files) {
             if (!file.getName().endsWith(".obj"))
                 continue;
@@ -202,7 +217,7 @@ public class Compiler {
         args.addAll(List.of("-o", exeFile.getAbsolutePath()));
         args.addAll(List.of("-luser32", "-lgdi32", "-lkernel32"));
 
-        args.add("-v");
+        // args.add("-v");
 
         ProcessBuilder linkBuilder = new ProcessBuilder(args);
         Process linkProcess = linkBuilder.start();
@@ -210,8 +225,12 @@ public class Compiler {
         System.out.print(ConsoleFormat.DEFAULT);
         System.err.print(ConsoleFormat.DEFAULT);
 
-        linkProcess.getErrorStream().transferTo(System.err);
-        linkProcess.getInputStream().transferTo(System.out);
+        linkProcess
+            .getErrorStream()
+            .transferTo(System.err);
+        linkProcess
+            .getInputStream()
+            .transferTo(System.out);
 
         linkProcess.waitFor();
 
@@ -244,6 +263,7 @@ public class Compiler {
 
         if (!tokens.get(0).is(TokenType.INFO, "package"))
             throw new IllegalStateException("Package declaration is missing from file: " + fileName);
+
         String packageName = tokens
             .get(1)
             .getValue();
@@ -308,12 +328,15 @@ public class Compiler {
 
         // convert the module to LLVM bitcode representation
         File bitcodeFile = new File(bitcodeDir, fileName + ".bc");
+        bitcodeFiles.add(bitcodeFile);
         module.writeBitcodeToFile(bitcodeFile);
 
         File dumpFile = new File(debugDir, fileName + ".ll");
+        dumpFiles.add(dumpFile);
         module.printIRToFile(dumpFile);
 
         File objectFile = new File(objDir, fileName + ".obj");
+        objectFiles.add(objectFile);
 
         // use clang to convert the LLVM bitcode file to an object file
         ProcessBuilder compileBuilder = new ProcessBuilder("clang", "-c", "-o",
@@ -352,7 +375,9 @@ public class Compiler {
             StringBuilder builder = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null)
-                builder.append(line).append('\n');
+                builder
+                    .append(line)
+                    .append('\n');
             return builder.toString();
         }
     }
@@ -365,15 +390,17 @@ public class Compiler {
         return new Generator(context, module, builder);
     }
 
-    private void walk(File file) {
-        if (file.isFile())
-            readSource(file);
-        else if (file.isDirectory()) {
-            File[] files = file.listFiles();
-            if (files == null)
-                return;
-            for (File child : files)
-                walk(child);
+    private List<File> walkDir(File dir) {
+        List<File> files = new ArrayList<>();
+        if (dir.isFile())
+            files.add(dir);
+        else if (dir.isDirectory()) {
+            File[] list = dir.listFiles();
+            if (list == null)
+                return files;
+            for (File child : list)
+                files.addAll(walkDir(child));
         }
+        return files;
     }
 }
