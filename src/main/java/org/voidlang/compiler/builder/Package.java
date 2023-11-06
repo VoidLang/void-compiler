@@ -101,6 +101,7 @@ public class Package extends Node {
         for (ImportNode child : using.getChildren()) {
             String childName = child.getName();
             boolean topLevel = child.getChildren().isEmpty();
+            boolean wildcard = childName.equals("*");
 
             // assume the top level is a function, class or any data structure
             if (topLevel) {
@@ -108,7 +109,16 @@ public class Package extends Node {
                 // TODO handle classes and data structures
 
                 // merge the imported methods, without overlapping the existing ones
-                List<Method> targetMethods = target.getMethods().get(childName);
+                List<Method> targetMethods = !wildcard
+                    ? target.getMethods().get(childName)
+                    : target // extract the methods from the target package
+                        .getMethods()
+                        .values()
+                        .stream()
+                        .reduce(new ArrayList<>(), (a, b) -> {
+                            a.addAll(b);
+                            return a;
+                        });
 
                 if (targetMethods == null) {
                     List<String> names = new ArrayList<>();
@@ -124,7 +134,15 @@ public class Package extends Node {
                     .map(method -> (Method) method)
                     .toList();
 
-                List<Method> localMethods = methods.get(childName);
+                List<Method> localMethods = !wildcard
+                    ? methods.get(childName)
+                    : methods // extract the methods from the local package
+                        .values()
+                        .stream()
+                        .reduce(new ArrayList<>(), (a, b) -> {
+                            a.addAll(b);
+                            return a;
+                        });
 
                 // if there were no methods associated with the name, just add the imported ones
                 if (localMethods == null) {
@@ -132,8 +150,9 @@ public class Package extends Node {
                     continue;
                 }
 
-                // merge all methods from the package, to this package, that's signature does
+                // find all methods from the package, to this package, that's signature does
                 // not overlap a method already declared in this package
+                List<Method> mergedMethods = new ArrayList<>();
                 check: for (Method targetMethod : targetMethods) {
                     for (Method localMethod : localMethods) {
                         // resolve the parameter types of the local method
@@ -145,8 +164,21 @@ public class Package extends Node {
                         // skip the method, if the signature is already declared locally
                         if (targetMethod.checkTypes(paramTypes))
                             continue check;
+                        mergedMethods.add(targetMethod);
                     }
                 }
+
+                // merge the non-overlapping methods to this package
+                if (!wildcard)
+                    methods
+                        .computeIfAbsent(childName, name -> new ArrayList<>())
+                        .addAll(mergedMethods);
+                else
+                    for (Method mergedMethod : mergedMethods) {
+                        methods
+                            .computeIfAbsent(mergedMethod.getName(), name -> new ArrayList<>())
+                            .add(mergedMethod);
+                    }
             }
 
             // there are more than one child, so we assume, there are more packages
