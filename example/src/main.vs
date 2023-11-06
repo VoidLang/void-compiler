@@ -5,5 +5,5 @@ using console::*
 
 int main() {
     println("Hello, World")
-    return 0;
+    return 0
 }

@@ -2,6 +2,6 @@ package SizeofTest
 
 int main() {
     let value = true
-    let size = sizeof value
+    mut size = sizeof value
     return size as int
 }

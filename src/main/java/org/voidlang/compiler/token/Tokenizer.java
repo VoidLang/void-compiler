@@ -61,23 +61,42 @@ public class Tokenizer {
      * @return next parsed token
      */
     public Token next() {
-        if (peek() == '/' && at(cursor + 1) == '/') {
-            skip(2);
-            while (peek() != '\n')
-                get();
+        // ignore all whitespaces from the content
+        while (isWhitespace(peek())) {
+            // handle new line
+            if (get() == '\n') {
+                // reset the line index
+                lineIndex = 0;
+                lineNumber++;
+                // make a new line token to be replaced later to semicolons
+                return makeToken(TokenType.NEW_LINE);
+            }
         }
 
+        // handle one line comments
+        if (peek() == '/' && at(cursor + 1) == '/') {
+            while (peek() != '\n') {
+                get();
+            }
+            lineIndex++;
+        }
+
+        // handle multiline comments
         else if (peek() == '/' && at(cursor + 1) == '*') {
+            // skip the comment prefix
             skip(2);
 
             while (true) {
                 if (peek() == '*' && at(cursor + 1) == '/') {
+                    // skip the comment suffix
                     skip(2);
                     break;
                 }
                 get();
             }
         }
+
+        // epic workaround for ignoring comments
 
         // ignore all whitespaces from the content
         while (isWhitespace(peek())) {
@@ -94,8 +113,6 @@ public class Tokenizer {
         // handle end of file
         if (peek() == '\0')
             return makeToken(TokenType.FINISH);
-
-
 
         beginIndex = cursor;
         tokenLineNumber = lineNumber;

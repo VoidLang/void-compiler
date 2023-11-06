@@ -109,8 +109,8 @@ public class Transformer {
 
             // ignore tokens that are a part of a command
             // TODO this should be done by the tokenizer
-            handleCommentLine();
-            handleCommentBlock();
+            // handleCommentLine();
+            // handleCommentBlock();
 
             // ignore the token if it is not a new line
             if (!token.is(TokenType.NEW_LINE)) {
