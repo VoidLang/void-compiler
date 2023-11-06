@@ -39,11 +39,6 @@ import static org.bytedeco.llvm.global.LLVM.*;
 
 @RequiredArgsConstructor
 public class Compiler {
-    private final List<File>
-        bitcodeFiles = new ArrayList<>(),
-        dumpFiles = new ArrayList<>(),
-        objectFiles = new ArrayList<>();
-
     private final String inputDir;
 
     private Application application;
@@ -97,9 +92,7 @@ public class Compiler {
         compilePackages();
         System.out.println();
 
-        // remove files that are not made be the current compilation
-        // TODO improve this logic, do not remove files that are not recompiled, because of being cached
-        // removeOldFiles();
+        removeOldFiles();
 
         linkModules();
 
@@ -107,15 +100,55 @@ public class Compiler {
     }
 
     private void removeOldFiles() {
-        walkDir(targetDir).forEach(file -> {
-            String name = file.getName();
+        List<File>
+            bitcodeFiles = new ArrayList<>(),
+            dumpFiles = new ArrayList<>(),
+            objectFiles = new ArrayList<>(),
+            checksumFiles = new ArrayList<>();
+
+        File
+            bitcodeDir = new File(targetDir, "bitcode"),
+            objDir = new File(targetDir, "object"),
+            debugDir = new File(targetDir, "debug"),
+            dataDir = new File(targetDir, "data");
+
+        List<File>
+            sourceFiles = walkDir(sourceDir),
+            targetFiles = walkDir(targetDir);
+
+        for (File sourceFile : sourceFiles) {
+            String fileName = sourceFile
+                .getAbsolutePath()
+                .substring(sourceDir.getAbsolutePath().length() + 1)
+                .replace('\\', '/');
+
+            fileName = fileName
+                .substring(0, fileName.length() - 3)
+                .replace('/', '.')
+                .replace('\\', '.');
+
+            File
+                bitcodeFile = new File(bitcodeDir, fileName + ".bc"),
+                dumpFile = new File(debugDir, fileName + ".ll"),
+                objectFile = new File(objDir, fileName + ".obj"),
+                checksumFile = new File(dataDir, fileName + ".checksum");
+
+            bitcodeFiles.add(bitcodeFile);
+            dumpFiles.add(dumpFile);
+            objectFiles.add(objectFile);
+            checksumFiles.add(checksumFile);
+        }
+
+        for (File targetFile : targetFiles) {
+            String name = targetFile.getName();
             if (
-                (name.endsWith(".bc") && !bitcodeFiles.contains(file)) ||
-                (name.endsWith(".ll") && !dumpFiles.contains(file)) ||
-                (name.endsWith(".obj") && !objectFiles.contains(file))
+                (name.endsWith(".bc") && !bitcodeFiles.contains(targetFile)) ||
+                (name.endsWith(".ll") && !dumpFiles.contains(targetFile)) ||
+                (name.endsWith(".obj") && !objectFiles.contains(targetFile)) ||
+                (name.endsWith(".checksum") && !checksumFiles.contains(targetFile))
             )
-                file.delete();
-        });
+                targetFile.delete();
+        }
     }
 
     @SneakyThrows
@@ -253,6 +286,8 @@ public class Compiler {
             .substring(sourceDir.getAbsolutePath().length() + 1)
             .replace('\\', '/');
 
+        // TODO invalidate cache, if the object file is missing for the source file
+        //  perhaps the files were deleted manually by the user
         String checksum = getChecksum(file);
         String cachedChecksum = getCachedChecksum(file);
 
@@ -319,8 +354,9 @@ public class Compiler {
         if (!dataDir.isDirectory())
             return null;
 
-        String fileName = file
-            .getAbsolutePath()
+        String fileName = file.getAbsolutePath();
+        fileName = fileName
+            .substring(0, fileName.length() - ".vs".length())
             .substring(sourceDir.getAbsolutePath().length() + 1)
             .replace('\\', '/')
             .replace('/', '.');
@@ -339,8 +375,9 @@ public class Compiler {
         File dataDir = new File(targetDir, "data");
         dataDir.mkdir();
 
-        String fileName = file
-            .getAbsolutePath()
+        String fileName = file.getAbsolutePath();
+        fileName = fileName
+            .substring(0, fileName.length() - ".vs".length())
             .substring(sourceDir.getAbsolutePath().length() + 1)
             .replace('\\', '/')
             .replace('/', '.');
@@ -403,15 +440,12 @@ public class Compiler {
 
         // convert the module to LLVM bitcode representation
         File bitcodeFile = new File(bitcodeDir, fileName + ".bc");
-        bitcodeFiles.add(bitcodeFile);
         module.writeBitcodeToFile(bitcodeFile);
 
         File dumpFile = new File(debugDir, fileName + ".ll");
-        dumpFiles.add(dumpFile);
         module.printIRToFile(dumpFile);
 
         File objectFile = new File(objDir, fileName + ".obj");
-        objectFiles.add(objectFile);
 
         // use clang to convert the LLVM bitcode file to an object file
         ProcessBuilder compileBuilder = new ProcessBuilder("clang", "-c", "-o",
