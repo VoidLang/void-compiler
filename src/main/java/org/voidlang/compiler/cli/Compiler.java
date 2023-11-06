@@ -47,6 +47,7 @@ public class Compiler {
 
     private File targetDir, sourceDir;
 
+    private int cachedFiles, parsedFiles, compiledFiles;
 
     public void compile() {
         File projectDir = new File(inputDir);
@@ -81,7 +82,8 @@ public class Compiler {
         initLLVM();
 
         walkDir(sourceDir).forEach(this::readSource);
-        System.out.println();
+        if (cachedFiles > 0 || parsedFiles > 0)
+            System.out.println();
 
         resolveImports();
         postProcessTypes();
@@ -90,7 +92,8 @@ public class Compiler {
         generate();
 
         compilePackages();
-        System.out.println();
+        if (compiledFiles > 0)
+            System.out.println();
 
         removeOldFiles();
 
@@ -298,6 +301,7 @@ public class Compiler {
                 ConsoleFormat.CYAN + "cached" + ConsoleFormat.LIGHT_GRAY + " > " +
                 ConsoleFormat.WHITE + moduleName
             );
+            cachedFiles++;
             return;
         }
 
@@ -309,6 +313,7 @@ public class Compiler {
             ConsoleFormat.YELLOW +  "source" + ConsoleFormat.LIGHT_GRAY + " > " +
             ConsoleFormat.WHITE + moduleName
         );
+        parsedFiles++;
 
         Generator generator = createContext(moduleName);
 
@@ -460,6 +465,7 @@ public class Compiler {
             ConsoleFormat.LIGHT_GRAY + " > " +
             ConsoleFormat.WHITE + fileName
         );
+        compiledFiles++;
     }
 
     private List<Token> tokenizeFile(File file) {
