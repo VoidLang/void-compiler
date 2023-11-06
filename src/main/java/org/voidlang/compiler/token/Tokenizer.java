@@ -61,6 +61,24 @@ public class Tokenizer {
      * @return next parsed token
      */
     public Token next() {
+        if (peek() == '/' && at(cursor + 1) == '/') {
+            skip(2);
+            while (peek() != '\n')
+                get();
+        }
+
+        else if (peek() == '/' && at(cursor + 1) == '*') {
+            skip(2);
+
+            while (true) {
+                if (peek() == '*' && at(cursor + 1) == '/') {
+                    skip(2);
+                    break;
+                }
+                get();
+            }
+        }
+
         // ignore all whitespaces from the content
         while (isWhitespace(peek())) {
             // handle new line
@@ -77,6 +95,8 @@ public class Tokenizer {
         if (peek() == '\0')
             return makeToken(TokenType.FINISH);
 
+
+
         beginIndex = cursor;
         tokenLineNumber = lineNumber;
         tokenLineIndex = lineIndex;
@@ -87,6 +107,7 @@ public class Tokenizer {
 
         // handle operators
         // TODO handle comments here, before operators
+
         else if (isOperator(peek()))
             return nextOperator();
         // handle separators

@@ -1,4 +1,4 @@
-package "SizeofTest"
+package SizeofTest
 
 int main() {
     let value = true
