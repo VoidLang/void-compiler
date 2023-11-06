@@ -291,19 +291,23 @@ public class Compiler {
 
         // TODO invalidate cache, if the object file is missing for the source file
         //  perhaps the files were deleted manually by the user
-        String checksum = getChecksum(file);
-        String cachedChecksum = getCachedChecksum(file);
 
-        if (checksum != null && checksum.equals(cachedChecksum)) {
-            System.out.println(
-                ConsoleFormat.DARK_GRAY + "" + ConsoleFormat.BOLD + "[" + ConsoleFormat.MAGENTA + "Void" +
-                ConsoleFormat.DARK_GRAY + "] " +
-                ConsoleFormat.CYAN + "cached" + ConsoleFormat.LIGHT_GRAY + " > " +
-                ConsoleFormat.WHITE + moduleName
-            );
-            cachedFiles++;
-            return;
-        }
+        // TODO you need to parse the file sill, because otherwise you won't know the cached packages contain
+
+        // String checksum = getChecksum(file);
+        // String cachedChecksum = getCachedChecksum(file);
+
+        // if (checksum != null && checksum.equals(cachedChecksum)) {
+        //     System.out.println(
+        //         ConsoleFormat.DARK_GRAY + "" + ConsoleFormat.BOLD + "[" + ConsoleFormat.MAGENTA + "Void" +
+        //         ConsoleFormat.DARK_GRAY + "] " +
+        //         ConsoleFormat.CYAN + "cached" + ConsoleFormat.LIGHT_GRAY + " > " +
+        //         ConsoleFormat.WHITE + moduleName
+        //     );
+        //     cachedFiles++;
+        //     return;
+        // }
+        // setFileChecksum(file, checksum);
 
         List<Token> tokens = tokenizeFile(file);
 
@@ -331,8 +335,6 @@ public class Compiler {
         }
 
         parsePackage(pkg, tokens);
-
-        setFileChecksum(file, checksum);
     }
 
     private String getChecksum(File file) {
