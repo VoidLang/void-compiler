@@ -1,10 +1,7 @@
 package console
 
-extern int GetStdHandle(int kind)
-
-extern int WriteConsoleA(int handle, ref byte buffer, int length, ref int written, int reserved)
-
-extern int strlen(ref byte buffer)
+import platform::windows::kernel32
+using platform::windows::kernel32::{GetStdHandle,WriteConsoleA,strlen}
 
 void printSizedBuffer(ref byte buffer, int length) {
     let handle = GetStdHandle(-11)

@@ -8,6 +8,8 @@ import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.llvm.element.IRValue;
 
+import java.util.List;
+
 /**
  * Represents a package name declaration of a file.
  */
@@ -18,7 +20,7 @@ public class PackageSet extends Node {
     /**
      * The name of the package to be declared.
      */
-    private final String name;
+    private final List<String> names;
 
     /**
      * Initialize all the child nodes for the overriding node.

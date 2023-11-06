@@ -2,6 +2,7 @@ package org.voidlang.compiler.builder;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
@@ -38,6 +39,9 @@ public class Package extends Node {
     private final Generator generator;
 
     private final String name;
+
+    @Setter
+    private Package parentPkg;
 
     /**
      * Generate an LLVM instruction for this node
@@ -82,9 +86,8 @@ public class Package extends Node {
             throw new IllegalStateException("package " + String.join("::", names) + " not found");
         }
 
-        for (ImportNode using : usings) {
+        for (ImportNode using : usings)
             resolveUsing(pkg, using);
-        }
 
         // resolve all package imports of nested import statements
         for (ImportNode child : node.getChildren())
@@ -95,8 +98,6 @@ public class Package extends Node {
         String usingName = using.getName();
         if (!usingName.equals(target.getName()))
             return;
-
-        // TODO resolve using wildcards
 
         for (ImportNode child : using.getChildren()) {
             String childName = child.getName();
@@ -182,8 +183,18 @@ public class Package extends Node {
             }
 
             // there are more than one child, so we assume, there are more packages
-            else
-                resolveUsing(target.getPackages().get(childName), child);
+            else {
+                Package childPackage = target.getPackages().get(childName);
+                if (childPackage == null) {
+                    List<String> names = new ArrayList<>();
+                    child.getNameTree(names);
+                    throw new IllegalStateException(
+                        "package " + String.join("::", names) + " not found"
+                    );
+                }
+
+                resolveUsing(childPackage, child);
+            }
         }
     }
 

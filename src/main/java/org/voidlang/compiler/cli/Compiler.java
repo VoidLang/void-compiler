@@ -324,14 +324,35 @@ public class Compiler {
         if (!tokens.get(0).is(TokenType.INFO, "package"))
             throw new IllegalStateException("Package declaration is missing from file: " + file);
 
-        String packageName = tokens
-            .get(1)
-            .getValue();
+        // resolve the nested package name declaration
+        List<String> names = new ArrayList<>();
+        names.add(tokens.get(1).getValue());
 
+        int i = 2;
+        for (Token token = tokens.get(i); !token.is(TokenType.SEMICOLON); token = tokens.get(++i)) {
+            names.add(tokens.get(i += 2).getValue());
+        }
+
+        String packageName = names.get(0);
+
+        // resolve the package of the root package name declaration
         Package pkg = application.getPackage(packageName);
         if (pkg == null) {
             pkg = new Package(application, generator, packageName);
             application.addPackage(packageName, pkg);
+        }
+
+        // resolve the nested packages
+        if (names.size() > 1) {
+            for (String name : names.subList(1, names.size())) {
+                Package child = pkg.getPackages().get(name);
+                if (child == null) {
+                    child = new Package(application, generator, name);
+                    pkg.getPackages().put(name, child);
+                    pkg.setParentPkg(pkg);
+                }
+                pkg = child;
+            }
         }
 
         parsePackage(pkg, tokens);

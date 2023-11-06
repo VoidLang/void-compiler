@@ -131,13 +131,24 @@ public class Parser {
 
         // get the name of the package
         String name = get(TokenType.IDENTIFIER).getValue();
+
+        List<String> names = new ArrayList<>();
+        names.add(name);
+
+        while (!peek().is(TokenType.SEMICOLON)) {
+            get(TokenType.COLON);
+            get(TokenType.COLON);
+
+            names.add(get(TokenType.IDENTIFIER).getValue());
+        }
+
         // ensure that the package is ended by a semicolon
         get(TokenType.SEMICOLON);
 
         if (Prettier.isEnabled())
             System.out.println(ConsoleFormat.BLUE + "package " + ConsoleFormat.GREEN + name);
 
-        return new PackageSet(name);
+        return new PackageSet(names);
     }
 
     /**
