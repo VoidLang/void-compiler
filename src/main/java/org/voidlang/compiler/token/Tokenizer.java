@@ -202,6 +202,7 @@ public class Tokenizer {
 
         while (isIdentifierPart(peek()))
             get();
+
         String token = range(begin, cursor);
         // determine the token type
         TokenType type = TokenType.IDENTIFIER;

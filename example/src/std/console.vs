@@ -1,7 +1,7 @@
 package console
 
-import platform::windows::kernel32
-using platform::windows::kernel32::{GetStdHandle,WriteConsoleA,strlen}
+import os::win::kernel32
+using os::win::kernel32::{GetStdHandle,WriteConsoleA,strlen}
 
 /**
  * Print a buffer of a fixed size to the standard output stream.
