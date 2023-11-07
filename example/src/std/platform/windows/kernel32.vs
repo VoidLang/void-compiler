@@ -1,4 +1,4 @@
-package platform::windows::kernel32
+package os::win::kernel32
 
 /**
  * Retrieve a handle to the specified standard device (standard input, standard output, or standard error).
