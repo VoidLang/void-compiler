@@ -8,7 +8,7 @@ package os::win::kernel32
  * - STD_OUTPUT_HANDLE | -11
  * - STD_ERROR_HANDLE  | -12
  *
- * @param kind - the standard device type
+ * @param kind the standard device type
  * @return the identifier of the device
  * 
  * @see https://learn.microsoft.com/en-us/windows/console/getstdhandle
@@ -29,10 +29,14 @@ extern int GetLastError()
 /**
  * Writes a character string to a console screen buffer beginning at the current cursor location.
  * 
- * @param handle - The handle to the console screen buffer. The handle must have the GENERIC_WRITE access right. 
+ * @param handle The handle to the console screen buffer. The handle must have the GENERIC_WRITE access right. 
  * For more information, see Console Buffer Security and Access Rights.
- * @param buffer - A pointer to a buffer that contains characters to be written to the console screen buffer. 
+ * @param buffer A pointer to a buffer that contains characters to be written to the console screen buffer. 
  * This is expected to be an array of either char for WriteConsoleA or wchar_t for WriteConsoleW.
+ * @param length The number of characters to be written. If the total size of the specified number of characters 
+ * exceeds the available heap, the function fails with ERROR_NOT_ENOUGH_MEMORY.
+ * @param written A pointer to a variable that receives the number of characters actually written.
+ * @param reserved Reserved; must be NULL.
  * 
  * @see https://learn.microsoft.com/en-us/windows/console/writeconsole
  */
@@ -41,14 +45,14 @@ extern int WriteConsoleA(int handle, ref byte buffer, int length, ref int writte
 /**
  * Writes a character string to a console screen buffer beginning at the current cursor location.
  * 
- * @param handle - The handle to the console screen buffer. The handle must have the GENERIC_WRITE access right. 
+ * @param handle The handle to the console screen buffer. The handle must have the GENERIC_WRITE access right. 
  * For more information, see Console Buffer Security and Access Rights.
- * @param buffer - A pointer to a buffer that contains characters to be written to the console screen buffer. 
+ * @param buffer A pointer to a buffer that contains characters to be written to the console screen buffer. 
  * This is expected to be an array of either char for WriteConsoleA or wchar_t for WriteConsoleW.
- * @param length - The number of characters to be written. If the total size of the specified number of characters 
+ * @param length The number of characters to be written. If the total size of the specified number of characters 
  * exceeds the available heap, the function fails with ERROR_NOT_ENOUGH_MEMORY.
- * @param written - A pointer to a variable that receives the number of characters actually written.
- * @param reserved - Reserved; must be NULL.
+ * @param written A pointer to a variable that receives the number of characters actually written.
+ * @param reserved Reserved; must be NULL.
  * 
  * @see https://learn.microsoft.com/en-us/windows/console/writeconsole
  */
@@ -58,7 +62,7 @@ extern int WriteConsoleW(int handle, ref ushort buffer, int length, ref int writ
  *-Gets the length of a string, by using the current locale or a specified locale. 
  * More secure versions of these functions are available; see strnlen, strnlen_s, wcsnlen, 
  * wcsnlen_s, _mbsnlen, _mbsnlen_l, _mbstrnlen, _mbstrnlen_l.
- * @param buffer- A Null-terminated string.
+ * @param buffer a null-terminated string
  * @return the locale to use
  */
 extern int strlen(ref byte buffer)
