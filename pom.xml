@@ -25,7 +25,7 @@
         <dependency>
             <groupId>com.github.Inventex-Development</groupId>
             <artifactId>OctaCore</artifactId>
-            <version>1.0.7</version>
+            <version>1.0.20</version>
         </dependency>
         <dependency>
             <groupId>org.voidlang.llvm</groupId>
