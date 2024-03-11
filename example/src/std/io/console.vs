@@ -3,6 +3,9 @@ package console
 import os::win::kernel32
 using os::win::kernel32::{GetStdHandle,WriteConsoleA,strlen}
 
+import os::external::libc
+using libc::itoa
+
 /**
  * Print a buffer of a fixed size to the standard output stream.
  */
@@ -46,6 +49,16 @@ void println() {
     return
 }
 
+void print(int value) {
+    let buffer = ""
+    itoa(value, buffer, 10)
+    print(buffer)
+    return
+}
+
+extern ref byte itoa(int value, ref byte str, int radix)
+
+
 /**
  * Print a value to the standard output stream and terminate the line.
  *
@@ -55,6 +68,11 @@ void panic(ref byte message) {
     print("Program paniced with message: ")
     println(message)
     exit(101)
+    return
+}
+
+void panic() {
+    panic("No message provided")
     return
 }
 
