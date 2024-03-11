@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.*;
-import org.voidlang.compiler.node.local.Loadable;
+import org.voidlang.compiler.node.method.Instruction;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.value.Tuple;

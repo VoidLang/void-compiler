@@ -3,11 +3,10 @@ package org.voidlang.compiler.node.element;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import static org.bytedeco.llvm.global.LLVM.*;
-import static org.bytedeco.llvm.global.LLVM.LLVMSetFunctionCallConv;
 
 import org.voidlang.compiler.node.*;
 import org.voidlang.compiler.node.local.*;
+import org.voidlang.compiler.node.method.FunctionContext;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;

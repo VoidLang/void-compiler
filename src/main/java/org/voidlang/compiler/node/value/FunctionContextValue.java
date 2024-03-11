@@ -2,7 +2,7 @@ package org.voidlang.compiler.node.value;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.voidlang.compiler.node.FunctionContext;
+import org.voidlang.compiler.node.method.FunctionContext;
 import org.voidlang.compiler.node.element.Method;
 
 @Getter

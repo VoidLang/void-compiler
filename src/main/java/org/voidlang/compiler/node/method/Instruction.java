@@ -1,7 +1,8 @@
-package org.voidlang.compiler.node;
+package org.voidlang.compiler.node.method;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.element.Method;
 
 @Getter

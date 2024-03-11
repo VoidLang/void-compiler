@@ -7,12 +7,13 @@ import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.*;
 import org.voidlang.compiler.node.local.ImmutableLocalDeclareAssign;
 import org.voidlang.compiler.node.local.MutableLocalDeclareAssign;
+import org.voidlang.compiler.node.method.FunctionContext;
+import org.voidlang.compiler.node.method.Instruction;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRBlock;
 import org.voidlang.llvm.element.IRBuilder;
-import org.voidlang.llvm.element.IRType;
 import org.voidlang.llvm.element.IRValue;
 
 import java.util.ArrayList;

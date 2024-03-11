@@ -8,7 +8,6 @@ int main() {
     let index = 45
 
     arr[index] = 40
-
     arr[index] = 20
 
     print("value is: ")
