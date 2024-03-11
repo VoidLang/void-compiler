@@ -7,6 +7,7 @@ import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
 import org.voidlang.compiler.node.operator.Accessor;
 import org.voidlang.compiler.node.type.array.Array;
+import org.voidlang.compiler.node.type.array.Dimension;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.value.Value;
@@ -14,6 +15,9 @@ import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
 import org.voidlang.llvm.element.IRValue;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RequiredArgsConstructor
 @NodeInfo(type = NodeType.ARRAY_LOAD)
@@ -34,18 +38,17 @@ public class ArrayLoad extends Value {
         IRBuilder builder = generator.getBuilder();
         IRContext context = generator.getContext();
 
-        ScalarType elementType = (ScalarType) accessor.getValueType();
+        ScalarType arrayType = (ScalarType) accessor.getValueType();
+        int arraySize = arrayType.getArray().getDimensions().size();
 
-        int arraySize = elementType.getArray().getDimensions().size();
-
-        IRType arrayType = elementType
+        IRType irArrayType = arrayType
             .generateType(generator.getContext())
             .toArrayType(arraySize);
         IRValue arrayPointer = accessor.generate(generator);
 
-        IRValue indexPointer = builder.structMemberPointer(arrayType, arrayPointer, index, "array load[" + index + "]");
+        IRValue indexPointer = builder.structMemberPointer(irArrayType, arrayPointer, index, "array load[" + index + "]");
 
-        IRType indexType = this.elementType.generateType(context);
+        IRType indexType = elementType.generateType(context);
         return builder.load(indexType, indexPointer, "array value[" + index + "]");
     }
 
@@ -91,16 +94,21 @@ public class ArrayLoad extends Value {
 
         ScalarType arrayType = (ScalarType) accessor.getValueType();
 
-        int dimensions = arrayType
-            .getArray()
-            .getDimensions()
-            .size() - 1;
+        // remove the first dimension from the array type
+        Array newArray;
+        if (arrayType.getArray().getDimensions().size() == 1)
+            newArray = Array.noArray();
+        else {
+            List<Dimension> newDimensions = new ArrayList<>(arrayType.getArray().getDimensions());
+            newDimensions.remove(0);
+            newArray = Array.of(newDimensions);
+        }
 
         elementType = new ScalarType(
             arrayType.getReferencing(),
             arrayType.getName(),
             arrayType.getGenerics(),
-            dimensions == 0 ? Array.noArray() : Array.explicit(dimensions - 1)
+            newArray
         );
     }
 
