@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
 import org.voidlang.compiler.node.element.Method;
+import org.voidlang.compiler.node.method.FunctionContext;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.compiler.util.Prettier;
 import org.voidlang.llvm.element.IRValue;
@@ -148,5 +149,19 @@ public abstract class Node {
     @Nullable
     public Method resolveMethod(String name, List<Type> types) {
         return parent != null ? parent.resolveMethod(name, types) : null;
+    }
+
+    /**
+     * Recursively resolve the method that this node is a child of.
+     *
+     * @return the method that this node is a child of
+     */
+    public Method resolveMethodScope() {
+        if (this instanceof Method method)
+            return method;
+        else if (this instanceof FunctionContext context && context.getContext() != null)
+            return context.getContext();
+        else
+            return parent.resolveMethodScope();
     }
 }
