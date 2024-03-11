@@ -34,18 +34,22 @@ public class ArrayStore extends Value {
         IRBuilder builder = generator.getBuilder();
         IRContext context = generator.getContext();
 
-        ScalarType elementType = (ScalarType) accessor.getValueType();
-        int arraySize = elementType.getArray().getDimensions().size();
+        ScalarType arrayType = (ScalarType) accessor.getValueType();
+        int arrayDimensions = arrayType.getArray().getDimensions().size();
+        int arrayLength = arrayType.getArray().getDimensions().get(0).getSizeConstant();
+
+        if (index < 0 || index >= arrayLength)
+            throw new IndexOutOfBoundsException("Array load index out of bounds: " + index + " (size: " + arrayLength + ")");
 
         if (!(accessor.getValue() instanceof Mutable))
             throw new IllegalStateException("Cannot store array element for immutable array");
 
-        IRType arrayType = elementType
+        IRType irArrayType = arrayType
             .generateType(context)
-            .toArrayType(arraySize);
+            .toArrayType(arrayDimensions);
 
         IRValue arrayPointer = accessor.generate(generator);
-        IRValue indexPointer = builder.structMemberPointer(arrayType, arrayPointer, index, "array store[" + index + "]");
+        IRValue indexPointer = builder.structMemberPointer(irArrayType, arrayPointer, index, "array store[" + index + "]");
 
         IRValue irValue = value.generate(generator);
         return builder.store(irValue, indexPointer);

@@ -39,11 +39,15 @@ public class ArrayLoad extends Value {
         IRContext context = generator.getContext();
 
         ScalarType arrayType = (ScalarType) accessor.getValueType();
-        int arraySize = arrayType.getArray().getDimensions().size();
+        int arrayDimensions = arrayType.getArray().getDimensions().size();
+        int arrayLength = arrayType.getArray().getDimensions().get(0).getSizeConstant();
+
+        if (index < 0 || index >= arrayLength)
+            throw new IndexOutOfBoundsException("Array load index out of bounds: " + index + " (size: " + arrayLength + ")");
 
         IRType irArrayType = arrayType
             .generateType(context)
-            .toArrayType(arraySize);
+            .toArrayType(arrayDimensions);
         IRValue arrayPointer = accessor.generate(generator);
 
         IRValue indexPointer = builder.structMemberPointer(irArrayType, arrayPointer, index, "array load[" + index + "]");

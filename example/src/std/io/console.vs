@@ -45,3 +45,20 @@ void println() {
     printSizedBuffer("\r\n", 2)
     return
 }
+
+/**
+ * Print a value to the standard output stream and terminate the line.
+ *
+ * Exit the current process with status code `101`.
+ */
+void panic(ref byte message) {
+    print("Program paniced with message: ")
+    println(message)
+    exit(101)
+    return
+}
+
+/**
+ * Exit the current process with the specified status code.
+ */
+extern void exit(int code)
