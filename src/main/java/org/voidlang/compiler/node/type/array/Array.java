@@ -88,8 +88,7 @@ public class Array {
      */
     public static Array explicit(int size) {
         List<Dimension> data = new ArrayList<>();
-        for (int i = 0; i < size; i++)
-            data.add(Dimension.explicit(size));
+        data.add(Dimension.explicit(size));
         return new Array(data);
     }
 
@@ -103,5 +102,14 @@ public class Array {
         for (int i = 0; i < dimensions; i++)
             data.add(Dimension.explicit(identifier));
         return new Array(data);
+    }
+
+    /**
+     * Create an array wrapper for the specified dimensions.
+     * @param dimensions array dimensions
+     * @return array of specified dimensions
+     */
+    public static Array of(List<Dimension> dimensions) {
+        return new Array(dimensions);
     }
 }

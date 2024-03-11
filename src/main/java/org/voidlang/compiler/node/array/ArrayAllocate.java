@@ -87,16 +87,11 @@ public class ArrayAllocate extends Value {
                 );
         }
 
-        int dimensions = elementType
-            .getArray()
-            .getDimensions()
-            .size() + 1;
-
         valueType = new ScalarType(
             elementType.getReferencing(),
             elementType.getName(),
             elementType.getGenerics(),
-            Array.explicit(dimensions)
+            Array.explicit(values.size())
         );
     }
 
