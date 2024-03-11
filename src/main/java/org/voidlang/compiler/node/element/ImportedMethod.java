@@ -19,21 +19,22 @@ import java.util.stream.Collectors;
 @Getter // must override getters, as the values of the parent class are for a different context
 @NodeInfo(type = NodeType.IMPORTED_METHOD)
 public class ImportedMethod extends Method {
+    private final String targetName;
+
     private Generator generator;
 
     private Type resolvedType;
 
     private List<IRType> paramTypes;
 
-    private String finalName;
-
     private boolean defined;
-
 
     private IRFunction function;
 
     public ImportedMethod(Method method) {
         super(method.getReturnType(), method.getName(), method.getParameters(), method.getBody());
+
+        targetName = method.getFinalName();
     }
 
     /**
@@ -48,7 +49,6 @@ public class ImportedMethod extends Method {
             return;
 
         this.generator = generator;
-
 
         // extract the context from the generator
         IRContext context = generator.getContext();
@@ -89,12 +89,8 @@ public class ImportedMethod extends Method {
 
         IRFunctionType functionType = IRFunctionType.create(returnType, paramTypes, false);
 
-        finalName = getName();
-        if (parent instanceof Class clazz)
-            finalName = clazz.getName() + "." + finalName;
-
         // create the LLVM function for the target context
-        function = IRFunction.create(module, finalName, functionType);
+        function = IRFunction.create(module, targetName, functionType);
 
         // handle successful method creation
         defined = true;

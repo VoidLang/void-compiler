@@ -32,6 +32,8 @@ import java.util.stream.Collectors;
 @Getter
 @NodeInfo(type = NodeType.METHOD)
 public class Method extends Node {
+    private static final Map<Method, String> methodNames = new HashMap<>();
+
     /**
      * The type of the method node in the AST.
      */
@@ -73,6 +75,11 @@ public class Method extends Node {
     private Generator generator;
 
     /**
+     * The name of the method with a suffix, that makes it unique in the module.
+     */
+    private String uniqueName;
+
+    /**
      * The final name that this method is registered as.
      */
     private String finalName;
@@ -107,6 +114,17 @@ public class Method extends Node {
                 context.setContext(this);
             node.preProcess(this);
         }
+
+        int padding = 1;
+        uniqueName = name;
+        while (methodNames.containsValue(uniqueName) && !bodyLess)
+            uniqueName = name + '_' + padding++;
+
+        finalName = uniqueName;
+        methodNames.put(this, finalName);
+
+        if (parent instanceof Class clazz)
+            finalName = clazz.getName() + "." + finalName;
     }
 
     /**
@@ -163,10 +181,6 @@ public class Method extends Node {
             paramTypes.add(0, IRType.pointerType(clazz.generateType(context)));
 
         IRFunctionType functionType = IRFunctionType.create(returnType, paramTypes, false);
-
-        finalName = name;
-        if (parent instanceof Class clazz)
-            finalName = clazz.getName() + "." + finalName;
 
         // create the LLVM function for the target context
         function = IRFunction.create(module, finalName, functionType);
