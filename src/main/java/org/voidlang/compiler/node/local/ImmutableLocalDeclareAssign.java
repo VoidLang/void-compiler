@@ -91,7 +91,7 @@ public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, 
         // do not reallocate if it was already allocated. the problem is that whenever
         //  this value is accessed, it is does reallocate the value, instead it should pass the value only
         if (allocated) {
-            // do not load the values from class struct pointers, as classes
+            // do not load the values from class struct pointers or arrays, as classes
             // are meant to be handled by reference, and not by value
             if (value.getValueType() instanceof Class ||
                     (value.getValueType() instanceof ScalarType scala && !scala.getArray().getDimensions().isEmpty()))

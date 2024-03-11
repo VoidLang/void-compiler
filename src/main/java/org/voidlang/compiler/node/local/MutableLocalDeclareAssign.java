@@ -91,10 +91,12 @@ public class MutableLocalDeclareAssign extends Value implements PointerOwner, Lo
         // do not reallocate if it was already allocated. the problem is that whenever
         //  this value is accessed, it is does reallocate the value, instead it should pass the value only
         if (loaded) {
-            // do not load the values from class struct pointers, as classes
+            // do not load the values from class struct pointers or arrays, as classes
             // are meant to be handled by reference, and not by value
-            if (value.getValueType() instanceof Class)
+            if (value.getValueType() instanceof Class ||
+                    (value.getValueType() instanceof ScalarType scala && !scala.getArray().getDimensions().isEmpty()))
                 return pointer;
+
             // local variable is meant to be passed by value, so load it from the pointer
             return load(generator);
         }
