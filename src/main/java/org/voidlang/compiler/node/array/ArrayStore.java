@@ -5,6 +5,7 @@ import org.voidlang.compiler.node.Generator;
 import org.voidlang.compiler.node.Node;
 import org.voidlang.compiler.node.NodeInfo;
 import org.voidlang.compiler.node.NodeType;
+import org.voidlang.compiler.node.local.Mutable;
 import org.voidlang.compiler.node.operator.Accessor;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
@@ -31,20 +32,23 @@ public class ArrayStore extends Value {
     @Override
     public IRValue generate(Generator generator) {
         IRBuilder builder = generator.getBuilder();
+        IRContext context = generator.getContext();
 
         ScalarType elementType = (ScalarType) accessor.getValueType();
-
         int arraySize = elementType.getArray().getDimensions().size();
 
+        if (!(accessor.getValue() instanceof Mutable))
+            throw new IllegalStateException("Cannot store array element for immutable array");
+
         IRType arrayType = elementType
-            .generateType(generator.getContext())
+            .generateType(context)
             .toArrayType(arraySize);
 
         IRValue arrayPointer = accessor.generate(generator);
         IRValue indexPointer = builder.structMemberPointer(arrayType, arrayPointer, index, "array store[" + index + "]");
 
-        IRValue value = this.value.generate(generator);
-        return builder.store(value, indexPointer);
+        IRValue irValue = value.generate(generator);
+        return builder.store(irValue, indexPointer);
     }
 
     /**

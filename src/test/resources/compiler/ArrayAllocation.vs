@@ -1,5 +1,5 @@
 int main() {
-    let arr = [1, 2, 3]
+    mut arr = [1, 2, 3]
 
     arr[0] = 5
 

@@ -42,7 +42,7 @@ public class ArrayLoad extends Value {
         int arraySize = arrayType.getArray().getDimensions().size();
 
         IRType irArrayType = arrayType
-            .generateType(generator.getContext())
+            .generateType(context)
             .toArrayType(arraySize);
         IRValue arrayPointer = accessor.generate(generator);
 
