@@ -31,21 +31,19 @@ public class ArrayStore extends Value {
     @Override
     public IRValue generate(Generator generator) {
         IRBuilder builder = generator.getBuilder();
-        IRContext context = generator.getContext();
 
         ScalarType elementType = (ScalarType) accessor.getValueType();
 
         int arraySize = elementType.getArray().getDimensions().size();
 
         IRType arrayType = elementType
-                .generateType(generator.getContext())
-                .toArrayType(arraySize);
-        IRValue arrayPointer = accessor.generate(generator);
+            .generateType(generator.getContext())
+            .toArrayType(arraySize);
 
+        IRValue arrayPointer = accessor.generate(generator);
         IRValue indexPointer = builder.structMemberPointer(arrayType, arrayPointer, index, "array store[" + index + "]");
 
         IRValue value = this.value.generate(generator);
-
         return builder.store(value, indexPointer);
     }
 

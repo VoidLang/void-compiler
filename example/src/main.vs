@@ -1,12 +1,9 @@
 package main
 
-import console
-using console::println
-
-import math
-using math::{abs,max}
-
 int main() {
-    println("Hello, World!")
-    return max(123, abs(-321))
+    mut arr = [10, 20, 30]
+
+    arr[0] = 100
+
+    return arr[0]
 }

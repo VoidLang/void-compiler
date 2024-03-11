@@ -349,6 +349,11 @@ public class Tokenizer {
             // move to the next number part
             skip(1);
         }
+
+        // TODO validate that the number does not end with '.'
+        // TODO validate that multiple underscores do not follow each other
+        // TODO handle numbers starting with '.'
+
         // get the value of the number
         String value = range(begin, cursor);
         return makeToken(integer ? TokenType.INTEGER : TokenType.DOUBLE, value);
