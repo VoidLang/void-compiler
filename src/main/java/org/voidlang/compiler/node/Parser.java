@@ -6,8 +6,8 @@ import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.builder.ImportNode;
 import org.voidlang.compiler.builder.Package;
 import org.voidlang.compiler.node.array.ArrayAllocate;
-import org.voidlang.compiler.node.array.ArrayLoad;
-import org.voidlang.compiler.node.array.ArrayStore;
+import org.voidlang.compiler.node.array.StaticArrayLoad;
+import org.voidlang.compiler.node.array.StaticArrayStore;
 import org.voidlang.compiler.node.common.Empty;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
@@ -1874,13 +1874,8 @@ public class Parser {
         get(TokenType.START);
 
         Value value = nextValue();
-        if (!(value instanceof Literal literal))
+        if (!(value instanceof Literal) && (!(value instanceof Accessor)))
             throw new IllegalStateException("Expected literal for array size, but got " + value);
-
-        int index = Integer.parseInt(literal
-            .getValue()
-            .getValue()
-        );
 
         get(TokenType.STOP);
 
@@ -1889,14 +1884,22 @@ public class Parser {
 
         if (peek().is(TokenType.OPERATOR, "=")) {
             get();
-            return new ArrayStore(accessor, index, nextValue());
+
+            if (value instanceof Literal literal) {
+                int index = Integer.parseInt(literal.getValue().getValue());
+                return new StaticArrayStore(accessor, index, nextValue());
+            }
+
+            throw new IllegalStateException("Dynamic array store is not supported yet.");
         }
 
         if (peek().is(TokenType.SEMICOLON))
             get();
 
-        return new ArrayLoad(accessor, index);
+        if (value instanceof Literal literal)
+            return new StaticArrayLoad(accessor, Integer.parseInt(literal.getValue().getValue()));
 
+        throw new IllegalStateException("Dynamic array load is not supported yet.");
     }
 
     private List<Value> nextArgumentList() {

@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
-@NodeInfo(type = NodeType.ARRAY_LOAD)
-public class ArrayLoad extends Value {
+@NodeInfo(type = NodeType.STATIC_ARRAY_LOAD)
+public class StaticArrayLoad extends Value {
     private final Accessor accessor;
 
     private final int index;

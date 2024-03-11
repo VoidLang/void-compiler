@@ -16,8 +16,8 @@ import org.voidlang.llvm.element.IRType;
 import org.voidlang.llvm.element.IRValue;
 
 @RequiredArgsConstructor
-@NodeInfo(type = NodeType.ARRAY_STORE)
-public class ArrayStore extends Value {
+@NodeInfo(type = NodeType.STATIC_ARRAY_STORE)
+public class StaticArrayStore extends Value {
     private final Accessor accessor;
 
     private final int index;
