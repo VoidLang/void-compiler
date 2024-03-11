@@ -5,9 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.voidlang.compiler.builder.ImportNode;
 import org.voidlang.compiler.builder.Package;
-import org.voidlang.compiler.node.array.ArrayAllocate;
-import org.voidlang.compiler.node.array.StaticArrayLoad;
-import org.voidlang.compiler.node.array.StaticArrayStore;
+import org.voidlang.compiler.node.array.*;
 import org.voidlang.compiler.node.common.Empty;
 import org.voidlang.compiler.node.common.Error;
 import org.voidlang.compiler.node.common.Finish;
@@ -1890,7 +1888,7 @@ public class Parser {
                 return new StaticArrayStore(accessor, index, nextValue());
             }
 
-            throw new IllegalStateException("Dynamic array store is not supported yet.");
+            return new DynamicArrayStore(accessor, (Accessor) value, nextValue());
         }
 
         if (peek().is(TokenType.SEMICOLON))
@@ -1899,7 +1897,7 @@ public class Parser {
         if (value instanceof Literal literal)
             return new StaticArrayLoad(accessor, Integer.parseInt(literal.getValue().getValue()));
 
-        throw new IllegalStateException("Dynamic array load is not supported yet.");
+        return new DynamicArrayLoad(accessor, (Accessor) value);
     }
 
     private List<Value> nextArgumentList() {

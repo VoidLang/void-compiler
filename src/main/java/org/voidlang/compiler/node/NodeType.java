@@ -62,6 +62,8 @@ public enum NodeType {
     ARRAY,
     STATIC_ARRAY_LOAD,
     STATIC_ARRAY_STORE,
+    DYNAMIC_ARRAY_LOAD,
+    DYNAMIC_ARRAY_STORE,
     IF,
     ELSE_IF,
     ELSE,
