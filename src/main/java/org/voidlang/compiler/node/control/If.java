@@ -38,12 +38,12 @@ public class If extends Instruction {
     @Override
     public void preProcess(Node parent) {
         this.parent = parent;
-        if (condition instanceof Instruction cond)
-            cond.setContext(getContext());
+        if (condition instanceof FunctionContext context)
+            context.setContext(getContext());
         condition.preProcess(this);
         for (Node node : body) {
-            if (node instanceof Instruction instruction)
-                instruction.setContext(getContext());
+            if (node instanceof FunctionContext context)
+                context.setContext(getContext());
             node.preProcess(this);
         }
         // else cases should inherit the parent of IF as a parent,

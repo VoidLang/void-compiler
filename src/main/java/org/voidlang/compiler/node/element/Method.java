@@ -103,8 +103,8 @@ public class Method extends Node {
     public void preProcess(Node parent) {
         this.parent = parent;
         for (Node node : body) {
-            if (node instanceof Instruction instruction)
-                instruction.setContext(this);
+            if (node instanceof FunctionContext context)
+                context.setContext(this);
             node.preProcess(this);
         }
     }
