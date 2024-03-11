@@ -49,6 +49,9 @@ void println() {
     return
 }
 
+/**
+ * Print an integer value to the standard output stream.
+ */
 void print(int value) {
     let buffer = ""
     itoa(value, buffer, 10)
@@ -56,8 +59,14 @@ void print(int value) {
     return
 }
 
-extern ref byte itoa(int value, ref byte str, int radix)
-
+/**
+ * Print an integer value to the standard output stream and terminate the line.
+ */
+void println(int value) {
+    print(value)
+    println()
+    return
+}
 
 /**
  * Print a value to the standard output stream and terminate the line.
