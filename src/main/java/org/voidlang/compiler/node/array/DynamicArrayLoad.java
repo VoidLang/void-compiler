@@ -10,7 +10,8 @@ import org.voidlang.compiler.node.type.array.Array;
 import org.voidlang.compiler.node.type.array.Dimension;
 import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
-import org.voidlang.compiler.node.value.Value;
+import org.voidlang.compiler.node.value.FunctionContextValue;
+import org.voidlang.compiler.runtime.Runtime;
 import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRContext;
 import org.voidlang.llvm.element.IRType;
@@ -21,7 +22,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @NodeInfo(type = NodeType.DYNAMIC_ARRAY_LOAD)
-public class DynamicArrayLoad extends Value {
+public class DynamicArrayLoad extends FunctionContextValue {
     private final Accessor accessor;
 
     private final Accessor index;
@@ -41,6 +42,9 @@ public class DynamicArrayLoad extends Value {
         ScalarType arrayType = (ScalarType) accessor.getValueType();
         int arrayDimensions = arrayType.getArray().getDimensions().size();
         int arrayLength = arrayType.getArray().getDimensions().get(0).getSizeConstant();
+
+        IRValue irIndex = index.generateAndLoad(generator);
+        Runtime.checkIndex(generator, resolveMethodScope().getFunction(), irIndex, arrayLength);
 
         IRType irArrayType = arrayType
             .generateType(context)

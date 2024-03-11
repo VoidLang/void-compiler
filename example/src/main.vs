@@ -4,14 +4,8 @@ import console
 using console::print
 
 int main() {
-    mut arr = [10, 20, 30]
-    let index = 45
+    let arr = [10, 20, 30, 40, 50]
+    let index = 69
 
-    arr[index] = 40
-    arr[index] = 20
-
-    print("value is: ")
-    print(arr[index])
-
-    return 1
+    return arr[index]
 }

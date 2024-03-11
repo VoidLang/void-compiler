@@ -8,6 +8,7 @@ import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.value.FunctionContextValue;
 import org.voidlang.compiler.node.value.Value;
+import org.voidlang.compiler.runtime.Runtime;
 import org.voidlang.llvm.element.*;
 
 import java.util.List;
@@ -38,21 +39,15 @@ public class DynamicArrayStore extends FunctionContextValue {
         if (!(accessor.getValue() instanceof Mutable))
             throw new IllegalStateException("Cannot store array element for immutable array");
 
+        IRValue irIndex = index.generateAndLoad(generator);
+        Runtime.checkIndex(generator, getContext().getFunction(), irIndex, arrayLength);
+
         IRType irArrayType = arrayType
             .generateType(context)
             .toArrayType(arrayDimensions);
         IRValue arrayPointer = accessor.generate(generator);
 
-        IRValue irIndex = index.generateAndLoad(generator);
-        IRType int32Type = IRType.int32(context);
-        IRValue irArrayLength = int32Type.constInt(arrayLength);
-
-        IRFunctionType type = IRFunctionType.create(IRType.voidType(context), List.of(int32Type, int32Type));
-        IRFunction function = IRFunction.getByName(generator.getModule(), type, "checkIndex");
-
-        builder.call(function, List.of(irIndex, irArrayLength));
-
-        List<IRValue> indices = List.of(int32Type.constInt(0), irIndex);
+        List<IRValue> indices = List.of(IRType.int32(context).constInt(0), irIndex);
         IRValue indexPointer = builder.elementPointer(irArrayType, arrayPointer, indices, "dynamic array store");
 
         IRValue irValue = value.generate(generator);
