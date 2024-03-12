@@ -15,6 +15,7 @@ import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.array.ArrayAllocate;
+import org.voidlang.compiler.node.value.New;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.llvm.element.IRBuilder;
 import org.voidlang.llvm.element.IRContext;
@@ -103,9 +104,14 @@ public class MutableLocalDeclareAssign extends Value implements PointerOwner, Lo
 
         pointerType = getType().generateType(context);
 
+        // the case of the `new` keyword is special, as it implements both StackAllocator and HeapAllocator
+        // let the keyboard decide whether to allocate on the stack or on the heap
+        if (value instanceof New)
+            pointer = value.generateNamed(generator, "let (new) " + name);
+
         // let the value allocate the value on the stack
         // this happens when using the "new" keyword
-        if (value instanceof StackAllocator allocator)
+        else if (value instanceof StackAllocator allocator)
             pointer = allocator.allocateStack(generator, "mut (alloc) " + name);
 
         // let the value allocate the value on the heap

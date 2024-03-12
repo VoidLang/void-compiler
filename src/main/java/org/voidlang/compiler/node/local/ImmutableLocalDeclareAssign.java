@@ -15,6 +15,7 @@ import org.voidlang.compiler.node.type.core.ScalarType;
 import org.voidlang.compiler.node.type.core.Type;
 import org.voidlang.compiler.node.type.named.NamedScalarType;
 import org.voidlang.compiler.node.array.ArrayAllocate;
+import org.voidlang.compiler.node.value.New;
 import org.voidlang.compiler.node.value.Tuple;
 import org.voidlang.compiler.node.value.Value;
 import org.voidlang.compiler.util.PrettierIgnore;
@@ -102,16 +103,22 @@ public class ImmutableLocalDeclareAssign extends Value implements PointerOwner, 
 
         pointerType = getType().generateType(context);
 
+        /* do not force allocation on the heap, imagine a method malloced a Class, and then
+         assigned it to a local variable, it should not be allocated on the heap, but on the stack
         // let classes be allocated on the stack
         if (getType() instanceof Class) {
             // check if the class does not have a heap allocator
             if (!(value instanceof HeapAllocator allocator))
-                throw new IllegalStateException("Class type must have a heap allocator");
+                throw new IllegalStateException("Class type must have a heap allocator, but is " + value);
             // allocate the class on the heap
             pointer = allocator.allocateHeap(generator, "let (class) " + name);
         }
+         */
 
-        // TODO handle struct allocation
+        // the case of the `new` keyword is special, as it implements both StackAllocator and HeapAllocator
+        // let the keyboard decide whether to allocate on the stack or on the heap
+        if (value instanceof New)
+            pointer = value.generateNamed(generator, "let (new) " + name);
 
         // let the value allocate the value on the stack
         // this happens when using the "new" keyword
