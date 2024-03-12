@@ -49,13 +49,13 @@ public class Package extends Node {
      */
     @Override
     public IRValue generate(Generator generator) {
+        for (Class clazz : classes.values())
+            clazz.generate(generator);
+
         for (List<Method> methodList : methods.values()) {
             for (Method method : methodList)
                 method.generate(generator);
         }
-
-        for (Class clazz : classes.values())
-            clazz.generate(generator);
 
         return null;
     }
@@ -253,12 +253,14 @@ public class Package extends Node {
      */
     @Override
     public void postProcessUse(Generator generator) {
+        for (Class clazz : classes.values()) {
+            clazz.postProcessUse(generator);
+        }
+
         for (List<Method> methodList : methods.values()) {
             for (Method method : methodList)
                 method.postProcessUse(generator);
         }
-        for (Class clazz : classes.values())
-            clazz.postProcessUse(generator);
     }
 
     @Override
