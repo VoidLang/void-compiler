@@ -93,6 +93,10 @@ public class Class extends Element implements PassedByReference {
             .stream()
             .flatMap(List::stream)
             .forEach(method -> method.postProcessType(generator));
+
+        fields
+            .values()
+            .forEach(field -> field.postProcessType(generator));
     }
 
     /**
@@ -109,6 +113,10 @@ public class Class extends Element implements PassedByReference {
             .stream()
             .flatMap(List::stream)
             .forEach(method -> method.postProcessMember(generator));
+
+        fields
+            .values()
+            .forEach(field -> field.postProcessMember(generator));
     }
 
     /**
@@ -125,6 +133,10 @@ public class Class extends Element implements PassedByReference {
             .stream()
             .flatMap(List::stream)
             .forEach(method -> method.postProcessUse(generator));
+
+        fields
+            .values()
+            .forEach(field -> field.postProcessUse(generator));
     }
 
     /**
