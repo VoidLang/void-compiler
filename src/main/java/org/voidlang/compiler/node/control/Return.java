@@ -34,7 +34,7 @@ public class Return extends Instruction {
 
         // resolve the type of the value to be returned and the return type of the function
         Type valueType = value.getValueType();
-        Type returnType = getContext().getReturnType();
+        Type returnType = getContext().getResolvedType();
 
         // extract the type of the value
         if (valueType instanceof NamedScalarType namedValueType)
