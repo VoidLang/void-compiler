@@ -92,7 +92,10 @@ public class MethodCall extends Value {
             Type type = target.getValueType();
 
             if (!(type instanceof Element element))
-                throw new IllegalStateException("Method access target '" + name.getDirect() + "' is not an element, but is " + type);
+                throw new IllegalStateException(
+                    "Method access target '" + name.getDirect() + "' is not an element, but is " + type + "(" +
+                    type.getClass().getSimpleName() + ")"
+                );
 
             String methodName = name.getFieldName(); // TODO this is the method's name
             method = element.resolveMethod(methodName, argTypes);
@@ -190,6 +193,14 @@ public class MethodCall extends Value {
      */
     @Override
     public Type getValueType() {
-        return method.getReturnType();
+        return method.getResolvedType();
+    }
+
+    @Override
+    public String toString() {
+        return "MethodCall{" +
+            "name=" + name +
+            ", arguments=" + arguments +
+            '}';
     }
 }
