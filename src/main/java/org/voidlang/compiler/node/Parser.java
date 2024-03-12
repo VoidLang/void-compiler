@@ -304,12 +304,14 @@ public class Parser {
         //                    ^^^^^^^^^^^ generic types may have a default value
         GenericTypeList generics = nextGenericTypes();
 
-        System.out.print(ConsoleFormat.YELLOW + kind + " " + ConsoleFormat.BLUE + name);
-        if (generics.isExplicit()) {
-            String debug = generics.getGenerics().stream()
-                .map(GenericType::toString)
-                .collect(Collectors.joining(", "));
-            System.out.print("<" + String.join(", ", debug) + ConsoleFormat.BLUE + ">");
+        if (Prettier.isEnabled()) {
+            System.out.print(ConsoleFormat.YELLOW + kind + " " + ConsoleFormat.BLUE + name);
+            if (generics.isExplicit()) {
+                String debug = generics.getGenerics().stream()
+                    .map(GenericType::toString)
+                    .collect(Collectors.joining(", "));
+                System.out.print("<" + String.join(", ", debug) + ConsoleFormat.BLUE + ">");
+            }
         }
 
         // TODO generic type implementation (where T implements MyType)
