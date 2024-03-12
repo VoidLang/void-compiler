@@ -109,6 +109,7 @@ public class ScalarType implements Type {
         // TODO here probably shouldn't use void pointer, instead of pointer to type
         if (!name.isPrimitive())
             return IRType.pointerType(IRType.voidType(context));
+
         // convert the raw types to LLVM type representations
         IRType type = switch (name.getPrimitive()) {
             case "void" -> IRType.voidType(context);

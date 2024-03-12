@@ -14,6 +14,8 @@ import org.voidlang.compiler.node.memory.StackAllocator;
 import org.voidlang.compiler.node.local.PointerOwner;
 import org.voidlang.compiler.node.type.QualifiedName;
 import org.voidlang.compiler.node.type.core.Type;
+import org.voidlang.compiler.node.type.named.NamedScalarType;
+import org.voidlang.compiler.node.type.pointer.ReferencingType;
 import org.voidlang.llvm.element.*;
 
 import java.util.List;
@@ -67,6 +69,12 @@ public class New extends Value implements PointerOwner, StackAllocator, HeapAllo
                 Type fieldType = field.getType();
                 Node fieldValue = field.getValue();
 
+                if (fieldType instanceof NamedScalarType named)
+                    fieldType = named.getScalarType();
+
+                if (fieldType.getReferencing().getType() == ReferencingType.REFERENCE)
+                    continue;
+
                 IRValue value;
                 if (fieldValue != null)
                     value = fieldValue.generateAndLoad(generator);
@@ -76,8 +84,9 @@ public class New extends Value implements PointerOwner, StackAllocator, HeapAllo
                 if (value == null)
                     continue;
 
-                IRValue fieldPointer = builder.structMemberPointer(pointerType, pointer,
-                    field.getFieldIndex(), "init " + field.getName());
+                IRValue fieldPointer = builder.structMemberPointer(
+                    pointerType, pointer, field.getFieldIndex(), "init " + field.getName()
+                );
                 builder.store(value, fieldPointer);
             }
         }
@@ -97,6 +106,12 @@ public class New extends Value implements PointerOwner, StackAllocator, HeapAllo
             for (Field field : clazz.getFields().values()) {
                 Type fieldType = field.getType();
                 Node fieldValue = field.getValue();
+
+                if (fieldType instanceof NamedScalarType named)
+                    fieldType = named.getScalarType();
+
+                if (fieldType.getReferencing().getType() == ReferencingType.REFERENCE)
+                    continue;
 
                 IRValue value;
                 if (fieldValue != null)

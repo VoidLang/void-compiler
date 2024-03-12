@@ -3,9 +3,17 @@ package main
 import console
 using console::print
 
-int main() {
-    let arr = [10, 20, 30, 40, 50]
-    let index = 69
+class String {
+    ref byte buffer
+    int length
+}
 
-    return arr[index]
+int foo() {
+    let str = new String()
+
+    return 213
+}
+
+int main() {
+    return 0
 }
