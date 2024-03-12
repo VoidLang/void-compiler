@@ -57,6 +57,18 @@ public class New extends Value implements PointerOwner, StackAllocator, HeapAllo
     }
 
     @Override
+    public IRValue generateNamed(Generator generator, String name) {
+        if (type instanceof Class)
+            return allocateHeap(generator, name);
+
+        else if (type instanceof Struct)
+            return allocateStack(generator, name);
+
+        else
+            throw new IllegalStateException("Expected class or struct type for `new` keyword, but got: " + type);
+    }
+
+    @Override
     public IRValue allocateStack(Generator generator, String name) {
         IRContext context = generator.getContext();
         IRBuilder builder = generator.getBuilder();
