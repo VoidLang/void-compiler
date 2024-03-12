@@ -107,8 +107,10 @@ public class New extends Value implements PointerOwner, StackAllocator, HeapAllo
                 if (value == null)
                     continue;
 
-                IRValue fieldPointer = builder.structMemberPointer(pointerType, pointer,
-                        field.getFieldIndex(), "init " + field.getName());
+                IRValue fieldPointer = builder.structMemberPointer(
+                    pointerType, pointer, field.getFieldIndex(), "init " + field.getName()
+                );
+
                 builder.store(value, fieldPointer);
             }
         }

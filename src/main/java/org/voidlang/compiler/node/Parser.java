@@ -414,6 +414,16 @@ public class Parser {
             return nextField();
         }
 
+        // handle referenced scalar type method or field declaration
+        else if (
+            peek().is(TokenType.TYPE, "ref") && at(cursor + 1).is(TokenType.TYPE, TokenType.IDENTIFIER) &&
+            at(cursor + 2).is(TokenType.IDENTIFIER)
+        ) {
+            if (at(cursor + 3).is(TokenType.OPEN))
+                return nextMethod();
+            return nextField();
+        }
+
         System.err.println(ConsoleFormat.RED + "Error (Content) " + peek());
         return new Error();
     }
