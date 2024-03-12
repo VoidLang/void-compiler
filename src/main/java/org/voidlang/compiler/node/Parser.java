@@ -346,8 +346,12 @@ public class Parser {
         // parse the body of the class
         Node.prettier.enterScope();
         List<Node> body = new ArrayList<>();
-        while (!peek().is(TokenType.END))
-            body.add(nextContent());
+        while (!peek().is(TokenType.END)) {
+            Node node = nextContent();
+            if (!node.hasNext())
+                return node;
+            body.add(node);
+        }
         Node.prettier.exitScope();
 
         // handle type body end
@@ -373,8 +377,12 @@ public class Parser {
         // parse the body of the class
         Node.prettier.enterScope();
         List<Node> body = new ArrayList<>();
-        while (!peek().is(TokenType.END))
-            body.add(nextContent());
+        while (!peek().is(TokenType.END)) {
+            Node node = nextContent();
+            if (!node.hasNext())
+                return node;
+            body.add(node);
+        }
         Node.prettier.exitScope();
 
         // handle type body end
